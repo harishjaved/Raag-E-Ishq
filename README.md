@@ -1,66 +1,114 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sagar Kinare — Event Operations Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A production-grade, mobile-first event ticketing and back-office operations platform built for **Joygivers** for the musical evening **Sagar Kinare** in Kochi, Kerala.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 1. Architectural Highlights
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* **100% Server-Authoritative Pricing:** All calculations are performed server-side in Indian paise. Client-supplied price tampering is mathematically impossible.
+* **Shared 450-Capacity Pool:** Row-level pessimistic locking (`SELECT ... FOR UPDATE`) guarantees that concurrent purchase bursts (e.g. 10+ simultaneous requests for the last available seat) can **never oversell** beyond the 450 total ceiling or tier caps (Tier 1: 100 @ ₹2,500; Tier 2: 100 @ ₹1,500; Tier 3: 250 @ ₹1,000).
+* **Payment QR vs. Admission QR Disconnect:** Educational clarity in UX and complete cryptographic separation in backend architecture.
+  * **Payment QR:** Ephemeral UPI payment payload (`upi://pay?...`) with a strictly matched 10-minute hold TTL.
+  * **Admission QR:** Single-use, high-entropy cryptographic token (`HMAC-SHA256(secret, ticket_id + nonce) + UUIDv4`), containing zero customer PII.
+* **Signature-Verified Webhook Ingestion:** Webhook payloads are verified against the raw HTTP request body bytes (`hash_hmac`) and deduplicated via `gateway_webhook_events` to ensure idempotency.
+* **Atomic Mobile Check-in:** Database `UNIQUE KEY (ticket_id)` on the `checkins` table guarantees that two phones scanning the identical QR ticket at the exact same millisecond will result in exactly **one Green (Admitted)** and **one Orange (Already Checked In)**.
+* **Strict Backend RBAC:** 4 distinct roles (`SUPER_ADMIN`, `EVENT_MANAGER`, `FINANCE`, `GATE_STAFF`). Gate staff have zero access to financial ledgers, exports, or customer contact books.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 2. Technology Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+* **Language & Framework:** PHP 8.3+ / Laravel 12.x (Stable production LTS baseline).
+* **Database:** MySQL 8.0 InnoDB (with strict relational integrity, foreign keys, and row-level locking).
+* **Frontend:** Laravel Blade, HTML5, Vanilla JavaScript, Tailwind CSS (Mobile-First responsive design), Chart.js.
+* **Gate Scanner:** Browser-native JavaScript camera stream (`html5-qrcode`) with real-time Web Audio API synthesized feedback.
+* **Queues & Scheduler:** Laravel Queues (database/redis) with automatic exponential backoff for transactional emails; system scheduler for hold expiry cleanup.
+* **Payment Gateway:** Razorpay (Dynamic single-use UPI QR code + mobile intent/checkout fallback).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 3. Directory Structure
 
-## Laravel Sponsors
+```text
+├── app/
+│   ├── Console/Commands/       # Hold expiration daemon command
+│   ├── Exceptions/             # OutOfStockException
+│   ├── Http/Controllers/
+│   │   ├── Admin/              # Dashboard, CRM, Bookings, Payments, Allocations, Reports, Audit
+│   │   ├── Auth/               # Login and Session management
+│   │   ├── Public/             # Event page, Registration, Payment, Confirmation, Download, Resend
+│   │   ├── Staff/              # Mobile Gate Scanner and manual lookup
+│   │   └── Webhooks/           # Razorpay signature-verified raw webhook receiver
+│   ├── Http/Middleware/        # RoleMiddleware (RBAC enforcement)
+│   ├── Http/Requests/          # Form request validations (anti-tampering)
+│   ├── Jobs/                   # Queued transactional email delivery with retry protection
+│   ├── Mail/                   # Ticket confirmation Mailable
+│   ├── Models/                 # 16 Eloquent models with strict typing and relationships
+│   └── Services/               # Domain services: Inventory, Razorpay, Ticket, Checkin, Analytics
+├── database/
+│   ├── migrations/             # 8 comprehensive relational migrations
+│   └── seeders/                # DatabaseSeeder (Default Event, 3 Tiers, 4 RBAC accounts, Settings)
+├── docs/                       # Complete operational runbooks, matrices, and guides
+│   ├── DEPLOYMENT_HOSTINGER_VPS.md
+│   ├── METRIC_DEFINITIONS.md
+│   ├── OPEN_ISSUES_REGISTER.md
+│   ├── RAZORPAY_INTEGRATION_NOTES.md
+│   ├── ROUTE_AND_ROLE_MATRIX.md
+│   ├── STAFF_OPERATING_GUIDE.md
+│   └── TEST_REPORT.md
+└── tests/
+    └── Feature/                # 35 feature tests covering concurrency, webhooks, gate races, and E2E
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 4. Local Quick Start & Verification
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Prerequisites
+* PHP 8.3+ with extensions: `pdo_mysql`, `pdo_sqlite`, `curl`, `mbstring`, `openssl`, `fileinfo`, `gd`, `zip`.
+* Composer 2.x
+* MySQL 8.0 Community Server
 
-## Contributing
+### Installation
+```bash
+# 1. Install dependencies
+composer install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 2. Configure environment
+cp .env.example .env
+php artisan key:generate
 
-## Code of Conduct
+# 3. Run database migrations & seeders
+php artisan migrate:fresh --seed
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 4. Execute test suite
+php artisan test
+```
 
-## Security Vulnerabilities
+### Default Seeded Accounts
+All accounts share the default development password: `Password123!`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+* **Super Admin:** `superadmin@joygivers.org` (Full system, user management, and audit logs)
+* **Event Manager:** `manager@joygivers.org` (CRM, bookings, seat allocations, and gate operations)
+* **Finance Officer:** `finance@joygivers.org` (Payment ledger, exception reconciliation, CSV settlement export)
+* **Gate Staff:** `gate@joygivers.org` (Mobile camera QR check-in and audited manual lookup only)
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 5. Automated Test Suite
+
+Run the full automated test suite containing **35 tests and 267 assertions**:
+
+```bash
+php artisan test
+```
+
+Test coverage includes:
+1. `Phase1FoundationTest`: Verification of all 16 tables, 450 capacity quota sum, and RBAC permissions.
+2. `Phase2RegistrationAndConcurrencyTest`: Anti-price-tampering, input validation, hold expiration, and **15-buyer concurrent race on the last seat**.
+3. `Phase3RazorpayWebhookTest`: Forged signature rejection (400), duplicate delivery idempotency, out-of-order deliveries, amount mismatch routing, and late payment reconciliation.
+4. `Phase4TicketIssuanceAndSecurityTest`: 1 ticket per admission, HMAC signature verification, signed URL protection, and zero PII leakage.
+5. `Phase5GateOperationsTest`: Atomic gate check-in, **double-scan simultaneous race prevention**, orange duplicate detection, void ticket rejection, and audited manual lookup.
+6. `Phase6BackOfficeAndAnalyticsTest`: RBAC denial verification across all 4 roles, dashboard metric calculations against fixtures, sponsor allocations, and sanitized CSV exports.
+7. `EndToEndLifecycleTest`: Full end-to-end integration: `Guest link -> Registration -> CRM -> Payment QR -> Webhook -> Admission QR -> Signed Download -> Mobile Gate Scan -> Duplicate Scan -> Dashboard Accuracy`.

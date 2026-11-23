@@ -37,7 +37,7 @@ class TicketService
 
             foreach ($booking->items as $item) {
                 for ($i = 0; $i < $item->quantity; $i++) {
-                    $attendeeName = $item->quantity === 1
+                    $attendeeName = $ticketIndex === 1
                         ? $booking->contact->full_name
                         : "{$booking->contact->full_name} (Guest #{$ticketIndex})";
 
