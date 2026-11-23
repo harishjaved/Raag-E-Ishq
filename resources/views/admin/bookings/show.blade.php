@@ -32,6 +32,13 @@
                 <span class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
                     PAYMENT PENDING
                 </span>
+                <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Approve &amp; Issue Tickets</span>
+                    </button>
+                </form>
             @else
                 <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold">
                     {{ $booking->status }}

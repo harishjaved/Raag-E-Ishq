@@ -57,6 +57,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     Route::get('/crm/contacts/{id}', [ContactController::class, 'show'])->name('crm.contacts.show');
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings');
     Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{id}/confirm-payment', [BookingController::class, 'confirmPayment'])->name('bookings.confirm-payment');
     Route::get('/allocations', [AllocationController::class, 'index'])->name('allocations');
     Route::post('/allocations', [AllocationController::class, 'store'])->name('allocations.store');
     Route::post('/allocations/{allocation}/generate-tickets', [AllocationController::class, 'generateTickets'])->name('allocations.generate-tickets');
