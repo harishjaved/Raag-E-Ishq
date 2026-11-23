@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -36,7 +37,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function show(int $id): View
+    public function show(int $id, TicketService $ticketService): View
     {
         $booking = Booking::with([
             'contact',
@@ -46,6 +47,10 @@ class BookingController extends Controller
             'tickets.checkin.scannedBy',
             'refunds',
         ])->findOrFail($id);
+
+        foreach ($booking->tickets as $ticket) {
+            $ticket->qr_svg = $ticketService->generateAdmissionQrSvg($ticket);
+        }
 
         return view('admin.bookings.show', [
             'booking' => $booking,

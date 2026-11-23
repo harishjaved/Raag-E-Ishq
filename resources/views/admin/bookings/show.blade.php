@@ -97,8 +97,7 @@
             <div class="grid sm:grid-cols-2 gap-4">
                 @foreach ($booking->tickets as $ticket)
                     @php
-                        $ticketService = app(\App\Services\TicketService::class);
-                        $qrSvg = $ticketService->generateQrSvg($ticket);
+                        $qrSvg = $ticket->qr_svg ?? app(\App\Services\TicketService::class)->generateAdmissionQrSvg($ticket);
                     @endphp
                     <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-4">
                         <div class="w-24 h-24 bg-white p-2 rounded-xl flex-shrink-0 flex items-center justify-center [&>svg]:w-full [&>svg]:h-auto shadow-inner">

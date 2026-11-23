@@ -150,6 +150,14 @@ class TicketService
     }
 
     /**
+     * Alias for generateAdmissionQrSvg for convenience.
+     */
+    public function generateQrSvg(Ticket $ticket, int $size = 250): string
+    {
+        return $this->generateAdmissionQrSvg($ticket, $size);
+    }
+
+    /**
      * Verify an admission token against database and HMAC signature.
      *
      * @return array{valid: bool, status: string, message: string, ticket: ?Ticket}

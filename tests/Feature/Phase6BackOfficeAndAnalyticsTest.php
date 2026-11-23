@@ -204,4 +204,25 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         // Crucial security test: Ensure customer phone number is NOT dumped into finance exports
         $this->assertStringNotContainsString('9847222333', $content);
     }
+
+    public function test_admin_booking_details_view_renders_tickets_and_qr_codes(): void
+    {
+        $b = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Aravind Swamy',
+            'email' => 'aravind@test.com',
+            'phone' => '9847555666',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 2,
+            'privacy_consent' => true,
+        ]);
+        $b->update(['status' => Booking::STATUS_CONFIRMED]);
+        $this->ticketService->issueTicketsForBooking($b);
+
+        $response = $this->actingAs($this->eventManager)->get("/admin/bookings/{$b->id}");
+        $response->assertStatus(200);
+        $response->assertSee($b->booking_reference);
+        $response->assertSee('Aravind Swamy');
+        $response->assertSee('Issued Admission Tickets (2)');
+        $response->assertSee('<svg', false); // Confirms SVG QR code is rendered
+    }
 }
