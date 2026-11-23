@@ -59,6 +59,17 @@ class Booking extends Model
         return $this->hasMany(BookingItem::class);
     }
 
+    public static function generateUniqueReference(): string
+    {
+        $datePrefix = date('Ymd');
+        do {
+            $random = strtoupper(\Illuminate\Support\Str::random(5));
+            $reference = "SK-{$datePrefix}-{$random}";
+        } while (self::where('booking_reference', $reference)->exists());
+
+        return $reference;
+    }
+
     public function inventoryHolds(): HasMany
     {
         return $this->hasMany(InventoryHold::class);

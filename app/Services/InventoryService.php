@@ -35,8 +35,9 @@ class InventoryService
             ->where('expires_at', '>', Carbon::now())
             ->sum('quantity');
 
-        // 3. Sponsor, complimentary, and organiser allocations
+        // 3. Sponsor, complimentary, and organiser unissued reserve holds
         $allocationsCount = TicketAllocation::where('ticket_category_id', $category->id)
+            ->whereNull('booking_id')
             ->sum('quantity');
 
         $allocatedTotal = $issuedCount + $activeHoldsCount + $allocationsCount;
@@ -62,6 +63,7 @@ class InventoryService
             ->sum('quantity');
 
         $allocationsCount = TicketAllocation::whereIn('ticket_category_id', $categoryIds)
+            ->whereNull('booking_id')
             ->sum('quantity');
 
         $totalAllocated = $issuedCount + $activeHoldsCount + $allocationsCount;

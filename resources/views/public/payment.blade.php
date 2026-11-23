@@ -74,6 +74,25 @@
             <p class="text-[10px] text-slate-500">Tapping will open your installed UPI app with the exact amount pre-filled.</p>
         </div>
 
+        @if (!config('services.razorpay.live_payments_enabled'))
+        <!-- Sandbox Test Mode Instant Simulation Action -->
+        <div class="pt-4 border-t border-amber-500/20 p-4 rounded-2xl bg-amber-500/5 text-center space-y-2">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center justify-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+                <span>Sandbox Test Mode</span>
+            </div>
+            <p class="text-[11px] text-slate-400">
+                Because this environment uses dummy test credentials, click below to simulate an instant successful bank UPI webhook:
+            </p>
+            <form action="{{ route('booking.simulate-payment', ['reference' => $booking->booking_reference]) }}" method="POST">
+                @csrf
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-md flex items-center justify-center gap-2">
+                    <span>⚡ Simulate Verified UPI Payment &amp; Issue Tickets</span>
+                </button>
+            </form>
+        </div>
+        @endif
+
         <!-- Live Status Polling Indicator -->
         <div class="pt-3 border-t border-slate-800 flex items-center justify-center gap-2 text-xs text-slate-400">
             <span class="relative flex h-2 w-2">

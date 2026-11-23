@@ -26,6 +26,7 @@ Route::post('/register', [RegistrationController::class, 'store'])->name('regist
 Route::get('/booking/{reference}/payment', [PaymentController::class, 'show'])->name('booking.payment');
 Route::get('/booking/{reference}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{reference}/confirmed', [ConfirmationController::class, 'show'])->name('booking.confirmed');
+Route::post('/booking/{reference}/simulate-payment', [PaymentController::class, 'simulatePayment'])->name('booking.simulate-payment');
 
 // Ticket Download (Signed URL) & Self-service Resend (Rate limited)
 Route::get('/tickets/download/{uuid}', [TicketDownloadController::class, 'download'])->name('ticket.download')->middleware('signed');
@@ -58,6 +59,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
     Route::get('/allocations', [AllocationController::class, 'index'])->name('allocations');
     Route::post('/allocations', [AllocationController::class, 'store'])->name('allocations.store');
+    Route::post('/allocations/{allocation}/generate-tickets', [AllocationController::class, 'generateTickets'])->name('allocations.generate-tickets');
 
     // Finance Restricted (Super Admin & Finance only)
     Route::middleware('role:finance')->group(function () {
