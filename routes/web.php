@@ -1,5 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AllocationController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\BookingController;
+use App\Http\Controllers\Admin\ContactController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Public\ConfirmationController;
 use App\Http\Controllers\Public\EventController;
@@ -38,4 +45,30 @@ Route::middleware(['auth', 'role:scan'])->group(function () {
     Route::get('/staff/scan', [ScanController::class, 'index'])->name('staff.scan');
     Route::post('/staff/scan/verify', [ScanController::class, 'verify'])->name('staff.scan.verify');
     Route::post('/staff/lookup/manual', [ScanController::class, 'manualLookup'])->name('staff.lookup.manual');
+});
+
+// Admin Back Office (Super Admin, Event Manager, Finance)
+Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // CRM Contacts & Bookings
+    Route::get('/crm/contacts', [ContactController::class, 'index'])->name('crm.contacts');
+    Route::get('/crm/contacts/{id}', [ContactController::class, 'show'])->name('crm.contacts.show');
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings');
+    Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
+    Route::get('/allocations', [AllocationController::class, 'index'])->name('allocations');
+    Route::post('/allocations', [AllocationController::class, 'store'])->name('allocations.store');
+
+    // Finance Restricted (Super Admin & Finance only)
+    Route::middleware('role:finance')->group(function () {
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments');
+        Route::post('/payments/{id}/reconcile', [AdminPaymentController::class, 'reconcile'])->name('payments.reconcile');
+        Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+    });
+
+    // Super Admin Only
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs');
+    });
 });
