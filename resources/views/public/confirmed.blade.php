@@ -1,0 +1,69 @@
+@extends('layouts.app')
+
+@section('title', 'Tickets Confirmed — Sagar Kinare')
+
+@section('content')
+<div class="max-w-2xl mx-auto px-4 py-8 space-y-8">
+    <!-- Success Banner -->
+    <div class="p-6 rounded-3xl bg-emerald-950/80 border border-emerald-500/40 text-center space-y-3 shadow-2xl">
+        <div class="w-12 h-12 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif-display">Payment Verified &amp; Tickets Confirmed!</h1>
+        <p class="text-xs text-emerald-300/90 max-w-md mx-auto">
+            Your admission tickets have been successfully generated. Present each admission QR code at Chavara Hall gate check-in.
+        </p>
+        <div class="pt-2 text-xs text-slate-400">
+            Booking Reference: <span class="font-mono text-amber-400 font-bold">{{ $booking->booking_reference }}</span>
+        </div>
+    </div>
+
+    <!-- Ticket Cards List -->
+    <div class="space-y-6">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-100">Your Event Admission Tickets ({{ $tickets->count() }})</h2>
+            <button onclick="window.print()" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span>Print / Save</span>
+            </button>
+        </div>
+
+        @foreach ($tickets as $ticket)
+            <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 shadow-xl">
+                <div class="flex flex-col sm:flex-row items-center gap-6 justify-between">
+                    <div class="space-y-2 text-center sm:text-left flex-grow">
+                        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                            {{ $ticket->category->name }} &bull; Admit 1
+                        </div>
+                        <div class="text-xl font-bold text-slate-100">{{ $ticket->attendee_name }}</div>
+                        <div class="text-xs text-slate-400 space-y-0.5">
+                            <div>Venue: <span class="text-slate-200 font-medium">Chavara Hall, Kochi</span></div>
+                            <div>Ticket Number: <span class="font-mono text-slate-300">{{ $ticket->ticket_number }}</span></div>
+                            <div>Status: <span class="text-emerald-400 font-semibold">{{ $ticket->status }}</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Unique Admission QR -->
+                    <div class="flex-shrink-0 text-center space-y-1">
+                        <div class="p-3 bg-white rounded-2xl inline-block shadow-md max-w-[170px] [&>svg]:w-full [&>svg]:h-auto">
+                            {!! $ticket->qr_svg !!}
+                        </div>
+                        <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Admission QR</div>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-800/80 text-[11px] text-slate-500 flex justify-between items-center">
+                    <span>Valid for single entry only</span>
+                    <span class="font-mono text-[10px] text-slate-600">ID: {{ substr($ticket->qr_uuid, 0, 8) }}...</span>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <!-- Help & Retrieval Notice -->
+    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-400 space-y-1">
+        <p>A confirmation email with your ticket details has been queued for delivery to <strong>{{ $booking->contact->email }}</strong>.</p>
+        <p class="text-slate-500">Need help? Contact Joygivers at events@joygivers.org</p>
+    </div>
+</div>
+@endsection

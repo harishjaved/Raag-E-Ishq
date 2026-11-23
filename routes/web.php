@@ -1,21 +1,18 @@
 <?php
 
+use App\Http\Controllers\Public\ConfirmationController;
 use App\Http\Controllers\Public\EventController;
+use App\Http\Controllers\Public\PaymentController;
 use App\Http\Controllers\Public\RegistrationController;
+use App\Http\Controllers\Webhooks\RazorpayWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [EventController::class, 'show'])->name('home');
 Route::post('/register', [RegistrationController::class, 'store'])->name('register.store');
 
-// Placeholders for payment and confirmation flows (Phase 3)
-Route::get('/booking/{reference}/payment', function ($reference) {
-    return response("Payment page for booking {$reference} will be implemented in Phase 3.", 200);
-})->name('booking.payment');
+Route::get('/booking/{reference}/payment', [PaymentController::class, 'show'])->name('booking.payment');
+Route::get('/booking/{reference}/status', [PaymentController::class, 'status'])->name('booking.status');
+Route::get('/booking/{reference}/confirmed', [ConfirmationController::class, 'show'])->name('booking.confirmed');
 
-Route::get('/booking/{reference}/status', function ($reference) {
-    return response()->json(['status' => 'PENDING']);
-})->name('booking.status');
-
-Route::get('/booking/{reference}/confirmed', function ($reference) {
-    return response("Booking confirmed for {$reference}", 200);
-})->name('booking.confirmed');
+// Razorpay signature-verified raw webhook endpoint
+Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handle'])->name('webhooks.razorpay');
