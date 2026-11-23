@@ -44,17 +44,22 @@ class RazorpayService
      */
     public function createPaymentAttempt(Booking $booking, string $method = 'auto'): PaymentAttempt
     {
+        $vpa = config('services.razorpay.merchant_vpa', 'mujammilibrahim007@okhdfcbank');
+        $merchantName = config('services.razorpay.merchant_name', 'Muzammil Ibrahim');
+        $rupees = number_format($booking->total_amount_paise / 100, 2, '.', '');
+        $upiPayload = "upi://pay?pa={$vpa}&pn=" . urlencode($merchantName) . "&am={$rupees}&cu=INR&tr={$booking->booking_reference}&tn=" . urlencode("Sagar Kinare - {$booking->booking_reference}");
+
         $existing = $booking->paymentAttempts()
             ->whereIn('status', [PaymentAttempt::STATUS_CREATED, PaymentAttempt::STATUS_AWAITING_PAYMENT])
             ->where('expires_at', '>', Carbon::now())
             ->first();
 
         if ($existing) {
+            if ($existing->qr_payload !== $upiPayload) {
+                $existing->update(['qr_payload' => $upiPayload]);
+            }
             return $existing;
         }
-
-        $rupees = number_format($booking->total_amount_paise / 100, 2, '.', '');
-        $upiPayload = "upi://pay?pa=joygivers@razorpay&pn=Joygivers%20Sagar%20Kinare&am={$rupees}&cu=INR&tr={$booking->booking_reference}&tn=Sagar%20Kinare%20Tickets";
 
         $providerQrId = null;
         $providerOrderId = null;

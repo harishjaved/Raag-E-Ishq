@@ -39,6 +39,8 @@ return [
         'key_id' => env('RAZORPAY_KEY_ID', 'rzp_test_dummyKeyId'),
         'key_secret' => env('RAZORPAY_KEY_SECRET', 'dummySecret'),
         'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET', 'dummyWebhookSecret'),
+        'merchant_vpa' => env('RAZORPAY_MERCHANT_VPA', 'mujammilibrahim007@okhdfcbank'),
+        'merchant_name' => env('RAZORPAY_MERCHANT_NAME', 'Muzammil Ibrahim'),
     ],
 
 ];
