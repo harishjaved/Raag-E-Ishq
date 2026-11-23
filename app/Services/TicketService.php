@@ -72,7 +72,47 @@ class TicketService
                 ]
             );
 
+            // Queue transactional confirmation email with retry protection
+            \App\Jobs\SendTicketEmailJob::dispatch($booking);
+
             return $tickets;
+        });
+    }
+
+    /**
+     * Generate a tamper-proof signed URL for downloading an individual ticket.
+     */
+    public function getDownloadSignedUrl(Ticket $ticket): string
+    {
+        return \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'ticket.download',
+            now()->addDays(7),
+            ['uuid' => $ticket->qr_uuid]
+        );
+    }
+
+    /**
+     * Void a ticket with reason and audit logging.
+     */
+    public function voidTicket(Ticket $ticket, string $reason, ?\App\Models\User $actor = null): Ticket
+    {
+        return DB::transaction(function () use ($ticket, $reason, $actor) {
+            $ticket->update([
+                'status' => Ticket::STATUS_VOID,
+                'voided_at' => Carbon::now(),
+                'void_reason' => $reason,
+            ]);
+
+            AuditLog::log(
+                action: 'TICKET_VOIDED',
+                targetType: 'Ticket',
+                targetId: $ticket->id,
+                oldValues: ['status' => Ticket::STATUS_ISSUED],
+                newValues: ['status' => Ticket::STATUS_VOID, 'reason' => $reason],
+                userId: $actor?->id
+            );
+
+            return $ticket;
         });
     }
 
