@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\InventoryService;
 use App\Services\RazorpayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -11,14 +12,22 @@ use Illuminate\View\View;
 
 class PaymentController extends Controller
 {
-    public function show(string $reference, RazorpayService $razorpayService): View|RedirectResponse
+    public function show(string $reference, RazorpayService $razorpayService, InventoryService $inventoryService): View|RedirectResponse
     {
+        $inventoryService->releaseExpiredHolds();
+
         $booking = Booking::with(['items.category', 'contact'])
             ->where('booking_reference', $reference)
             ->firstOrFail();
 
         if ($booking->status === Booking::STATUS_CONFIRMED) {
             return redirect()->route('booking.confirmed', ['reference' => $reference]);
+        }
+
+        if ($booking->status === Booking::STATUS_HOLD_EXPIRED) {
+            return redirect()->route('home')->withErrors([
+                'quantity' => "Your 10-minute reservation hold for {$booking->booking_reference} has expired. Please re-select your tickets."
+            ]);
         }
 
         $paymentAttempt = $razorpayService->createPaymentAttempt($booking);
@@ -35,8 +44,10 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function status(string $reference): JsonResponse
+    public function status(string $reference, InventoryService $inventoryService): JsonResponse
     {
+        $inventoryService->releaseExpiredHolds();
+
         $booking = Booking::where('booking_reference', $reference)->firstOrFail();
 
         return response()->json([

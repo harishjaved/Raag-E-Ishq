@@ -10,6 +10,7 @@ use App\Models\Contact;
 use App\Models\Event;
 use App\Models\EventSetting;
 use App\Models\InventoryHold;
+use App\Models\PaymentAttempt;
 use App\Models\Ticket;
 use App\Models\TicketAllocation;
 use App\Models\TicketCategory;
@@ -202,16 +203,18 @@ class InventoryService
     }
 
     /**
-     * Sweep and release expired inventory holds, updating associated bookings.
+     * Sweep and release expired inventory holds, updating associated bookings and payment attempts.
      */
     public function releaseExpiredHolds(): int
     {
         $now = Carbon::now();
+        $count = 0;
+
+        // 1. Release active inventory holds that passed expires_at
         $expiredHolds = InventoryHold::where('status', InventoryHold::STATUS_ACTIVE)
             ->where('expires_at', '<=', $now)
             ->get();
 
-        $count = 0;
         foreach ($expiredHolds as $hold) {
             DB::transaction(function () use ($hold, &$count) {
                 $hold->update(['status' => InventoryHold::STATUS_RELEASED]);
@@ -228,9 +231,73 @@ class InventoryService
                         targetType: 'Booking',
                         targetId: $booking->id,
                         oldValues: ['status' => Booking::STATUS_PAYMENT_PENDING],
-                        newValues: ['status' => Booking::STATUS_HOLD_EXPIRED]
+                        newValues: [
+                            'status' => Booking::STATUS_HOLD_EXPIRED,
+                            'booking_reference' => $booking->booking_reference,
+                            'reason' => '10-minute hold window elapsed without payment',
+                        ]
                     );
                 }
+                $count++;
+            });
+        }
+
+        // 2. Mark any pending bookings past hold_expires_at as HOLD_EXPIRED
+        $expiredPendingBookings = Booking::where('status', Booking::STATUS_PAYMENT_PENDING)
+            ->whereNotNull('hold_expires_at')
+            ->where('hold_expires_at', '<=', $now)
+            ->get();
+
+        foreach ($expiredPendingBookings as $booking) {
+            DB::transaction(function () use ($booking, &$count) {
+                $booking->update([
+                    'status' => Booking::STATUS_HOLD_EXPIRED,
+                    'cancellation_reason' => 'Inventory hold expired without verified payment',
+                ]);
+
+                AuditLog::log(
+                    action: 'BOOKING_HOLD_EXPIRED',
+                    targetType: 'Booking',
+                    targetId: $booking->id,
+                    oldValues: ['status' => Booking::STATUS_PAYMENT_PENDING],
+                    newValues: [
+                        'status' => Booking::STATUS_HOLD_EXPIRED,
+                        'booking_reference' => $booking->booking_reference,
+                        'reason' => '10-minute hold window elapsed without payment',
+                    ]
+                );
+                $count++;
+            });
+        }
+
+        // 3. Mark any awaiting payment attempts past expires_at or on resolved bookings as EXPIRED
+        $expiredPaymentAttempts = PaymentAttempt::with('booking')
+            ->where('status', PaymentAttempt::STATUS_AWAITING_PAYMENT)
+            ->where(function ($q) use ($now) {
+                $q->where(function ($sub) use ($now) {
+                    $sub->whereNotNull('expires_at')->where('expires_at', '<=', $now);
+                })->orWhereHas('booking', function ($sub) {
+                    $sub->whereIn('status', [Booking::STATUS_CONFIRMED, Booking::STATUS_CANCELLED, Booking::STATUS_HOLD_EXPIRED]);
+                });
+            })
+            ->get();
+
+        foreach ($expiredPaymentAttempts as $payment) {
+            DB::transaction(function () use ($payment, &$count) {
+                $payment->update(['status' => PaymentAttempt::STATUS_EXPIRED]);
+
+                AuditLog::log(
+                    action: 'PAYMENT_EXPIRED',
+                    targetType: 'PaymentAttempt',
+                    targetId: $payment->id,
+                    oldValues: ['status' => PaymentAttempt::STATUS_AWAITING_PAYMENT],
+                    newValues: [
+                        'status' => PaymentAttempt::STATUS_EXPIRED,
+                        'booking_reference' => $payment->booking?->booking_reference,
+                        'amount_rupees' => number_format($payment->amount_paise / 100, 2),
+                        'reason' => '10-minute payment session expired without payment confirmation',
+                    ]
+                );
                 $count++;
             });
         }

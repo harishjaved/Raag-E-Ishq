@@ -6,18 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Services\AnalyticsService;
+use App\Services\InventoryService;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
-    public function sales(AnalyticsService $analyticsService): View
+    public function sales(AnalyticsService $analyticsService, InventoryService $inventoryService): View
     {
+        $inventoryService->releaseExpiredHolds();
+
         $metrics = $analyticsService->getDashboardMetrics();
+
+        $settlements = Booking::with(['items.category', 'contact', 'paymentAttempts'])
+            ->where('status', Booking::STATUS_CONFIRMED)
+            ->latest('id')
+            ->paginate(15);
 
         return view('admin.reports.sales', [
             'metrics' => $metrics,
+            'settlements' => $settlements,
         ]);
     }
 

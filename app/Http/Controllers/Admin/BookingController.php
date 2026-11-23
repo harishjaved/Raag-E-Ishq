@@ -4,14 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Services\InventoryService;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, InventoryService $inventoryService): View
     {
+        $inventoryService->releaseExpiredHolds();
+
         $query = Booking::with(['contact', 'items.category'])->latest();
 
         if ($status = $request->query('status')) {

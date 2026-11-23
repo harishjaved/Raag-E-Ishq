@@ -6,14 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\PaymentAttempt;
+use App\Services\InventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PaymentController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, InventoryService $inventoryService): View
     {
+        $inventoryService->releaseExpiredHolds();
+
         $query = PaymentAttempt::with(['booking.contact'])->latest();
 
         if ($status = $request->query('status')) {
