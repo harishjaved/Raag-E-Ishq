@@ -24,6 +24,7 @@
                     <th class="py-2.5">Reference</th>
                     <th class="py-2.5">Purchaser</th>
                     <th class="py-2.5">Category &amp; Qty</th>
+                    <th class="py-2.5">Type</th>
                     <th class="py-2.5">Amount</th>
                     <th class="py-2.5">Status</th>
                     <th class="py-2.5">Created At</th>
@@ -32,7 +33,11 @@
             <tbody class="divide-y divide-slate-800/60">
                 @forelse ($bookings as $booking)
                     <tr>
-                        <td class="py-3 font-mono font-bold text-amber-400">{{ $booking->booking_reference }}</td>
+                        <td class="py-3 font-mono font-bold text-amber-400">
+                            <a href="{{ route('admin.bookings.show', $booking->id) }}" class="hover:underline">
+                                {{ $booking->booking_reference }}
+                            </a>
+                        </td>
                         <td class="py-3 font-semibold text-slate-200">
                             <div>{{ $booking->contact->full_name }}</div>
                             <div class="text-[11px] text-slate-400 font-normal">{{ $booking->contact->email }}</div>
@@ -41,6 +46,17 @@
                             @foreach ($booking->items as $item)
                                 <span>{{ $item->category->name }} &times; {{ $item->quantity }}</span>
                             @endforeach
+                        </td>
+                        <td class="py-3">
+                            @if ($booking->is_donation)
+                                <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[10px] font-bold">
+                                    DONATION
+                                </span>
+                            @else
+                                <span class="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 text-[10px] font-bold">
+                                    ATTENDING
+                                </span>
+                            @endif
                         </td>
                         <td class="py-3 font-mono font-bold text-slate-100">
                             ₹{{ number_format($booking->total_amount_paise / 100, 2) }}
@@ -62,7 +78,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-6 text-center text-slate-500">No bookings match the filter.</td>
+                        <td colspan="7" class="py-6 text-center text-slate-500">No bookings match the filter.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -20,6 +20,7 @@ class RegistrationRequest extends FormRequest
             'country_code' => ['nullable', 'string', 'max:5'],
             'ticket_category_id' => ['required', 'integer', 'exists:ticket_categories,id'],
             'quantity' => ['required', 'integer', 'min:1', 'max:10'],
+            'attending' => ['nullable', 'in:yes,no,true,false,1,0'],
             'attendee_names' => ['nullable', 'array'],
             'attendee_names.*' => ['nullable', 'string', 'max:255'],
             'marketing_opt_in' => ['nullable', 'boolean'],

@@ -14,6 +14,16 @@
         </div>
 
         <div class="flex items-center gap-2">
+            @if ($booking->is_donation)
+                <span class="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-bold">
+                    DONATION &bull; NON-ATTENDING
+                </span>
+            @else
+                <span class="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-bold">
+                    IN-PERSON ATTENDEE
+                </span>
+            @endif
+
             @if ($booking->status === 'CONFIRMED')
                 <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
                     CONFIRMED &bull; PAID
@@ -50,7 +60,9 @@
                     ₹{{ number_format($booking->total_amount_paise / 100, 2) }}
                 </div>
                 <div class="text-xs text-slate-400">
-                    @if ($booking->total_amount_paise == 0)
+                    @if ($booking->is_donation)
+                        Charitable Contribution (0 Hall Seats Deducted)
+                    @elseif ($booking->total_amount_paise == 0)
                         Complimentary / Sponsor Allocation
                     @else
                         Paid via Razorpay UPI

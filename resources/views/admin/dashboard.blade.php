@@ -22,9 +22,23 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Gross Verified Collections -->
         <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-2 shadow-xl">
-            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Gross Collections</div>
+            <div class="flex items-center justify-between">
+                <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Gross Collections</div>
+                @if (($metrics['donation_collections_paise'] ?? 0) > 0)
+                    <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[9px] font-bold">
+                        Inc. Donations
+                    </span>
+                @endif
+            </div>
             <div class="text-2xl font-extrabold text-amber-400 font-mono">₹{{ $metrics['gross_collections_rupees'] }}</div>
-            <div class="text-[10px] text-slate-500">Verified captured payments only</div>
+            <div class="text-[10px] text-slate-400 space-y-0.5">
+                <div>Tickets: <span class="text-slate-200 font-mono">₹{{ $metrics['ticket_collections_rupees'] }}</span></div>
+                @if (($metrics['donation_collections_paise'] ?? 0) > 0)
+                    <div>Charity Donations: <span class="text-purple-300 font-mono font-bold">₹{{ $metrics['donation_collections_rupees'] }}</span> ({{ $metrics['donation_bookings_count'] }})</div>
+                @else
+                    <div class="text-slate-500">Verified captured payments only</div>
+                @endif
+            </div>
         </div>
 
         <!-- Paid Admissions Issued -->

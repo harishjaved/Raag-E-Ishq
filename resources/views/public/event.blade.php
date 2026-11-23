@@ -133,6 +133,29 @@
                 </div>
             </div>
 
+            <!-- In-Person Attendance Question -->
+            <div class="space-y-2 p-4 rounded-2xl bg-slate-950/40 border border-slate-800">
+                <label class="text-xs font-semibold text-slate-300 block">
+                    Will you be attending the programme in person? <span class="text-amber-400">*</span>
+                </label>
+                <div class="grid sm:grid-cols-2 gap-3 pt-1">
+                    <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-400/50 cursor-pointer transition">
+                        <input type="radio" name="attending" value="yes" {{ old('attending', 'yes') === 'yes' ? 'checked' : '' }} class="w-4 h-4 text-amber-500 focus:ring-0">
+                        <div class="text-xs">
+                            <span class="font-bold text-slate-200 block">Yes</span>
+                            <span class="text-[11px] text-slate-400">I will attend in person at Chavara Hall</span>
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-400/50 cursor-pointer transition">
+                        <input type="radio" name="attending" value="no" {{ old('attending') === 'no' ? 'checked' : '' }} class="w-4 h-4 text-amber-500 focus:ring-0">
+                        <div class="text-xs">
+                            <span class="font-bold text-slate-200 block">No</span>
+                            <span class="text-[11px] text-slate-400">Unable to attend (Support only)</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <!-- Quantity & Live Calculation -->
             <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-3">
                 <div class="flex items-center justify-between">

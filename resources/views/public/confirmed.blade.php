@@ -9,15 +9,26 @@
         <div class="w-12 h-12 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif-display">Payment Verified &amp; Tickets Confirmed!</h1>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif-display">
+            @if ($booking->is_attending)
+                Payment Verified &amp; Tickets Confirmed!
+            @else
+                Payment Verified &amp; Contribution Acknowledged!
+            @endif
+        </h1>
         <p class="text-xs text-emerald-300/90 max-w-md mx-auto">
-            Your admission tickets have been successfully generated. Present each admission QR code at Chavara Hall gate check-in.
+            @if ($booking->is_attending)
+                Your admission tickets have been successfully generated. Present each admission QR code at Chavara Hall gate check-in.
+            @else
+                Thank you for your generous support of Joygivers' education initiative for underprivileged students! Your contribution has been verified.
+            @endif
         </p>
         <div class="pt-2 text-xs text-slate-400">
             Booking Reference: <span class="font-mono text-amber-400 font-bold">{{ $booking->booking_reference }}</span>
         </div>
     </div>
 
+    @if ($booking->is_attending)
     <!-- Ticket Cards List -->
     <div class="space-y-6">
         <div class="flex items-center justify-between">
@@ -58,6 +69,46 @@
                 </div>
             </div>
         @endforeach
+    </div>
+    @else
+    <!-- Non-Attending Official Contribution & Supporter Receipt -->
+    <div class="p-8 rounded-3xl bg-slate-900 border border-slate-800 space-y-6 shadow-xl text-center sm:text-left">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+            <div>
+                <span class="px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[11px] font-bold uppercase tracking-wider">
+                    Official Supporter Receipt
+                </span>
+                <h2 class="text-xl font-bold text-slate-100 mt-2">{{ $booking->contact->full_name }}</h2>
+                <p class="text-xs text-slate-400">Attendance: <span class="text-amber-400 font-semibold">Non-Attending / In Absentia</span></p>
+            </div>
+            <button onclick="window.print()" class="self-start sm:self-auto text-xs font-semibold px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition flex items-center gap-1.5 shadow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span>Print Official Receipt</span>
+            </button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+            <div class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Contribution Breakdown</div>
+            @foreach ($booking->items as $item)
+                <div class="flex justify-between text-slate-300 py-1.5 border-b border-slate-800/40">
+                    <span>{{ $item->category->name }} Tier Support &times; {{ $item->quantity }}</span>
+                    <span class="font-mono text-slate-100 font-bold">₹{{ number_format($item->subtotal_paise / 100, 2) }}</span>
+                </div>
+            @endforeach
+            <div class="flex justify-between text-sm font-bold text-slate-100 pt-2">
+                <span>Total Contribution Received</span>
+                <span class="font-mono text-amber-400 text-lg">₹{{ number_format($booking->total_amount_paise / 100, 2) }}</span>
+            </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400 space-y-1">
+            <div class="font-semibold text-slate-200">Joygivers Charitable Initiative Notice</div>
+            <p>
+                Your registration has been recorded in our official patron ledger. Since you indicated that you will not be attending in person, no hall seating has been withheld, and your entire payment directly fuels our educational programs for underprivileged children.
+            </p>
+        </div>
+    </div>
+    @endif
     </div>
 
     <!-- Help & Retrieval Notice -->

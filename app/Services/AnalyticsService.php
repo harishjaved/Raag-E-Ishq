@@ -45,6 +45,18 @@ class AnalyticsService
         $grossCollectionsPaise = Booking::where('status', Booking::STATUS_CONFIRMED)
             ->sum('total_amount_paise');
 
+        $donationCollectionsPaise = Booking::where('status', Booking::STATUS_CONFIRMED)
+            ->where('is_donation', true)
+            ->sum('total_amount_paise');
+
+        $ticketCollectionsPaise = Booking::where('status', Booking::STATUS_CONFIRMED)
+            ->where('is_donation', false)
+            ->sum('total_amount_paise');
+
+        $donationBookingsCount = Booking::where('status', Booking::STATUS_CONFIRMED)
+            ->where('is_donation', true)
+            ->count();
+
         $globalRemaining = $this->inventoryService->getGlobalRemainingCapacity($event);
         $totalAllocated = $event->total_capacity - $globalRemaining;
 
@@ -100,6 +112,11 @@ class AnalyticsService
             'total_checked_in' => $totalCheckedIn,
             'gross_collections_paise' => $grossCollectionsPaise,
             'gross_collections_rupees' => number_format($grossCollectionsPaise / 100, 2),
+            'ticket_collections_paise' => $ticketCollectionsPaise,
+            'ticket_collections_rupees' => number_format($ticketCollectionsPaise / 100, 2),
+            'donation_collections_paise' => $donationCollectionsPaise,
+            'donation_collections_rupees' => number_format($donationCollectionsPaise / 100, 2),
+            'donation_bookings_count' => $donationBookingsCount,
             'global_remaining' => $globalRemaining,
             'total_allocated' => $totalAllocated,
             'total_capacity' => $event->total_capacity,

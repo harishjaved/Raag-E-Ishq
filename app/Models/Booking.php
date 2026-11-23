@@ -23,6 +23,8 @@ class Booking extends Model
         'booking_reference',
         'event_id',
         'contact_id',
+        'is_attending',
+        'is_donation',
         'total_amount_paise',
         'currency',
         'status',
@@ -37,6 +39,8 @@ class Booking extends Model
     protected function casts(): array
     {
         return [
+            'is_attending' => 'boolean',
+            'is_donation' => 'boolean',
             'total_amount_paise' => 'integer',
             'hold_expires_at' => 'datetime',
             'confirmed_at' => 'datetime',

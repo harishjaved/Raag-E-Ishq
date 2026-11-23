@@ -24,13 +24,19 @@ class InventoryService
      */
     public function getAvailableCapacity(TicketCategory $category): int
     {
-        // 1. Issued/checked-in valid tickets
+        // 1. Issued/checked-in valid tickets for attending bookings
         $issuedCount = Ticket::where('ticket_category_id', $category->id)
+            ->whereHas('booking', function ($q) {
+                $q->where('is_attending', true);
+            })
             ->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])
             ->count();
 
-        // 2. Active, unexpired inventory holds
+        // 2. Active, unexpired inventory holds for attending bookings
         $activeHoldsCount = InventoryHold::where('ticket_category_id', $category->id)
+            ->whereHas('booking', function ($q) {
+                $q->where('is_attending', true);
+            })
             ->where('status', InventoryHold::STATUS_ACTIVE)
             ->where('expires_at', '>', Carbon::now())
             ->sum('quantity');
@@ -54,10 +60,16 @@ class InventoryService
         $categoryIds = $event->categories()->pluck('id');
 
         $issuedCount = Ticket::whereIn('ticket_category_id', $categoryIds)
+            ->whereHas('booking', function ($q) {
+                $q->where('is_attending', true);
+            })
             ->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])
             ->count();
 
         $activeHoldsCount = InventoryHold::whereIn('ticket_category_id', $categoryIds)
+            ->whereHas('booking', function ($q) {
+                $q->where('is_attending', true);
+            })
             ->where('status', InventoryHold::STATUS_ACTIVE)
             ->where('expires_at', '>', Carbon::now())
             ->sum('quantity');
@@ -83,7 +95,9 @@ class InventoryService
         $holdTtlMinutes = (int) EventSetting::get('hold_duration_minutes', 10);
         $holdExpiresAt = Carbon::now()->addMinutes($holdTtlMinutes);
 
-        return DB::transaction(function () use ($data, $holdExpiresAt, $ipAddress, $userAgent) {
+        $isAttending = !isset($data['attending']) || in_array(strtolower((string)$data['attending']), ['yes', 'true', '1'], true);
+
+        return DB::transaction(function () use ($data, $isAttending, $holdExpiresAt, $ipAddress, $userAgent) {
             $category = TicketCategory::where('id', $data['ticket_category_id'])
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -91,22 +105,23 @@ class InventoryService
             $event = $category->event()->lockForUpdate()->firstOrFail();
             $requestedQuantity = (int) $data['quantity'];
 
-            // 1. Verify category capacity under exclusive lock
-            $categoryAvailable = $this->getAvailableCapacity($category);
-            if ($categoryAvailable < $requestedQuantity) {
-                throw new OutOfStockException(
-                    "Only {$categoryAvailable} ticket(s) remaining in {$category->display_name}.",
-                    $categoryAvailable
-                );
-            }
+            // 1 & 2. Only check & lock physical capacity if attending
+            if ($isAttending) {
+                $categoryAvailable = $this->getAvailableCapacity($category);
+                if ($categoryAvailable < $requestedQuantity) {
+                    throw new OutOfStockException(
+                        "Only {$categoryAvailable} ticket(s) remaining in {$category->display_name}.",
+                        $categoryAvailable
+                    );
+                }
 
-            // 2. Verify global shared event capacity (450 ceiling) under lock
-            $globalAvailable = $this->getGlobalRemainingCapacity($event);
-            if ($globalAvailable < $requestedQuantity) {
-                throw new OutOfStockException(
-                    "Only {$globalAvailable} ticket(s) remaining for the entire event.",
-                    $globalAvailable
-                );
+                $globalAvailable = $this->getGlobalRemainingCapacity($event);
+                if ($globalAvailable < $requestedQuantity) {
+                    throw new OutOfStockException(
+                        "Only {$globalAvailable} ticket(s) remaining for the entire event.",
+                        $globalAvailable
+                    );
+                }
             }
 
             // 3. Create or update contact record (do not merge bookings, only contact info)
@@ -138,10 +153,12 @@ class InventoryService
                 'booking_reference' => $bookingReference,
                 'event_id' => $event->id,
                 'contact_id' => $contact->id,
+                'is_attending' => $isAttending,
+                'is_donation' => !$isAttending,
                 'total_amount_paise' => $totalAmountPaise,
                 'currency' => 'INR',
                 'status' => Booking::STATUS_PAYMENT_PENDING,
-                'hold_expires_at' => $holdExpiresAt,
+                'hold_expires_at' => $isAttending ? $holdExpiresAt : null,
                 'ip_address' => $ipAddress,
                 'user_agent' => $userAgent,
             ]);
@@ -155,18 +172,20 @@ class InventoryService
                 'subtotal_paise' => $totalAmountPaise,
             ]);
 
-            // 8. Create inventory hold
-            InventoryHold::create([
-                'booking_id' => $booking->id,
-                'ticket_category_id' => $category->id,
-                'quantity' => $requestedQuantity,
-                'expires_at' => $holdExpiresAt,
-                'status' => InventoryHold::STATUS_ACTIVE,
-            ]);
+            // 8. Create inventory hold ONLY if attending
+            if ($isAttending) {
+                InventoryHold::create([
+                    'booking_id' => $booking->id,
+                    'ticket_category_id' => $category->id,
+                    'quantity' => $requestedQuantity,
+                    'expires_at' => $holdExpiresAt,
+                    'status' => InventoryHold::STATUS_ACTIVE,
+                ]);
+            }
 
             // 9. Audit log the booking creation
             AuditLog::log(
-                action: 'BOOKING_HOLD_CREATED',
+                action: $isAttending ? 'BOOKING_HOLD_CREATED' : 'DONATION_BOOKING_CREATED',
                 targetType: 'Booking',
                 targetId: $booking->id,
                 newValues: [
