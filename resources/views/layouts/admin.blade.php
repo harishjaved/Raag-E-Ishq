@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Operations') — Sagar Kinare</title>
+    <title>@yield('title', 'Admin Operations') — Raage-E-Ishq</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -17,10 +17,10 @@
         <div class="p-4 space-y-6">
             <div class="flex items-center justify-between">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
-                    <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 font-extrabold text-sm flex items-center justify-center border border-amber-500/30">SK</span>
+                    <span class="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-500 to-amber-500 text-slate-950 font-extrabold text-xs flex items-center justify-center shadow-md">REI</span>
                     <div>
                         <div class="text-[10px] uppercase font-bold tracking-widest text-amber-400">Back Office</div>
-                        <div class="text-sm font-bold text-slate-100">Sagar Kinare</div>
+                        <div class="text-sm font-bold text-slate-100">Raage-E-Ishq</div>
                     </div>
                 </a>
             </div>

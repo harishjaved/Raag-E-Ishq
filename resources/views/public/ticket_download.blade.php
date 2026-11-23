@@ -48,7 +48,7 @@
 <body class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
     <div class="max-w-md w-full space-y-4">
         <div class="no-print flex justify-between items-center text-xs">
-            <a href="/" class="text-amber-400 font-semibold hover:underline">&larr; Back to Sagar Kinare</a>
+            <a href="/" class="text-amber-400 font-semibold hover:underline">&larr; Back to Raage-E-Ishq</a>
             <div class="flex items-center gap-2">
                 <a href="{{ route('ticket.qr.download', ['uuid' => $ticket->qr_uuid]) }}"
                     class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition flex items-center gap-1.5">
@@ -66,8 +66,8 @@
             <!-- Header -->
             <div class="text-center space-y-1 pb-4 border-b border-slate-800">
                 <div class="text-xs uppercase tracking-widest text-amber-400 font-bold">Joygivers Presents</div>
-                <h1 class="text-2xl font-bold font-serif-display text-slate-100">Sagar Kinare</h1>
-                <p class="text-xs text-slate-400">Official Event Admission Pass</p>
+                <h1 class="text-2xl font-bold font-serif-display text-slate-100">Raage-E-Ishq</h1>
+                <p class="text-xs text-slate-400">Official Event Admission Pass &bull; 17th December, 7:00 PM</p>
             </div>
 
             <!-- Admission Details (NO PRIVATE BILLING DATA) -->

@@ -37,7 +37,7 @@ class Phase2RegistrationAndConcurrencyTest extends TestCase
     {
         $response = $this->get('/');
         $response->assertStatus(200);
-        $response->assertSee('Sagar Kinare');
+        $response->assertSee('Raage-E-Ishq');
         $response->assertSee('Chavara Hall');
         $response->assertSee('Tier 1');
         $response->assertSee('Tier 2');

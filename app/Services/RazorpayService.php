@@ -47,7 +47,7 @@ class RazorpayService
         $vpa = config('services.razorpay.merchant_vpa', 'mujammilibrahim007@okhdfcbank');
         $merchantName = config('services.razorpay.merchant_name', 'Muzammil Ibrahim');
         $rupees = number_format($booking->total_amount_paise / 100, 2, '.', '');
-        $upiPayload = "upi://pay?pa={$vpa}&pn=" . urlencode($merchantName) . "&am={$rupees}&cu=INR&tr={$booking->booking_reference}&tn=" . urlencode("Sagar Kinare - {$booking->booking_reference}");
+        $upiPayload = "upi://pay?pa={$vpa}&pn=" . urlencode($merchantName) . "&am={$rupees}&cu=INR&tr={$booking->booking_reference}&tn=" . urlencode("Raage-E-Ishq - {$booking->booking_reference}");
 
         $existing = $booking->paymentAttempts()
             ->whereIn('status', [PaymentAttempt::STATUS_CREATED, PaymentAttempt::STATUS_AWAITING_PAYMENT])
@@ -75,7 +75,7 @@ class RazorpayService
                     'usage' => 'single_use',
                     'fixed_amount' => true,
                     'payment_amount' => $booking->total_amount_paise,
-                    'description' => "Admissions for Sagar Kinare ({$booking->booking_reference})",
+                    'description' => "Admissions for Raage-E-Ishq ({$booking->booking_reference})",
                     'close_by' => $booking->hold_expires_at?->timestamp ?? Carbon::now()->addMinutes(10)->timestamp,
                     'notes' => [
                         'booking_reference' => $booking->booking_reference,

@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\EventSetting;
 use App\Models\TicketCategory;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -60,16 +61,16 @@ class DatabaseSeeder extends Seeder
         $event = Event::updateOrCreate(
             ['slug' => 'sagar-kinare-2026'],
             [
-                'name' => 'Sagar Kinare',
-                'description' => 'A captivating musical evening supporting an education initiative.',
+                'name' => 'Raage-E-Ishq',
+                'description' => 'A celebration of timeless Hindi melodies in Kochi, to support child girls.',
                 'venue_name' => 'Chavara Hall',
                 'venue_address' => 'Chavara Cultural Centre, Near South Railway Station, Kochi, Kerala',
-                'event_start_at' => null, // Pending client confirmation
-                'event_end_at' => null,
+                'event_start_at' => Carbon::create(2026, 12, 17, 19, 0, 0),
+                'event_end_at' => Carbon::create(2026, 12, 17, 22, 0, 0),
                 'total_capacity' => 500,
-                'is_published' => false, // Non-negotiable flag
-                'live_payments_enabled' => false, // Non-negotiable flag
-                'hold_duration_minutes' => 10,
+                'is_published' => false,
+                'live_payments_enabled' => false,
+                'hold_duration_minutes' => 1440,
             ]
         );
 

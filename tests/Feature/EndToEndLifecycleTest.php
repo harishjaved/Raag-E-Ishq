@@ -55,7 +55,7 @@ class EndToEndLifecycleTest extends TestCase
         // STEP 1: Event Discovery & Campaign Tracking Link
         $discoveryResponse = $this->get('/?utm_source=whatsapp&utm_medium=broadcast&utm_campaign=vip_preview');
         $discoveryResponse->assertStatus(200);
-        $discoveryResponse->assertSee('Sagar Kinare');
+        $discoveryResponse->assertSee('Raage-E-Ishq');
         $discoveryResponse->assertSee('Tier 1');
 
         // STEP 2: Registration & CRM Contact Creation with Inventory Hold

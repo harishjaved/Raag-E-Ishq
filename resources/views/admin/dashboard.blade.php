@@ -8,7 +8,7 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-extrabold text-slate-100">Operations Overview</h1>
-            <p class="text-xs text-slate-400 mt-1">Sagar Kinare — Live Event Operations &amp; Inventory Management</p>
+            <p class="text-xs text-slate-400 mt-1">Raage-E-Ishq — Live Event Operations &amp; Inventory Management</p>
         </div>
         <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300">

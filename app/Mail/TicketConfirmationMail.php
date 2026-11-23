@@ -23,7 +23,7 @@ class TicketConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Your Tickets for Sagar Kinare ({$this->booking->booking_reference})",
+            subject: "Your Tickets for Raage-E-Ishq ({$this->booking->booking_reference})",
         );
     }
 
