@@ -47,6 +47,10 @@
                 <span class="text-slate-200">Total Payable</span>
                 <span class="text-amber-400 text-lg">₹{{ $rupeesFormatted }}</span>
             </div>
+            <div class="pt-2.5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] text-slate-400">
+                <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span><strong>No-Cancellation Policy:</strong> Bookings are final and non-refundable once payment is completed.</span>
+            </div>
         </div>
     </div>
 
@@ -102,6 +106,43 @@
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
             </span>
             <span id="polling_status">Waiting for payment confirmation from bank...</span>
+        </div>
+    </div>
+
+    <!-- Payment Help & Direct Support Footer -->
+    <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-3.5 shadow-xl">
+        <div class="flex items-center gap-2.5">
+            <div class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            </div>
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Payment Issue or Need Help?</h3>
+                <p class="text-[11px] text-slate-400">If money was debited from your bank, your funds are safe!</p>
+            </div>
+        </div>
+
+        <p class="text-xs text-slate-400 leading-relaxed">
+            In case your UPI payment was successful but your ticket pass didn't load, share your <strong>12-digit UPI Reference No. (UTR)</strong> from Google Pay / PhonePe along with your Booking Reference <span class="font-mono text-amber-400 font-bold">{{ $booking->booking_reference }}</span> with our team:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <!-- WhatsApp Direct Support -->
+            <a href="https://wa.me/919876543210?text={{ urlencode('Hi Joygivers Support, I have paid ₹' . $rupeesFormatted . ' for booking ' . $booking->booking_reference . '. Please verify and issue my tickets.') }}"
+                target="_blank"
+                class="px-4 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                <span>WhatsApp Support</span>
+            </a>
+
+            <!-- Email Support -->
+            <a href="mailto:events@joygivers.org?subject={{ urlencode('Payment Support: Booking ' . $booking->booking_reference) }}&body={{ urlencode("Booking Reference: " . $booking->booking_reference . "\nName: " . $booking->contact->full_name . "\nAmount: ₹" . $rupeesFormatted . "\nUPI UTR / Reference ID: ") }}"
+                class="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span>Email: events@joygivers.org</span>
+            </a>
+        </div>
+        <div class="text-[10px] text-slate-500 text-center">
+            Helpline: <span class="font-mono text-slate-400 font-semibold">+91 98765 43210</span> &bull; 9:00 AM &ndash; 9:00 PM IST
         </div>
     </div>
 </div>

@@ -179,12 +179,23 @@
                 </div>
             </div>
 
-            <!-- Privacy Notice & Consent -->
+            <!-- Terms, No-Cancellation Policy & Consent -->
             <div class="space-y-3 pt-2">
+                <!-- No-Cancellation Notice Card -->
+                <div class="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 text-xs text-slate-300 space-y-1">
+                    <div class="flex items-center gap-2 font-bold text-amber-400">
+                        <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span>Strict No-Cancellation &amp; Non-Refundable Policy</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">
+                        All ticket bookings and payments are <strong>strictly final and non-refundable</strong> once confirmed. No cancellations, seat reassignments, or refunds are permitted under any circumstances as all proceeds directly fund Joygivers educational initiatives for underprivileged children.
+                    </p>
+                </div>
+
                 <label class="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" name="privacy_consent" value="1" required class="mt-1 w-4 h-4 rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-0">
-                    <span class="text-xs text-slate-400">
-                        I acknowledge that my registration details will be used to issue admission tickets and verify entry for Sagar Kinare. I understand payments are strictly verified via Razorpay before tickets are issued.
+                    <span class="text-xs text-slate-300">
+                        I acknowledge that my registration details will be used to issue admission tickets and verify entry for Sagar Kinare. <strong>I agree to the strict No-Cancellation and Non-Refundable policy</strong>, and understand that payments are verified before entry passes are issued.
                     </span>
                 </label>
 

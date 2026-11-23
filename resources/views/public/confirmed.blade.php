@@ -111,10 +111,29 @@
     @endif
     </div>
 
-    <!-- Help & Retrieval Notice -->
-    <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-400 space-y-1">
-        <p>A confirmation email with your ticket details has been queued for delivery to <strong>{{ $booking->contact->email }}</strong>.</p>
-        <p class="text-slate-500">Need help? Contact Joygivers at events@joygivers.org</p>
+    <!-- Help, Support & Policy Notice -->
+    <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 shadow-xl">
+        <div class="space-y-1">
+            <p class="text-xs text-slate-300">A confirmation receipt with your ticket passes has been queued for delivery to <strong class="text-amber-400">{{ $booking->contact->email }}</strong>.</p>
+            <p class="text-[11px] text-slate-500">
+                <strong>Cancellation Policy:</strong> All ticket bookings are final, non-cancellable, and non-refundable. All proceeds support Joygivers educational initiatives.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a href="https://wa.me/919876543210?text={{ urlencode('Hi Joygivers, I have a query regarding my booking ' . $booking->booking_reference) }}"
+                target="_blank"
+                class="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2 transition">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                <span>WhatsApp Support</span>
+            </a>
+
+            <a href="mailto:events@joygivers.org?subject={{ urlencode('Enquiry: Booking ' . $booking->booking_reference) }}"
+                class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center gap-2 transition">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span>events@joygivers.org</span>
+            </a>
+        </div>
     </div>
 </div>
 @endsection
