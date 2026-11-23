@@ -40,10 +40,10 @@
     <section class="space-y-4">
         <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold text-slate-100">Admission Categories</h2>
-            <span class="text-xs text-slate-400">Strict 450 total seating pool</span>
+            <span class="text-xs text-slate-400">Live Available Quotas</span>
         </div>
 
-        <div class="grid sm:grid-cols-3 gap-4">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @foreach ($categories as $cat)
                 <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition">
                     <div>

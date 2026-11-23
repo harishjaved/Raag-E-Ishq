@@ -225,7 +225,7 @@ class EndToEndLifecycleTest extends TestCase
         $this->assertEquals('5,000.00', $metrics['gross_collections_rupees']);
         $this->assertEquals(2, $metrics['paid_tickets_issued']);
         $this->assertEquals(1, $metrics['total_checked_in']);
-        $this->assertEquals(448, $metrics['global_remaining']); // 450 - 2 = 448
+        $this->assertEquals(498, $metrics['global_remaining']); // 500 - 2 = 498
         $this->assertEquals(50.0, $metrics['showup_rate']); // 1 of 2 checked in = 50%
     }
 }

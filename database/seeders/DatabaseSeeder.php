@@ -66,14 +66,14 @@ class DatabaseSeeder extends Seeder
                 'venue_address' => 'Chavara Cultural Centre, Near South Railway Station, Kochi, Kerala',
                 'event_start_at' => null, // Pending client confirmation
                 'event_end_at' => null,
-                'total_capacity' => 450,
+                'total_capacity' => 500,
                 'is_published' => false, // Non-negotiable flag
                 'live_payments_enabled' => false, // Non-negotiable flag
                 'hold_duration_minutes' => 10,
             ]
         );
 
-        // 3. Seed Ticket Categories (100 @ 2500, 100 @ 1500, 250 @ 1000 = 450 total)
+        // 3. Seed Ticket Categories (100 @ 2500, 100 @ 1500, 250 @ 1000, 50 @ 2 = 500 total)
         TicketCategory::updateOrCreate(
             ['event_id' => $event->id, 'name' => 'Tier 1'],
             [
@@ -106,6 +106,18 @@ class DatabaseSeeder extends Seeder
                 'price_paise' => 100000,
                 'capacity' => 250,
                 'display_order' => 3,
+                'is_active' => true,
+            ]
+        );
+
+        TicketCategory::updateOrCreate(
+            ['event_id' => $event->id, 'name' => 'Tier 4'],
+            [
+                'display_name' => 'Tier 4 Test (₹2)',
+                'description' => 'Test admission pass for live UPI testing.',
+                'price_paise' => 200,
+                'capacity' => 50,
+                'display_order' => 4,
                 'is_active' => true,
             ]
         );
