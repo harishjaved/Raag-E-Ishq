@@ -50,6 +50,10 @@ class PaymentController extends Controller
 
     public function simulatePayment(string $reference, RazorpayService $razorpayService, \App\Services\TicketService $ticketService): RedirectResponse|JsonResponse
     {
+        if (config('services.razorpay.live_payments_enabled') || config('app.env') === 'production') {
+            abort(403, 'Payment simulation is strictly forbidden when live payments are active.');
+        }
+
         $booking = Booking::with(['items.category', 'contact'])->where('booking_reference', $reference)->firstOrFail();
 
         if ($booking->status === Booking::STATUS_CONFIRMED) {

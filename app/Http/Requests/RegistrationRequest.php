@@ -11,6 +11,28 @@ class RegistrationRequest extends FormRequest
         return true;
     }
 
+    protected function sanitizeString(?string $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+        $cleaned = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $value);
+        return strip_tags(trim($cleaned));
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'full_name' => $this->sanitizeString($this->input('full_name')),
+            'email' => strtolower(trim((string) $this->input('email'))),
+            'phone' => preg_replace('/[^0-9]/', '', (string) $this->input('phone')),
+            'utm_source' => $this->sanitizeString($this->input('utm_source')),
+            'utm_medium' => $this->sanitizeString($this->input('utm_medium')),
+            'utm_campaign' => $this->sanitizeString($this->input('utm_campaign')),
+            'utm_content' => $this->sanitizeString($this->input('utm_content')),
+        ]);
+    }
+
     public function rules(): array
     {
         return [

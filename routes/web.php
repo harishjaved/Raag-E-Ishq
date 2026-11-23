@@ -20,13 +20,13 @@ use Illuminate\Support\Facades\Route;
 
 // Public Registration & Event
 Route::get('/', [EventController::class, 'show'])->name('home');
-Route::post('/register', [RegistrationController::class, 'store'])->name('register.store');
+Route::post('/register', [RegistrationController::class, 'store'])->name('register.store')->middleware('throttle:30,1');
 
 // Booking Payment & Polling
 Route::get('/booking/{reference}/payment', [PaymentController::class, 'show'])->name('booking.payment');
 Route::get('/booking/{reference}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{reference}/confirmed', [ConfirmationController::class, 'show'])->name('booking.confirmed');
-Route::post('/booking/{reference}/simulate-payment', [PaymentController::class, 'simulatePayment'])->name('booking.simulate-payment');
+Route::post('/booking/{reference}/simulate-payment', [PaymentController::class, 'simulatePayment'])->name('booking.simulate-payment')->middleware('throttle:30,1');
 
 // Ticket Download (Signed URL) & Self-service Resend (Rate limited)
 Route::get('/tickets/download/{uuid}', [TicketDownloadController::class, 'download'])->name('ticket.download')->middleware('signed');
@@ -38,14 +38,14 @@ Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handle'])-
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post')->middleware('throttle:5,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Staff Gate Operations (Restricted to Gate Staff, Event Manager, Super Admin)
 Route::middleware(['auth', 'role:scan'])->group(function () {
     Route::get('/staff/scan', [ScanController::class, 'index'])->name('staff.scan');
-    Route::post('/staff/scan/verify', [ScanController::class, 'verify'])->name('staff.scan.verify');
-    Route::post('/staff/lookup/manual', [ScanController::class, 'manualLookup'])->name('staff.lookup.manual');
+    Route::post('/staff/scan/verify', [ScanController::class, 'verify'])->name('staff.scan.verify')->middleware('throttle:120,1');
+    Route::post('/staff/lookup/manual', [ScanController::class, 'manualLookup'])->name('staff.lookup.manual')->middleware('throttle:30,1');
 });
 
 // Admin Back Office (Super Admin, Event Manager, Finance)
