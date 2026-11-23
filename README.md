@@ -50,6 +50,7 @@ A production-grade, mobile-first event ticketing and back-office operations plat
 │   ├── migrations/             # 8 comprehensive relational migrations
 │   └── seeders/                # DatabaseSeeder (Default Event, 3 Tiers, 4 RBAC accounts, Settings)
 ├── docs/                       # Complete operational runbooks, matrices, and guides
+│   ├── DATABASE_ERD.md
 │   ├── DEPLOYMENT_HOSTINGER_VPS.md
 │   ├── METRIC_DEFINITIONS.md
 │   ├── OPEN_ISSUES_REGISTER.md
