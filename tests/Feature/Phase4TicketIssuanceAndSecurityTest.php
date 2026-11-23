@@ -108,6 +108,13 @@ class Phase4TicketIssuanceAndSecurityTest extends TestCase
         // Crucial security check: must NOT leak customer phone or billing payment details
         $validResponse->assertDontSee($booking->contact->phone);
         $validResponse->assertDontSee('total_amount_paise');
+
+        // Test direct QR SVG download
+        $qrResponse = $this->get("/tickets/{$ticket->qr_uuid}/qr");
+        $qrResponse->assertStatus(200);
+        $qrResponse->assertHeader('Content-Type', 'image/svg+xml');
+        $this->assertStringContainsString('attachment', $qrResponse->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('<svg', $qrResponse->getContent());
     }
 
     public function test_voided_ticket_is_rejected_at_verification(): void

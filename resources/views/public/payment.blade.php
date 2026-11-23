@@ -86,19 +86,6 @@
             <p class="text-[10px] text-slate-500">Tapping will open your installed UPI app with the exact amount pre-filled.</p>
         </div>
 
-        <!-- Payment Completion Action -->
-        <div class="pt-4 border-t border-slate-800/80 space-y-2 text-center">
-            <div class="text-xs text-slate-400">Completed payment in Google Pay / PhonePe?</div>
-            <form action="{{ route('booking.simulate-payment', ['reference' => $booking->booking_reference]) }}" method="POST">
-                @csrf
-                <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-sm tracking-wide transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>I Have Paid — View &amp; Download Tickets</span>
-                </button>
-            </form>
-            <p class="text-[10px] text-slate-500">Tap after sending ₹{{ $rupeesFormatted }} to generate your admission pass.</p>
-        </div>
-
         <!-- Live Status Polling Indicator -->
         <div class="pt-3 border-t border-slate-800 flex items-center justify-center gap-2 text-xs text-slate-400">
             <span class="relative flex h-2 w-2">

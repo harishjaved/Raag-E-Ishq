@@ -10,10 +10,38 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-serif-display { font-family: 'Playfair Display', serif; }
         @media print {
-            body { background: white !important; color: black !important; }
-            .no-print { display: none !important; }
-            .print-card { border: 2px solid #000 !important; box-shadow: none !important; color: black !important; background: white !important; }
-            .print-card * { color: black !important; }
+            @page {
+                size: A4 portrait;
+                margin: 15mm;
+            }
+            body, html {
+                background: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-card {
+                border: 2px dashed #000000 !important;
+                box-shadow: none !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+            }
+            .print-card * {
+                color: #000000 !important;
+            }
+            .print-card .qr-white-box {
+                border: 1px solid #000000 !important;
+                background: #ffffff !important;
+            }
         }
     </style>
 </head>
@@ -21,9 +49,17 @@
     <div class="max-w-md w-full space-y-4">
         <div class="no-print flex justify-between items-center text-xs">
             <a href="/" class="text-amber-400 font-semibold hover:underline">&larr; Back to Sagar Kinare</a>
-            <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition">
-                Print Ticket
-            </button>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('ticket.qr.download', ['uuid' => $ticket->qr_uuid]) }}"
+                    class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span>Download QR</span>
+                </a>
+                <button onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold transition flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    <span>Print Pass / PDF</span>
+                </button>
+            </div>
         </div>
 
         <div class="print-card rounded-3xl bg-slate-900 border border-slate-800 p-6 space-y-6 shadow-2xl">

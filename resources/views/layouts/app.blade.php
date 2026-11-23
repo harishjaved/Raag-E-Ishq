@@ -25,6 +25,19 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .font-serif-display { font-family: 'Playfair Display', serif; }
+        @media print {
+            header, footer, .no-print {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-full flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">

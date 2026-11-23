@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class TicketDownloadController extends Controller
@@ -26,6 +27,21 @@ class TicketDownloadController extends Controller
         return view('public.ticket_download', [
             'ticket' => $ticket,
             'qrSvg' => $qrSvg,
+        ]);
+    }
+
+    public function downloadQr(string $uuid, TicketService $ticketService): Response
+    {
+        $ticket = Ticket::with(['category', 'booking'])
+            ->where('qr_uuid', $uuid)
+            ->firstOrFail();
+
+        $qrSvg = $ticketService->generateAdmissionQrSvg($ticket, 400);
+
+        return response($qrSvg, 200, [
+            'Content-Type' => 'image/svg+xml',
+            'Content-Disposition' => 'attachment; filename="SagarKinare-' . $ticket->ticket_number . '-QR.svg"',
+            'Cache-Control' => 'no-cache, private',
         ]);
     }
 }

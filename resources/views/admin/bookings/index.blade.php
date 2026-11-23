@@ -28,6 +28,7 @@
                     <th class="py-2.5">Amount</th>
                     <th class="py-2.5">Status</th>
                     <th class="py-2.5">Created At</th>
+                    <th class="py-2.5 text-right">Action</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-800/60">
@@ -74,11 +75,26 @@
                                 <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-[10px]">{{ $booking->status }}</span>
                             @endif
                         </td>
-                        <td class="py-3 text-slate-500 text-[11px]">{{ $booking->created_at->format('d M H:i') }}</td>
+                        <td class="py-3 text-slate-500 text-[11px] whitespace-nowrap">{{ $booking->created_at->format('d M H:i') }}</td>
+                        <td class="py-3 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                @if ($booking->status === 'PAYMENT_PENDING')
+                                    <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm payment of ₹{{ number_format($booking->total_amount_paise / 100, 2) }} for {{ $booking->contact->full_name }}?');">
+                                        @csrf
+                                        <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] transition shadow">
+                                            Approve
+                                        </button>
+                                    </form>
+                                @endif
+                                <a href="{{ route('admin.bookings.show', $booking->id) }}" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition">
+                                    View
+                                </a>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="py-6 text-center text-slate-500">No bookings match the filter.</td>
+                        <td colspan="8" class="py-6 text-center text-slate-500">No bookings match the filter.</td>
                     </tr>
                 @endforelse
             </tbody>
