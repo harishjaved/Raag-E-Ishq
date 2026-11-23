@@ -87,13 +87,13 @@ class EndToEndLifecycleTest extends TestCase
         $this->assertEquals(500000, $booking->total_amount_paise); // 2 * 250,000 paise (Server calculated)
         $regResponse->assertRedirect(route('booking.payment', ['reference' => $booking->booking_reference]));
 
-        // STEP 3: Payment Page Presentation (UPI QR & Mobile Intent)
+        // STEP 3: Booking Enquiry Page Presentation (Concierge Verification & Status)
         $paymentPageResponse = $this->get(route('booking.payment', ['reference' => $booking->booking_reference]));
         $paymentPageResponse->assertStatus(200);
         $paymentPageResponse->assertSee($booking->booking_reference);
         $paymentPageResponse->assertSee('₹5,000.00');
-        $paymentPageResponse->assertSee('UPI Payment QR');
-        $paymentPageResponse->assertSee('Open UPI App to Pay');
+        $paymentPageResponse->assertSee('Booking Enquiry Registered');
+        $paymentPageResponse->assertSee('Verification Call', false);
 
         // Check polling status is initially pending
         $statusPoll1 = $this->getJson(route('booking.status', ['reference' => $booking->booking_reference]));

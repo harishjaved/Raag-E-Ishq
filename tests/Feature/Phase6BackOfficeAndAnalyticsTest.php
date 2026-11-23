@@ -225,4 +225,92 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $response->assertSee('Issued Admission Tickets (2)');
         $response->assertSee('<svg', false); // Confirms SVG QR code is rendered
     }
+
+    public function test_concierge_enquiry_status_transitions_and_actions(): void
+    {
+        $b = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Fahadh Faasil',
+            'email' => 'fahadh@test.com',
+            'phone' => '9847111222',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 1,
+            'privacy_consent' => true,
+        ]);
+        $this->assertEquals(Booking::STATUS_PAYMENT_PENDING, $b->status);
+
+        // 1. Transition to IN_PROCESS (team called customer)
+        $response = $this->actingAs($this->eventManager)->post("/admin/bookings/{$b->id}/status", [
+            'status' => 'IN_PROCESS',
+            'note' => 'Payment team called, UPI details sent via WhatsApp',
+        ]);
+        $response->assertRedirect();
+        $b->refresh();
+        $this->assertEquals(Booking::STATUS_IN_PROCESS, $b->status);
+
+        // 2. Transition to CONFIRMED (customer paid)
+        $response2 = $this->actingAs($this->eventManager)->post("/admin/bookings/{$b->id}/status", [
+            'status' => 'CONFIRMED',
+        ]);
+        $response2->assertRedirect();
+        $b->refresh();
+        $this->assertEquals(Booking::STATUS_CONFIRMED, $b->status);
+        $this->assertEquals(1, $b->tickets()->count());
+    }
+
+    public function test_admin_can_cancel_enquiry_and_release_held_seats(): void
+    {
+        $initialCapacity = $this->inventoryService->getAvailableCapacity($this->tier2);
+
+        $b = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Prithviraj Sukumaran',
+            'email' => 'prithvi@test.com',
+            'phone' => '9847333444',
+            'ticket_category_id' => $this->tier2->id,
+            'quantity' => 2,
+            'privacy_consent' => true,
+        ]);
+
+        $heldCapacity = $this->inventoryService->getAvailableCapacity($this->tier2);
+        $this->assertEquals($initialCapacity - 2, $heldCapacity);
+
+        // Admin cancels enquiry
+        $response = $this->actingAs($this->eventManager)->post("/admin/bookings/{$b->id}/status", [
+            'status' => 'CANCELLED',
+            'reason' => 'Customer requested cancellation over call',
+        ]);
+        $response->assertRedirect();
+
+        $b->refresh();
+        $this->assertEquals(Booking::STATUS_CANCELLED, $b->status);
+
+        // Verify seats returned to pool
+        $restoredCapacity = $this->inventoryService->getAvailableCapacity($this->tier2);
+        $this->assertEquals($initialCapacity, $restoredCapacity);
+    }
+
+    public function test_ticket_dispatch_desk_renders_and_generates_tickets(): void
+    {
+        $b = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Mohanlal Viswanathan',
+            'email' => 'lalettan@test.com',
+            'phone' => '9847999888',
+            'ticket_category_id' => $this->tier3->id,
+            'quantity' => 2,
+            'privacy_consent' => true,
+        ]);
+
+        // Dispatch desk page renders
+        $deskResponse = $this->actingAs($this->superAdmin)->get('/admin/dispatch');
+        $deskResponse->assertStatus(200);
+        $deskResponse->assertSee('Ticket Generator &amp; Dispatch Desk', false);
+        $deskResponse->assertSee($b->booking_reference);
+
+        // Generate tickets from dispatch desk
+        $genResponse = $this->actingAs($this->superAdmin)->post("/admin/dispatch/{$b->id}/generate");
+        $genResponse->assertRedirect();
+
+        $b->refresh();
+        $this->assertEquals(Booking::STATUS_CONFIRMED, $b->status);
+        $this->assertEquals(2, $b->tickets()->count());
+    }
 }

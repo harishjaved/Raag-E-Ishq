@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\TicketDispatchController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Public\ConfirmationController;
 use App\Http\Controllers\Public\EventController;
@@ -59,6 +60,12 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->name('admin.')->grou
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings');
     Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{id}/confirm-payment', [BookingController::class, 'confirmPayment'])->name('bookings.confirm-payment');
+    Route::post('/bookings/{id}/status', [BookingController::class, 'updateStatus'])->name('bookings.update-status');
+
+    // Ticket Generator & Dispatch Desk
+    Route::get('/dispatch', [TicketDispatchController::class, 'index'])->name('dispatch');
+    Route::post('/dispatch/{id}/generate', [TicketDispatchController::class, 'generate'])->name('dispatch.generate');
+
     Route::get('/allocations', [AllocationController::class, 'index'])->name('allocations');
     Route::post('/allocations', [AllocationController::class, 'store'])->name('allocations.store');
     Route::post('/allocations/{allocation}/generate-tickets', [AllocationController::class, 'generateTickets'])->name('allocations.generate-tickets');

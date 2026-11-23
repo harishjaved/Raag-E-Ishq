@@ -195,7 +195,7 @@
                 <label class="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" name="privacy_consent" value="1" required class="mt-1 w-4 h-4 rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-0">
                     <span class="text-xs text-slate-300">
-                        I acknowledge that my registration details will be used to issue admission tickets and verify entry for Sagar Kinare. <strong>I agree to the strict No-Cancellation and Non-Refundable policy</strong>, and understand that payments are verified before entry passes are issued.
+                        I acknowledge that my booking details will be sent to the Joygivers reservations desk. <strong>I agree to the strict No-Cancellation and Non-Refundable policy</strong>, and understand that our payment team will contact me to verify details and complete payment before admission tickets are issued.
                     </span>
                 </label>
 
@@ -208,11 +208,16 @@
             </div>
 
             <!-- Submit Action -->
-            <button type="submit" id="submit_btn"
-                class="w-full py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-sm tracking-wide transition shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2">
-                <span>Hold Seats &amp; Proceed to UPI Payment</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-            </button>
+            <div class="space-y-2">
+                <button type="submit" id="submit_btn"
+                    class="w-full py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-bold text-sm tracking-wide transition shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2">
+                    <span>Submit Booking Enquiry &amp; Reserve Seats</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </button>
+                <p class="text-[11px] text-slate-400 text-center">
+                    No online payment needed now. Our payment and reservations team will call you at your phone number to confirm details and share payment options via WhatsApp or Email.
+                </p>
+            </div>
         </form>
     </section>
 </div>

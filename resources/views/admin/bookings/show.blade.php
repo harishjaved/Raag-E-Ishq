@@ -26,17 +26,67 @@
 
             @if ($booking->status === 'CONFIRMED')
                 <span class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
-                    CONFIRMED &bull; PAID
+                    COMPLETED &bull; PAID
                 </span>
-            @elseif ($booking->status === 'PAYMENT_PENDING')
-                <span class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
-                    PAYMENT PENDING
+                @if (isset($booking->whatsapp_ticket_url))
+                    <a href="{{ $booking->whatsapp_ticket_url }}" target="_blank"
+                        class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
+                        <span>Send Passes via WhatsApp</span>
+                    </a>
+                @endif
+            @elseif ($booking->status === 'IN_PROCESS')
+                <span class="px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-bold">
+                    IN PROCESS &bull; CONTACTED
                 </span>
-                <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline">
+                @if (isset($booking->whatsapp_payment_url))
+                    <a href="{{ $booking->whatsapp_payment_url }}" target="_blank"
+                        class="px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/30 text-sky-300 font-bold text-xs flex items-center gap-1.5 transition">
+                        <span>Send Payment Details (WhatsApp)</span>
+                    </a>
+                @endif
+                <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm payment received and issue admission tickets?');">
                     @csrf
                     <button type="submit" class="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         <span>Approve &amp; Issue Tickets</span>
+                    </button>
+                </form>
+                <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel enquiry and release reserved seats?');">
+                    @csrf
+                    <input type="hidden" name="status" value="CANCELLED">
+                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs transition">
+                        Cancel Enquiry
+                    </button>
+                </form>
+            @elseif (in_array($booking->status, ['PAYMENT_PENDING', 'PENDING']))
+                <span class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold">
+                    PENDING CALL
+                </span>
+                @if (isset($booking->whatsapp_payment_url))
+                    <a href="{{ $booking->whatsapp_payment_url }}" target="_blank"
+                        class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
+                        <span>Send Payment Details (WhatsApp)</span>
+                    </a>
+                @endif
+                <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline">
+                    @csrf
+                    <input type="hidden" name="status" value="IN_PROCESS">
+                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 font-bold text-xs transition">
+                        Mark In Process
+                    </button>
+                </form>
+                <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm payment received and issue admission tickets?');">
+                    @csrf
+                    <button type="submit" class="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Approve &amp; Issue Tickets</span>
+                    </button>
+                </form>
+                <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel enquiry and release reserved seats?');">
+                    @csrf
+                    <input type="hidden" name="status" value="CANCELLED">
+                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs transition">
+                        Cancel Enquiry
                     </button>
                 </form>
             @else
@@ -142,6 +192,23 @@
                                     <span class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 text-[10px] font-bold">
                                         {{ $ticket->status }}
                                     </span>
+                                @endif
+                            </div>
+
+                            <div class="pt-2 flex items-center gap-2">
+                                @if (isset($ticket->qr_download_url))
+                                    <a href="{{ $ticket->qr_download_url }}" download="SagarKinare-{{ $ticket->ticket_number }}-QR.svg"
+                                        class="text-[11px] text-amber-400 hover:underline flex items-center gap-1 font-semibold">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                        <span>Download QR</span>
+                                    </a>
+                                @endif
+                                @if (isset($ticket->download_url))
+                                    <span class="text-slate-600">&bull;</span>
+                                    <a href="{{ $ticket->download_url }}" target="_blank"
+                                        class="text-[11px] text-slate-300 hover:underline flex items-center gap-1">
+                                        <span>View Single Pass &rarr;</span>
+                                    </a>
                                 @endif
                             </div>
                         </div>

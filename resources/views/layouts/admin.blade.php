@@ -48,7 +48,12 @@
 
                     <a href="{{ route('admin.bookings') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-800 transition {{ request()->routeIs('admin.bookings*') ? 'bg-slate-800 text-amber-400 font-bold' : 'text-slate-400' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                        <span>Bookings</span>
+                        <span>Enquiries &amp; Bookings</span>
+                    </a>
+
+                    <a href="{{ route('admin.dispatch') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-800 transition {{ request()->routeIs('admin.dispatch*') ? 'bg-slate-800 text-amber-400 font-bold' : 'text-slate-400' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                        <span>Ticket Generator &amp; Dispatch</span>
                     </a>
 
                     <a href="{{ route('admin.allocations') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-800 transition {{ request()->routeIs('admin.allocations*') ? 'bg-slate-800 text-amber-400 font-bold' : 'text-slate-400' }}">

@@ -93,7 +93,7 @@ class InventoryService
      */
     public function createBookingWithHold(array $data, ?string $ipAddress = null, ?string $userAgent = null): Booking
     {
-        $holdTtlMinutes = (int) EventSetting::get('hold_duration_minutes', 10);
+        $holdTtlMinutes = (int) EventSetting::get('hold_duration_minutes', 1440);
         $holdExpiresAt = Carbon::now()->addMinutes($holdTtlMinutes);
 
         $isAttending = !isset($data['attending']) || in_array(strtolower((string)$data['attending']), ['yes', 'true', '1'], true);
@@ -196,6 +196,54 @@ class InventoryService
                     'total_amount_paise' => $totalAmountPaise,
                     'hold_expires_at' => $holdExpiresAt->toIso8601String(),
                 ]
+            );
+
+            return $booking;
+        });
+    }
+
+    /**
+     * Atomically cancel a booking and release its inventory holds back to the available pool.
+     */
+    public function cancelBooking(Booking $booking, string $reason = 'Cancelled by administrator', ?int $userId = null): Booking
+    {
+        return DB::transaction(function () use ($booking, $reason, $userId) {
+            $booking = Booking::where('id', $booking->id)->lockForUpdate()->firstOrFail();
+
+            if ($booking->status === Booking::STATUS_CONFIRMED) {
+                throw new \InvalidArgumentException('Confirmed booking with issued tickets cannot be directly cancelled here.');
+            }
+
+            $oldStatus = $booking->status;
+
+            // Release all active holds
+            InventoryHold::where('booking_id', $booking->id)
+                ->where('status', InventoryHold::STATUS_ACTIVE)
+                ->update(['status' => InventoryHold::STATUS_RELEASED]);
+
+            // Update booking
+            $booking->update([
+                'status' => Booking::STATUS_CANCELLED,
+                'cancelled_at' => Carbon::now(),
+                'cancellation_reason' => $reason,
+            ]);
+
+            // Expire any pending payment attempts
+            PaymentAttempt::where('booking_id', $booking->id)
+                ->whereIn('status', [PaymentAttempt::STATUS_CREATED, PaymentAttempt::STATUS_AWAITING_PAYMENT])
+                ->update(['status' => PaymentAttempt::STATUS_EXPIRED]);
+
+            AuditLog::log(
+                action: 'BOOKING_CANCELLED',
+                targetType: 'Booking',
+                targetId: $booking->id,
+                oldValues: ['status' => $oldStatus],
+                newValues: [
+                    'status' => Booking::STATUS_CANCELLED,
+                    'booking_reference' => $booking->booking_reference,
+                    'reason' => $reason,
+                ],
+                userId: $userId
             );
 
             return $booking;

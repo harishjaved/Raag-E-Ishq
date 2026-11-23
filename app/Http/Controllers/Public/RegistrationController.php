@@ -20,7 +20,7 @@ class RegistrationController extends Controller
             );
 
             return redirect()->route('booking.payment', ['reference' => $booking->booking_reference])
-                ->with('success', 'Your reservation hold is confirmed. Please complete UPI payment within 10 minutes.');
+                ->with('success', 'Your booking enquiry has been received! Our payment team will call you shortly on your phone number to confirm details and share payment options.');
         } catch (OutOfStockException $e) {
             return back()
                 ->withInput()

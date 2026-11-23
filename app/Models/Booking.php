@@ -11,6 +11,8 @@ class Booking extends Model
 {
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_PAYMENT_PENDING = 'PAYMENT_PENDING';
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_IN_PROCESS = 'IN_PROCESS';
     public const STATUS_VERIFYING_PAYMENT = 'VERIFYING_PAYMENT';
     public const STATUS_CONFIRMED = 'CONFIRMED';
     public const STATUS_CANCELLED = 'CANCELLED';
@@ -104,11 +106,30 @@ class Booking extends Model
         return $this->hasMany(EmailDelivery::class);
     }
 
+    public function isPending(): bool
+    {
+        return in_array($this->status, [self::STATUS_PAYMENT_PENDING, self::STATUS_PENDING], true);
+    }
+
+    public function isInProcess(): bool
+    {
+        return $this->status === self::STATUS_IN_PROCESS;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return in_array($this->status, [self::STATUS_CANCELLED, self::STATUS_HOLD_EXPIRED], true);
+    }
+
     public function isHoldValid(): bool
     {
-        return $this->status === self::STATUS_PAYMENT_PENDING
-            && $this->hold_expires_at !== null
-            && $this->hold_expires_at->isFuture();
+        return ($this->isPending() || $this->isInProcess())
+            && ($this->hold_expires_at === null || $this->hold_expires_at->isFuture());
     }
 
     public function getFormattedTotalAttribute(): string
