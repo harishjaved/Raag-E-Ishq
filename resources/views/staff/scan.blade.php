@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Gate Scanner — Raage-E-Ishq</title>
+    <title>Gate Scanner — Raag-E-Ishq</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
@@ -221,7 +221,7 @@
                 const sig = url.searchParams.get('s');
 
                 if (!uuid || !sig) {
-                    showResultCard('RED_INVALID', 'Invalid QR Code', 'This is not a valid Raage-E-Ishq admission ticket.');
+                    showResultCard('RED_INVALID', 'Invalid QR Code', 'This is not a valid Raag-E-Ishq admission ticket.');
                     return;
                 }
 

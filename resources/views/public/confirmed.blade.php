@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tickets Confirmed — Raage-E-Ishq')
+@section('title', 'Tickets Confirmed — Raag-E-Ishq')
 
 @section('content')
 <style>
@@ -79,7 +79,7 @@
             @if ($booking->is_attending)
                 Your admission tickets have been generated. Present each unique QR code at Chavara Hall gate check-in.
             @else
-                Thank you for your generous support of Joygivers' initiative to support child girls! Your contribution has been verified.
+                Thank you for your generous support of Joygivers' initiative for child girls education! Your contribution has been verified.
             @endif
         </p>
         <div class="pt-2 text-xs text-slate-400">
@@ -106,8 +106,8 @@
                 <!-- Print-Only Ticket Header -->
                 <div class="print-only-header text-center pb-3 border-b-2 border-slate-900 space-y-0.5">
                     <div class="text-[11px] font-bold uppercase tracking-widest text-slate-800">Joygivers Presents</div>
-                    <div class="text-xl font-extrabold text-slate-950 font-serif-display">RAAGE-E-ISHQ — OFFICIAL ADMISSION PASS</div>
-                    <div class="text-[10px] text-slate-700">A Musical Evening To Support Child Girls &bull; 17th December, 7:00 PM &bull; Chavara Hall, Kochi</div>
+                    <div class="text-xl font-extrabold text-slate-950 font-serif-display">RAAG-E-ISHQ — OFFICIAL ADMISSION PASS</div>
+                    <div class="text-[10px] text-slate-700">A Musical Evening For Child Girls Education &bull; 17th December, 7:00 PM &bull; Chavara Hall, Kochi</div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center gap-6 justify-between">
@@ -137,7 +137,7 @@
                 <div class="no-print pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
                     <span class="text-[11px] text-slate-500">Admit One &bull; Valid for single gate scan</span>
                     <div class="flex items-center gap-2">
-                        <a href="{{ $ticket->qr_download_url ?? ($ticket->qr_data_uri ?? '#') }}" download="SagarKinare-{{ $ticket->ticket_number }}-QR.svg"
+                        <a href="{{ $ticket->qr_download_url ?? ($ticket->qr_data_uri ?? '#') }}" download="Raag-E-Ishq-{{ $ticket->ticket_number }}-QR.svg"
                             class="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             <span>Download QR</span>
@@ -190,7 +190,7 @@
         <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400 space-y-1">
             <div class="font-semibold text-slate-200">Joygivers Charitable Initiative Notice</div>
             <p>
-                Your registration has been recorded in our official patron ledger. Since you indicated that you will not be attending in person, no hall seating has been withheld, and your entire contribution directly fuels our initiatives to support child girls.
+                Your registration has been recorded in our official patron ledger. Since you indicated that you will not be attending in person, no hall seating has been withheld, and your entire contribution directly fuels our initiatives for child girls education.
             </p>
         </div>
     </div>

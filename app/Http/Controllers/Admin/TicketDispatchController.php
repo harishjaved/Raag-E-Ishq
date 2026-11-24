@@ -52,7 +52,7 @@ class TicketDispatchController extends Controller
             }
             if ($booking->tickets->isNotEmpty()) {
                 $publicUrl = route('booking.confirmed', $booking->booking_reference);
-                $waText = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raage-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your unique QR entry passes here: " . $publicUrl;
+                $waText = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raag-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your unique QR entry passes here: " . $publicUrl;
                 $phoneClean = preg_replace('/[^0-9]/', '', $booking->contact->phone);
                 if (strlen($phoneClean) === 10) {
                     $phoneClean = '91' . $phoneClean;

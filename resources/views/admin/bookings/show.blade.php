@@ -270,7 +270,7 @@
 
                             <div class="pt-2 flex flex-wrap items-center gap-2">
                                 @if (isset($ticket->qr_download_url))
-                                    <a href="{{ $ticket->qr_download_url }}" download="Raage-E-Ishq-{{ $ticket->ticket_number }}-QR.svg"
+                                    <a href="{{ $ticket->qr_download_url }}" download="Raag-E-Ishq-{{ $ticket->ticket_number }}-QR.svg"
                                         class="text-[11px] text-amber-400 hover:underline flex items-center gap-1 font-semibold">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                         <span>Download QR</span>

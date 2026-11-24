@@ -11,7 +11,7 @@
                 <span>Executive Command Center</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif-display">Operations Overview</h1>
-            <p class="text-xs text-slate-400 mt-1">Raage-E-Ishq — Live Event Operations &amp; Inventory Management</p>
+            <p class="text-xs text-slate-400 mt-1">Raag-E-Ishq — Live Event Operations &amp; Inventory Management</p>
         </div>
         <div class="flex items-center gap-2.5">
             <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs text-slate-300 shadow">

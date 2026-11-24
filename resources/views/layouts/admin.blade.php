@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Operations') — Raage-E-Ishq</title>
+    <title>@yield('title', 'Admin Operations') — Raag-E-Ishq</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -30,7 +30,7 @@
                     <div>
                         <div class="text-[10px] uppercase font-extrabold tracking-widest bg-gradient-to-r from-amber-400 to-rose-400 bg-clip-text text-transparent">Back Office Portal</div>
                         <div class="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-                            <span>Raage-E-Ishq</span>
+                            <span>Raag-E-Ishq</span>
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         </div>
                     </div>

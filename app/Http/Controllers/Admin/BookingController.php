@@ -53,13 +53,13 @@ class BookingController extends Controller
             $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
             
             // Payment instructions message for Pending / In-Process enquiries
-            $payMsg = "Hello " . $booking->contact->full_name . "! Thank you for booking Raage-E-Ishq (Ref: " . $booking->booking_reference . "). Total payable is ₹" . $amountFormatted . ". Please pay via UPI to mujammilibrahim007@okhdfcbank and reply with your payment screenshot/UTR to confirm your tickets.";
+            $payMsg = "Hello " . $booking->contact->full_name . "! Thank you for booking Raag-E-Ishq (Ref: " . $booking->booking_reference . "). Total payable is ₹" . $amountFormatted . ". Please pay via UPI to mujammilibrahim007@okhdfcbank and reply with your payment screenshot/UTR to confirm your tickets.";
             $booking->whatsapp_payment_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($payMsg);
 
             // Tickets link for confirmed bookings
             if ($booking->status === Booking::STATUS_CONFIRMED) {
                 $ticketsUrl = route('booking.confirmed', $booking->booking_reference);
-                $ticketMsg = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raage-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your QR entry passes here: " . $ticketsUrl;
+                $ticketMsg = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raag-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your QR entry passes here: " . $ticketsUrl;
                 $booking->whatsapp_ticket_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($ticketMsg);
             }
         }
@@ -96,12 +96,12 @@ class BookingController extends Controller
             $phoneClean = '91' . $phoneClean;
         }
         $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
-        $payMsg = "Hello " . $booking->contact->full_name . "! Thank you for booking Raage-E-Ishq (Ref: " . $booking->booking_reference . "). Total payable is ₹" . $amountFormatted . ". Please pay via UPI to mujammilibrahim007@okhdfcbank and reply with your payment screenshot/UTR to confirm your tickets.";
+        $payMsg = "Hello " . $booking->contact->full_name . "! Thank you for booking Raag-E-Ishq (Ref: " . $booking->booking_reference . "). Total payable is ₹" . $amountFormatted . ". Please pay via UPI to mujammilibrahim007@okhdfcbank and reply with your payment screenshot/UTR to confirm your tickets.";
         $booking->whatsapp_payment_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($payMsg);
 
         if ($booking->status === Booking::STATUS_CONFIRMED) {
             $ticketsUrl = route('booking.confirmed', $booking->booking_reference);
-            $ticketMsg = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raage-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your QR entry passes here: " . $ticketsUrl;
+            $ticketMsg = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raag-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your QR entry passes here: " . $ticketsUrl;
             $booking->whatsapp_ticket_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($ticketMsg);
         }
 

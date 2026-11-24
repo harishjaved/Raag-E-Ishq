@@ -2,17 +2,17 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Your Tickets — Raage-E-Ishq</title>
+    <title>Your Tickets — Raag-E-Ishq</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background-color: #0c2238; color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
-        <h1 style="color: #e5a93b; margin: 0; font-size: 24px;">Raage-E-Ishq</h1>
-        <p style="margin: 5px 0 0; font-size: 14px;">Joygivers Presents &bull; 17th December, 7:00 PM &bull; To Support Child Girls</p>
+        <h1 style="color: #e5a93b; margin: 0; font-size: 24px;">Raag-E-Ishq</h1>
+        <p style="margin: 5px 0 0; font-size: 14px;">Joygivers Presents &bull; 17th December, 7:00 PM &bull; For Child Girls Education</p>
     </div>
 
     <div style="padding: 20px 0;">
         <p>Dear {{ $booking->contact->full_name }},</p>
-        <p>Thank you for booking your admission to <strong>Raage-E-Ishq</strong> to support child girls. Your payment has been verified and your tickets are ready!</p>
+        <p>Thank you for booking your admission to <strong>Raag-E-Ishq</strong> for child girls education. Your payment has been verified and your tickets are ready!</p>
         
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background: #f9f9f9; border-radius: 6px;">
             <tr>

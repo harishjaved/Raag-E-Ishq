@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>@yield('title', 'Raage-E-Ishq — Live Musical Evening | Joygivers')</title>
+    <title>@yield('title', 'Raag-E-Ishq — Live Musical Evening | Joygivers')</title>
 
     <!-- Theme Preference Initialization (Prevents theme flash) -->
     <script>
@@ -336,7 +336,7 @@
                 </span>
                 <div>
                     <div class="text-[10px] uppercase tracking-widest text-amber-500 dark:text-amber-400 font-bold">Joygivers Presents</div>
-                    <div class="text-base font-extrabold font-serif-display tracking-wide dark:text-slate-100 text-slate-900">Raage-E-Ishq</div>
+                    <div class="text-base font-extrabold font-serif-display tracking-wide dark:text-slate-100 text-slate-900">Raag-E-Ishq</div>
                 </div>
             </a>
 
@@ -395,10 +395,10 @@
         <div class="max-w-5xl mx-auto px-4 text-center space-y-3">
             <div class="flex items-center justify-center gap-2">
                 <span class="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-400 to-rose-500 text-white flex items-center justify-center font-bold text-xs">REI</span>
-                <span class="font-serif-display font-bold text-sm tracking-wide dark:text-slate-200 text-slate-800">Joygivers Presents — Raage-E-Ishq</span>
+                <span class="font-serif-display font-bold text-sm tracking-wide dark:text-slate-200 text-slate-800">Joygivers Presents — Raag-E-Ishq</span>
             </div>
             <p class="text-xs dark:text-slate-400 text-slate-600 max-w-md mx-auto">
-                A grand musical evening of timeless Hindi melodies at Chavara Hall, Kochi. Organized to support child girls' education and welfare.
+                A grand musical evening of timeless Hindi melodies at Chavara Hall, Kochi. Organized for child girls education and welfare.
             </p>
             <p class="text-[11px] dark:text-slate-500 text-slate-500">
                 17th December &bull; 7:00 PM &bull; Total Hall Capacity: 450 Seats &bull; All verified bookings strictly non-refundable.

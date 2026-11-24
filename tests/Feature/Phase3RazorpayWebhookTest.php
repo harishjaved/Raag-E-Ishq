@@ -66,7 +66,7 @@ class Phase3RazorpayWebhookTest extends TestCase
                         'status' => 'captured',
                         'order_id' => 'order_test_123',
                         'method' => 'upi',
-                        'description' => 'Joygivers Raage-E-Ishq',
+                        'description' => 'Joygivers Raag-E-Ishq',
                         'notes' => [
                             'booking_reference' => $booking->booking_reference,
                         ],

@@ -61,8 +61,8 @@ class DatabaseSeeder extends Seeder
         $event = Event::updateOrCreate(
             ['slug' => 'sagar-kinare-2026'],
             [
-                'name' => 'Raage-E-Ishq',
-                'description' => 'A celebration of timeless Hindi melodies in Kochi, to support child girls.',
+                'name' => 'Raag-E-Ishq',
+                'description' => 'A celebration of timeless Hindi melodies in Kochi, for child girls education.',
                 'venue_name' => 'Chavara Hall',
                 'venue_address' => 'Chavara Cultural Centre, Near South Railway Station, Kochi, Kerala',
                 'event_start_at' => Carbon::create(2026, 12, 17, 19, 0, 0),
