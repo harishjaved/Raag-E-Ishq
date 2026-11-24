@@ -1,0 +1,26 @@
+<?php
+
+// Vercel Serverless Function entry point for Laravel
+// Create writable directories in /tmp since Vercel's root filesystem is read-only
+$tmpDirs = [
+    '/tmp/storage/framework/views',
+    '/tmp/storage/framework/sessions',
+    '/tmp/storage/framework/cache',
+    '/tmp/storage/logs',
+    '/tmp/bootstrap/cache',
+];
+
+foreach ($tmpDirs as $dir) {
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
+}
+
+// Copy pre-seeded SQLite database to /tmp if it doesn't already exist
+$srcDb = __DIR__ . '/../database/database.sqlite';
+$dstDb = '/tmp/database.sqlite';
+if (!file_exists($dstDb) && file_exists($srcDb)) {
+    @copy($srcDb, $dstDb);
+}
+
+require __DIR__ . '/../public/index.php';
