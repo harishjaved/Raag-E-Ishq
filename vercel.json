@@ -28,6 +28,8 @@
   "env": {
     "APP_ENV": "production",
     "APP_DEBUG": "false",
+    "APP_URL": "https://raag-e-ishq.vercel.app",
+    "ASSET_URL": "https://raag-e-ishq.vercel.app",
     "APP_KEY": "base64:k6WI2NDoZmD8lJ5FtIpFwX0waWYsSEqkyAk33jjMiHo=",
     "APP_CONFIG_CACHE": "/tmp/config.php",
     "APP_EVENTS_CACHE": "/tmp/events.php",
