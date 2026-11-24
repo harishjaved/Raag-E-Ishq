@@ -32,10 +32,10 @@
                 <span>Reserve Seats &amp; Book Tickets</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
             </a>
-            <a href="#seating-map"
+            <a href="#categories"
                 class="px-5 py-3.5 rounded-2xl border transition text-xs font-bold flex items-center gap-2 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:bg-slate-800 dark:text-slate-200 light:border-slate-300 light:bg-white light:hover:bg-slate-100 light:text-slate-800 shadow-sm">
-                <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                <span>View Seating Layout</span>
+                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                <span>View Ticket Categories</span>
             </a>
         </div>
 
@@ -71,76 +71,8 @@
         </div>
     </section>
 
-    <!-- Interactive Seating Layout & Stage Arc (Inspired by reference UI in Image 3) -->
-    <section id="seating-map" class="p-6 sm:p-8 rounded-3xl border transition-all dark:bg-slate-900/70 dark:border-slate-800 light:bg-white light:border-slate-200 shadow-xl space-y-6">
-        <div class="text-center space-y-1">
-            <span class="text-[11px] uppercase font-bold tracking-widest text-rose-500">Auditorium Seating Architecture</span>
-            <h2 class="text-2xl font-bold dark:text-slate-100 text-slate-900 font-serif-display">Stage &amp; Seating Plan</h2>
-            <p class="text-xs dark:text-slate-400 text-slate-600">Select any category to view tier positions or book directly.</p>
-        </div>
-
-        <!-- Visual Auditorium Graphic -->
-        <div class="max-w-lg mx-auto py-4 text-center space-y-4">
-            <!-- Stage Box -->
-            <div class="mx-auto w-48 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 text-white font-extrabold text-xs tracking-wider shadow-lg shadow-rose-500/20 uppercase">
-                Stage &bull; Live Orchestra
-            </div>
-
-            <!-- Curved Seating Bowl Graphic -->
-            <svg viewBox="0 0 400 210" class="w-full max-w-md mx-auto drop-shadow-md select-none">
-                <!-- Tier 1: Front Arc (Gold/Amber) -->
-                <path d="M 80 70 A 130 110 0 0 1 320 70" fill="none" stroke="#f59e0b" stroke-width="18" stroke-linecap="round" opacity="0.9"/>
-                <text x="200" y="66" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">TIER 1 &bull; VIP (₹2,500)</text>
-
-                <!-- Tier 2: Middle Arc (Rose/Pink) -->
-                <path d="M 50 115 A 170 140 0 0 1 350 115" fill="none" stroke="#e11d48" stroke-width="20" stroke-linecap="round" opacity="0.85"/>
-                <text x="200" y="111" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">TIER 2 &bull; PREMIUM (₹1,500)</text>
-
-                <!-- Tier 3: Classic Rear Arc (Purple/Violet) -->
-                <path d="M 25 165 A 205 165 0 0 1 375 165" fill="none" stroke="#7c3aed" stroke-width="22" stroke-linecap="round" opacity="0.8"/>
-                <text x="200" y="161" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">TIER 3 &bull; CLASSIC (₹1,000)</text>
-
-                <!-- Tier 4: Community Arc (Cyan/Emerald) -->
-                <path d="M 10 200 A 225 180 0 0 1 390 200" fill="none" stroke="#059669" stroke-width="12" stroke-linecap="round" opacity="0.75"/>
-                <text x="200" y="196" text-anchor="middle" fill="#ffffff" font-size="8" font-weight="bold">TIER 4 &bull; COMMUNITY PASS (₹2.00)</text>
-            </svg>
-        </div>
-
-        <!-- Seating Legend -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
-            <div class="p-2.5 rounded-xl border flex items-center gap-2.5 dark:border-slate-800 dark:bg-slate-950/60 light:border-slate-200 light:bg-slate-50">
-                <span class="w-3.5 h-3.5 rounded-full bg-amber-500 flex-shrink-0"></span>
-                <div>
-                    <div class="font-bold dark:text-slate-200 text-slate-800">Tier 1: VIP</div>
-                    <div class="text-[10px] dark:text-slate-400 text-slate-500">₹2,500 &bull; Front Rows</div>
-                </div>
-            </div>
-            <div class="p-2.5 rounded-xl border flex items-center gap-2.5 dark:border-slate-800 dark:bg-slate-950/60 light:border-slate-200 light:bg-slate-50">
-                <span class="w-3.5 h-3.5 rounded-full bg-rose-500 flex-shrink-0"></span>
-                <div>
-                    <div class="font-bold dark:text-slate-200 text-slate-800">Tier 2: Prime</div>
-                    <div class="text-[10px] dark:text-slate-400 text-slate-500">₹1,500 &bull; Middle Circle</div>
-                </div>
-            </div>
-            <div class="p-2.5 rounded-xl border flex items-center gap-2.5 dark:border-slate-800 dark:bg-slate-950/60 light:border-slate-200 light:bg-slate-50">
-                <span class="w-3.5 h-3.5 rounded-full bg-purple-600 flex-shrink-0"></span>
-                <div>
-                    <div class="font-bold dark:text-slate-200 text-slate-800">Tier 3: Classic</div>
-                    <div class="text-[10px] dark:text-slate-400 text-slate-500">₹1,000 &bull; Rear Seating</div>
-                </div>
-            </div>
-            <div class="p-2.5 rounded-xl border flex items-center gap-2.5 dark:border-slate-800 dark:bg-slate-950/60 light:border-slate-200 light:bg-slate-50">
-                <span class="w-3.5 h-3.5 rounded-full bg-emerald-600 flex-shrink-0"></span>
-                <div>
-                    <div class="font-bold dark:text-slate-200 text-slate-800">Tier 4: Entry</div>
-                    <div class="text-[10px] dark:text-slate-400 text-slate-500">₹2.00 &bull; Special Pass</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Admission Categories & Pricing Cards (Inspired by Reference Cards) -->
-    <section class="space-y-6">
+    <section id="categories" class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
                 <span class="text-[11px] uppercase font-bold tracking-widest text-amber-500">Choose Your Experience</span>
@@ -149,7 +81,7 @@
             <span class="text-xs dark:text-slate-400 text-slate-500">Live Available Quotas &bull; Instant Seat Reservation</span>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid sm:grid-cols-3 gap-6">
             @foreach ($categories as $cat)
                 @php
                     $isTier1 = str_contains(strtolower($cat->name), 'tier 1');

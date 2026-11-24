@@ -144,12 +144,12 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $this->assertEquals(10, $metrics['comps_issued']);
         $this->assertEquals(1, $metrics['total_checked_in']);
 
-        // 3. Shared Pool Math:
+        // 3. 450 Shared Pool Math:
         // Total allocated: 3 (paid) + 2 (active holds) + 10 (comps) = 15
-        // Remaining: 500 - 15 = 485
+        // Remaining: 450 - 15 = 435
         $this->assertEquals(15, $metrics['total_allocated']);
-        $this->assertEquals(485, $metrics['global_remaining']);
-        $this->assertEquals(500, $metrics['total_capacity']);
+        $this->assertEquals(435, $metrics['global_remaining']);
+        $this->assertEquals(450, $metrics['total_capacity']);
 
         // 4. Rates
         $this->assertEquals(33.3, $metrics['showup_rate']); // 1 checked in out of 3 paid tickets = 33.3%
@@ -175,8 +175,8 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $updatedAvailable = $this->inventoryService->getAvailableCapacity($this->tier3);
         $this->assertEquals(225, $updatedAvailable);
 
-        // Global capacity must also decrease by 25 (from 500 to 475)
-        $this->assertEquals(475, $this->inventoryService->getGlobalRemainingCapacity($this->event));
+        // Global capacity must also decrease by 25 (from 450 to 425)
+        $this->assertEquals(425, $this->inventoryService->getGlobalRemainingCapacity($this->event));
     }
 
     public function test_finance_csv_export_streams_sanitized_settlement_ledger(): void

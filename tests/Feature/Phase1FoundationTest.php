@@ -55,17 +55,16 @@ class Phase1FoundationTest extends TestCase
     {
         $event = Event::where('slug', 'sagar-kinare-2026')->first();
         $this->assertNotNull($event);
-        $this->assertEquals(500, $event->total_capacity);
+        $this->assertEquals(450, $event->total_capacity);
         $this->assertFalse($event->is_published);
         $this->assertFalse($event->live_payments_enabled);
 
         $categories = $event->categories;
-        $this->assertCount(4, $categories);
+        $this->assertCount(3, $categories);
 
         $tier1 = $categories->firstWhere('name', 'Tier 1');
         $tier2 = $categories->firstWhere('name', 'Tier 2');
         $tier3 = $categories->firstWhere('name', 'Tier 3');
-        $tier4 = $categories->firstWhere('name', 'Tier 4');
 
         $this->assertEquals(250000, $tier1->price_paise);
         $this->assertEquals(100, $tier1->capacity);
@@ -76,11 +75,8 @@ class Phase1FoundationTest extends TestCase
         $this->assertEquals(100000, $tier3->price_paise);
         $this->assertEquals(250, $tier3->capacity);
 
-        $this->assertEquals(200, $tier4->price_paise);
-        $this->assertEquals(50, $tier4->capacity);
-
-        // Sum of tier capacities MUST equal 500
-        $this->assertEquals(500, $categories->sum('capacity'));
+        // Sum of tier capacities MUST equal 450
+        $this->assertEquals(450, $categories->sum('capacity'));
     }
 
     public function test_rbac_users_and_role_permissions(): void
