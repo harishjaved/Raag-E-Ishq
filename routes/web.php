@@ -32,6 +32,7 @@ Route::post('/booking/{reference}/simulate-payment', [PaymentController::class, 
 // Ticket Download (Signed URL) & Self-service Resend (Rate limited)
 Route::get('/tickets/download/{uuid}', [TicketDownloadController::class, 'download'])->name('ticket.download')->middleware('signed');
 Route::get('/tickets/{uuid}/qr', [TicketDownloadController::class, 'downloadQr'])->name('ticket.qr.download');
+Route::get('/tickets/{uuid}/qr.png', [TicketDownloadController::class, 'downloadQrPng'])->name('ticket.qr.png');
 Route::get('/tickets/resend', [TicketResendController::class, 'show'])->name('tickets.resend.show');
 Route::post('/tickets/resend', [TicketResendController::class, 'send'])->name('tickets.resend.send')->middleware('throttle:5,10');
 

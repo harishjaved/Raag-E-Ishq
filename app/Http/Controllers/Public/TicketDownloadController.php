@@ -44,4 +44,19 @@ class TicketDownloadController extends Controller
             'Cache-Control' => 'no-cache, private',
         ]);
     }
+
+    public function downloadQrPng(string $uuid, TicketService $ticketService): Response
+    {
+        $ticket = Ticket::with(['category', 'booking'])
+            ->where('qr_uuid', $uuid)
+            ->firstOrFail();
+
+        $pngData = $ticketService->generateAdmissionQrPng($ticket, 10, 4);
+
+        return response($pngData, 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => 'inline; filename="Raag-E-Ishq-' . $ticket->ticket_number . '-QR.png"',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
 }

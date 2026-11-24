@@ -150,6 +150,50 @@ class TicketService
     }
 
     /**
+     * Generate responsive PNG QR code for admission ticket using GD.
+     */
+    public function generateAdmissionQrPng(Ticket $ticket, int $scale = 10, int $margin = 4): string
+    {
+        $payload = $this->getAdmissionQrPayload($ticket);
+        $qr = \BaconQrCode\Encoder\Encoder::encode($payload, \BaconQrCode\Common\ErrorCorrectionLevel::M());
+        $matrix = $qr->getMatrix();
+        $width = $matrix->getWidth();
+        $height = $matrix->getHeight();
+
+        $imgWidth = ($width + $margin * 2) * $scale;
+        $imgHeight = ($height + $margin * 2) * $scale;
+
+        $im = imagecreatetruecolor($imgWidth, $imgHeight);
+        $white = imagecolorallocate($im, 255, 255, 255);
+        $black = imagecolorallocate($im, 15, 23, 42);
+
+        imagefill($im, 0, 0, $white);
+
+        $bytes = $matrix->getArray();
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                if ($bytes[$y][$x] === 1) {
+                    imagefilledrectangle(
+                        $im,
+                        ($x + $margin) * $scale,
+                        ($y + $margin) * $scale,
+                        ($x + $margin + 1) * $scale - 1,
+                        ($y + $margin + 1) * $scale - 1,
+                        $black
+                    );
+                }
+            }
+        }
+
+        ob_start();
+        imagepng($im);
+        $png = ob_get_clean();
+        imagedestroy($im);
+
+        return $png;
+    }
+
+    /**
      * Alias for generateAdmissionQrSvg for convenience.
      */
     public function generateQrSvg(Ticket $ticket, int $size = 250): string
@@ -274,12 +318,15 @@ class TicketService
 
         if ($booking->tickets->isNotEmpty()) {
             $lines[] = "";
-            $lines[] = "🎫 *Your Individual Admission Pass & QR Download Links:*";
+            $lines[] = "🎟️ *Your Admission Passes & Entry QR Codes:*";
             foreach ($booking->tickets as $idx => $ticket) {
                 $num = $idx + 1;
                 $catName = $ticket->category->name ?? 'Admission';
-                $directUrl = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
-                $lines[] = "• Pass #" . $num . " (" . $catName . " - " . $ticket->ticket_number . "): " . $directUrl;
+                $directQrPngUrl = route('ticket.qr.png', ['uuid' => $ticket->qr_uuid]);
+                $directPassUrl = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
+                $lines[] = "• Pass #" . $num . " (" . $catName . " - " . $ticket->ticket_number . "):";
+                $lines[] = "  📸 Entry QR Image: " . $directQrPngUrl;
+                $lines[] = "  📱 Digital Pass: " . $directPassUrl;
             }
         }
 

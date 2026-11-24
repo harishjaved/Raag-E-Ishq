@@ -389,47 +389,31 @@
             </div>
         </div>
 
-        <!-- Instructions Banner -->
-        <div class="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 text-xs text-slate-200 space-y-1">
-            <div class="flex items-center gap-1.5 font-bold text-emerald-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>How to send QR Ticket on WhatsApp:</span>
-            </div>
-            <div class="text-[11px] text-slate-300 pl-5 space-y-0.5">
-                <div>1. Click <strong>"Open WhatsApp Chat"</strong> (chat opens in a new tab with pre-filled message &amp; links).</div>
-                <div>2. Simply press <strong>Ctrl + V</strong> in WhatsApp to paste and attach the QR ticket image!</div>
-            </div>
-        </div>
-
         <!-- Primary Action Buttons -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            <!-- 1. Open WhatsApp (wa.me) & Auto-Copy QR -->
+        <div class="space-y-2.5 pt-1">
+            <!-- 1. Send WhatsApp Pass with QR Code (Primary prominent action) -->
             <button type="button" id="modalOpenWhatsAppBtn"
-                class="py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/25">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                <span>Open WhatsApp Chat</span>
+                class="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 active:from-emerald-600 active:to-emerald-700 text-slate-950 font-extrabold text-sm flex items-center justify-center gap-2.5 transition shadow-lg shadow-emerald-500/25">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                <span>Send WhatsApp Pass (with QR Code)</span>
             </button>
 
-            <!-- 2. Copy QR Image as PNG to Clipboard -->
-            <button type="button" id="modalCopyQrBtn"
-                class="py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 text-purple-200 font-extrabold text-xs flex items-center justify-center gap-2 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-                <span>Copy QR Ticket (Ctrl+V)</span>
-            </button>
+            <!-- Secondary Actions Row -->
+            <div class="grid grid-cols-2 gap-2.5">
+                <!-- 2. Download QR Image (PNG) -->
+                <button type="button" id="modalDownloadPngBtn"
+                    class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span>Download QR (PNG)</span>
+                </button>
 
-            <!-- 3. Download QR Image (PNG) -->
-            <button type="button" id="modalDownloadPngBtn"
-                class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                <span>Download QR Image (PNG)</span>
-            </button>
-
-            <!-- 4. Copy Text Message -->
-            <button type="button" id="modalCopyTextBtn"
-                class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <span>Copy Message Text</span>
-            </button>
+                <!-- 3. Copy Text Message -->
+                <button type="button" id="modalCopyTextBtn"
+                    class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Copy Message Text</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -595,25 +579,58 @@ function copyCanvasToClipboard(canvas) {
     });
 }
 
+async function dispatchWhatsAppPass(booking, ticket) {
+    if (!booking) return;
+    let canvas = null;
+    let file = null;
+
+    if (ticket && ticket.svg) {
+        try {
+            canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, booking.reference, ticket.category, ticket.number);
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) {
+                file = new File([blob], `Raag-E-Ishq-${ticket.number || 'Pass'}-QR.png`, { type: 'image/png' });
+            }
+        } catch (e) {
+            console.warn('Canvas render error', e);
+        }
+    }
+
+    // Try Web Share API with file (shares image and text directly into WhatsApp on supported mobile/desktop)
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                title: `Raag-E-Ishq Admission Pass - ${ticket ? ticket.number : booking.reference}`,
+                text: booking.whatsappText,
+                files: [file]
+            });
+            showToast('✓ WhatsApp Pass with QR Code shared successfully!');
+            return;
+        } catch (err) {
+            if (err.name === 'AbortError') return;
+            console.warn('Navigator share error, falling back', err);
+        }
+    }
+
+    // Direct Web Fallback: copy image to clipboard and open WhatsApp link (which includes direct QR image link and digital pass)
+    if (canvas) {
+        try {
+            await copyCanvasToClipboard(canvas);
+        } catch (e) {}
+    }
+
+    showToast('Opening WhatsApp with ticket details & QR pass link!');
+    if (booking.whatsappUrl) {
+        window.open(booking.whatsappUrl, '_blank');
+    }
+}
+
 async function quickSendWhatsAppWithQr() {
     const bookingId = {{ $booking->id }};
     const data = getBookingMetadata(bookingId);
     if (!data) return;
-
-    if (data.tickets && data.tickets.length > 0 && data.tickets[0].svg) {
-        try {
-            const ticket = data.tickets[0];
-            const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, data.reference, ticket.category, ticket.number);
-            await copyCanvasToClipboard(canvas);
-            showToast('📋 QR Ticket Image copied to clipboard! In WhatsApp, press Ctrl+V to attach & send!');
-        } catch (e) {
-            showToast('Opening WhatsApp with ticket details & links!');
-        }
-    }
-
-    if (data.whatsappUrl) {
-        window.open(data.whatsappUrl, '_blank');
-    }
+    const ticket = (data.tickets && data.tickets.length > 0) ? data.tickets[0] : null;
+    await dispatchWhatsAppPass(data, ticket);
 }
 
 async function copyTicketCardQr(idx) {
@@ -625,7 +642,7 @@ async function copyTicketCardQr(idx) {
         const ticket = data.tickets[idx];
         const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, data.reference, ticket.category, ticket.number);
         await copyCanvasToClipboard(canvas);
-        showToast(`✓ QR Ticket Image #${idx + 1} copied! Press Ctrl+V in WhatsApp to send image.`);
+        showToast(`✓ QR Ticket Image #${idx + 1} copied to clipboard!`);
     } catch (e) {
         showToast('Clipboard copy failed. Please use "Download QR".');
     }
@@ -687,30 +704,7 @@ function selectModalTicket(idx) {
 
     const openBtn = document.getElementById('modalOpenWhatsAppBtn');
     openBtn.onclick = async () => {
-        if (ticket.svg) {
-            try {
-                const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, currentActiveBooking.reference, ticket.category, ticket.number);
-                await copyCanvasToClipboard(canvas);
-                showToast('📋 QR Ticket Image copied to clipboard! In WhatsApp, press Ctrl+V to attach & send!');
-            } catch (e) {
-                showToast('Opening WhatsApp with ticket details & links!');
-            }
-        }
-        if (currentActiveBooking.whatsappUrl) {
-            window.open(currentActiveBooking.whatsappUrl, '_blank');
-        }
-    };
-
-    const copyBtn = document.getElementById('modalCopyQrBtn');
-    copyBtn.onclick = async () => {
-        if (!ticket.svg) return;
-        try {
-            const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, currentActiveBooking.reference, ticket.category, ticket.number);
-            await copyCanvasToClipboard(canvas);
-            showToast('✓ QR Ticket Image copied! Press Ctrl+V in WhatsApp to send image.');
-        } catch (e) {
-            showToast('Clipboard copy failed.');
-        }
+        await dispatchWhatsAppPass(currentActiveBooking, ticket);
     };
 
     const downloadBtn = document.getElementById('modalDownloadPngBtn');
