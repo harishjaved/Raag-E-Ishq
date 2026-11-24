@@ -483,11 +483,11 @@
 
         <!-- Primary Action Buttons -->
         <div class="space-y-2.5 pt-1">
-            <!-- 1. Send WhatsApp Pass with QR Code (Primary prominent action) -->
+            <!-- 1. Send WhatsApp Pass to Customer (Direct to designated number) -->
             <button type="button" id="modalOpenWhatsAppBtn"
                 class="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 active:from-emerald-600 active:to-emerald-700 text-slate-950 font-extrabold text-sm flex items-center justify-center gap-2.5 transition shadow-lg shadow-emerald-500/25">
                 <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                <span>Send WhatsApp Pass (with QR Code)</span>
+                <span id="modalOpenWhatsAppText">Send WhatsApp Pass (to Customer)</span>
             </button>
 
             <!-- Secondary Actions Row -->
@@ -679,48 +679,22 @@ function copyCanvasToClipboard(canvas) {
 
 async function dispatchWhatsAppPass(booking, ticket) {
     if (!booking) return;
-    let canvas = null;
-    let file = null;
 
+    // Direct WhatsApp Web / App target with designated customer phone number
+    const phoneClean = String(booking.phone || '').replace(/[^0-9]/g, '');
+    const fullPhone = phoneClean.length === 10 ? '91' + phoneClean : phoneClean;
+    const targetUrl = booking.whatsappUrl || `https://api.whatsapp.com/send?phone=${fullPhone}&text=${encodeURIComponent(booking.whatsappText || '')}`;
+
+    // Silently copy QR image canvas to clipboard in background (for quick paste if desired)
     if (ticket && ticket.svg) {
         try {
-            canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, booking.reference, ticket.category, ticket.number);
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) {
-                file = new File([blob], `Raag-E-Ishq-${ticket.number || 'Pass'}-QR.png`, { type: 'image/png' });
-            }
-        } catch (e) {
-            console.warn('Canvas render error', e);
-        }
-    }
-
-    // Try Web Share API with file (shares image and text directly into WhatsApp on supported mobile/desktop)
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-            await navigator.share({
-                title: `Raag-E-Ishq Admission Pass - ${ticket ? ticket.number : booking.reference}`,
-                text: booking.whatsappText,
-                files: [file]
-            });
-            showToast('✓ WhatsApp Pass with QR Code shared successfully!');
-            return;
-        } catch (err) {
-            if (err.name === 'AbortError') return;
-            console.warn('Navigator share error, falling back', err);
-        }
-    }
-
-    // Direct Web Fallback: copy image to clipboard and open WhatsApp link (which includes direct QR image link and digital pass)
-    if (canvas) {
-        try {
+            const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, booking.reference, ticket.category, ticket.number);
             await copyCanvasToClipboard(canvas);
         } catch (e) {}
     }
 
-    showToast('Opening WhatsApp with ticket details & QR pass link!');
-    if (booking.whatsappUrl) {
-        window.open(booking.whatsappUrl, '_blank');
-    }
+    showToast(`Opening WhatsApp for +${fullPhone}...`);
+    window.open(targetUrl, '_blank');
 }
 
 async function quickSendWhatsAppWithQr(bookingId) {
@@ -740,6 +714,13 @@ function openWhatsAppModal(bookingId) {
     const modal = document.getElementById('whatsappDispatchModal');
     document.getElementById('modalCustomerTitle').textContent = `${data.customer} (${data.reference})`;
     document.getElementById('modalSubtitle').textContent = `Total: ${data.amount} • Phone: ${data.phone}`;
+
+    const phoneClean = String(data.phone || '').replace(/[^0-9]/g, '');
+    const formattedPhone = phoneClean.length === 10 ? '+91 ' + phoneClean : '+' + phoneClean;
+    const openBtnText = document.getElementById('modalOpenWhatsAppText');
+    if (openBtnText) {
+        openBtnText.textContent = `Send WhatsApp Pass (${formattedPhone})`;
+    }
 
     // Setup Ticket Tabs if multiple tickets
     const tabsContainer = document.getElementById('modalTicketTabs');

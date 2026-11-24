@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Tickets Confirmed — Raag-E-Ishq')
+@section('title', 'Raag-E-Ishq Admission Pass — ' . $booking->contact->full_name)
+@section('og_image', $tickets->first() ? route('ticket.qr.png', ['uuid' => $tickets->first()->qr_uuid]) : asset('images/music-hero-bg.jpg'))
+@section('og_description', 'Official QR admission pass for Raag-E-Ishq at Chavara Hall, Kochi. Organized by Joygivers for girl education.')
 
 @section('content')
 <style>

@@ -291,51 +291,36 @@ class TicketService
             return implode("\n", $lines);
         }
 
-        $lines = [
-            "🎟️ *Joygivers Presents: Raag-E-Ishq*",
-            "*Official Admission Pass & Gate QR Entry*",
-            "",
-            "Dear *" . $booking->contact->full_name . "*,",
-            "Your tickets for *Raag-E-Ishq* have been approved and confirmed!",
-            "",
-            "📋 *Booking Reference:* " . $booking->booking_reference,
-        ];
-
         $categorySummary = $booking->items->map(function ($item) {
             return ($item->category->name ?? 'Tier') . " (" . $item->quantity . " " . ($item->quantity === 1 ? 'Seat' : 'Seats') . ")";
         })->implode(', ');
 
-        if ($categorySummary) {
-            $lines[] = "💺 *Category:* " . $categorySummary;
-        }
-
-        $lines[] = "📅 *Event Date:* Tuesday, 17th December 2026";
-        $lines[] = "⏰ *Time:* 7:00 PM IST (Gates open 6:15 PM)";
-        $lines[] = "📍 *Venue:* Chavara Hall, Near South Railway Station, Kochi";
-        $lines[] = "";
-        $lines[] = "📲 *View & Download Full Digital Passes:*";
-        $lines[] = $ticketsUrl;
-
+        $ticketSummary = '';
         if ($booking->tickets->isNotEmpty()) {
-            $lines[] = "";
-            $lines[] = "🎟️ *Your Admission Passes & Entry QR Codes:*";
-            foreach ($booking->tickets as $idx => $ticket) {
-                $num = $idx + 1;
-                $catName = $ticket->category->name ?? 'Admission';
-                $directQrPngUrl = route('ticket.qr.png', ['uuid' => $ticket->qr_uuid]);
-                $directPassUrl = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
-                $lines[] = "• Pass #" . $num . " (" . $catName . " - " . $ticket->ticket_number . "):";
-                $lines[] = "  📸 Entry QR Image: " . $directQrPngUrl;
-                $lines[] = "  📱 Digital Pass: " . $directPassUrl;
-            }
+            $ticketSummary = $booking->tickets->map(function ($ticket, $idx) {
+                return "Pass #" . ($idx + 1) . " (" . ($ticket->category->name ?? 'Admission') . " - " . $ticket->ticket_number . ")";
+            })->implode(', ');
+        } else {
+            $ticketSummary = $categorySummary ?: 'Admission Pass';
         }
 
-        $lines[] = "";
-        $lines[] = "⚠️ *Gate Entry Instructions:*";
-        $lines[] = "• Present the QR code on your phone or printed pass at the entrance for instant scanning.";
-        $lines[] = "• All admission bookings are final and non-refundable (all proceeds dedicated to girl education).";
-        $lines[] = "";
-        $lines[] = "We look forward to welcoming you to an unforgettable musical evening! 🎶✨";
+        $lines = [
+            "🎟️ *Raag-E-Ishq — Admission Pass*",
+            "",
+            "Dear *" . $booking->contact->full_name . "*,",
+            "Your ticket booking is confirmed! Here is your official entry pass:",
+            "",
+            "📋 *Booking Ref:* " . $booking->booking_reference,
+            "💺 *Tickets:* " . $ticketSummary,
+            "📅 *Date & Time:* Tuesday, 17th December 2026 • 7:00 PM",
+            "📍 *Venue:* Chavara Hall, Near South Railway Station, Kochi",
+            "",
+            "📲 *Open Your QR Ticket Pass:*",
+            $ticketsUrl,
+            "",
+            "Present this QR pass at the entrance for instant check-in.",
+            "(100% proceeds dedicated to girl education ✨)",
+        ];
 
         return implode("\n", $lines);
     }
