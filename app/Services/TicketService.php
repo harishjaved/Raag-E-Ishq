@@ -222,6 +222,114 @@ class TicketService
         ];
     }
 
+    /**
+     * Build structured WhatsApp text message for confirmed admission tickets.
+     */
+    public function buildWhatsAppTicketMessage(Booking $booking): string
+    {
+        $booking->loadMissing(['contact', 'items.category', 'tickets.category']);
+        $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
+        $ticketsUrl = route('booking.confirmed', $booking->booking_reference);
+
+        if ($booking->is_donation) {
+            $lines = [
+                "💖 *Joygivers Presents: Raag-E-Ishq*",
+                "*Official Supporter & Donation Receipt*",
+                "",
+                "Dear *" . $booking->contact->full_name . "*,",
+                "Thank you for your generous contribution of *₹" . $amountFormatted . "* supporting girl education! 🌟",
+                "",
+                "📋 *Booking Reference:* " . $booking->booking_reference,
+                "📄 *Official Supporter Receipt:* " . $ticketsUrl,
+                "",
+                "100% of proceeds fund girl education and welfare programmes. Thank you for making a lasting difference! ✨",
+            ];
+            return implode("\n", $lines);
+        }
+
+        $lines = [
+            "🎟️ *Joygivers Presents: Raag-E-Ishq*",
+            "*Official Admission Pass & Gate QR Entry*",
+            "",
+            "Dear *" . $booking->contact->full_name . "*,",
+            "Your tickets for *Raag-E-Ishq* have been approved and confirmed!",
+            "",
+            "📋 *Booking Reference:* " . $booking->booking_reference,
+        ];
+
+        $categorySummary = $booking->items->map(function ($item) {
+            return ($item->category->name ?? 'Tier') . " (" . $item->quantity . " " . ($item->quantity === 1 ? 'Seat' : 'Seats') . ")";
+        })->implode(', ');
+
+        if ($categorySummary) {
+            $lines[] = "💺 *Category:* " . $categorySummary;
+        }
+
+        $lines[] = "📅 *Event Date:* Tuesday, 17th December 2026";
+        $lines[] = "⏰ *Time:* 7:00 PM IST (Gates open 6:15 PM)";
+        $lines[] = "📍 *Venue:* Chavara Hall, Near South Railway Station, Kochi";
+        $lines[] = "";
+        $lines[] = "📲 *View & Download Full Digital Passes:*";
+        $lines[] = $ticketsUrl;
+
+        if ($booking->tickets->isNotEmpty()) {
+            $lines[] = "";
+            $lines[] = "🎫 *Your Individual Admission Pass & QR Download Links:*";
+            foreach ($booking->tickets as $idx => $ticket) {
+                $num = $idx + 1;
+                $catName = $ticket->category->name ?? 'Admission';
+                $directUrl = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
+                $lines[] = "• Pass #" . $num . " (" . $catName . " - " . $ticket->ticket_number . "): " . $directUrl;
+            }
+        }
+
+        $lines[] = "";
+        $lines[] = "⚠️ *Gate Entry Instructions:*";
+        $lines[] = "• Present the QR code on your phone or printed pass at the entrance for instant scanning.";
+        $lines[] = "• All admission bookings are final and non-refundable (all proceeds dedicated to girl education).";
+        $lines[] = "";
+        $lines[] = "We look forward to welcoming you to an unforgettable musical evening! 🎶✨";
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Build payment instructions WhatsApp message for enquiry.
+     */
+    public function buildWhatsAppPaymentMessage(Booking $booking): string
+    {
+        $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
+        $lines = [
+            "🎵 *Joygivers Presents: Raag-E-Ishq*",
+            "*Ticket Booking Enquiry Confirmation*",
+            "",
+            "Hello *" . $booking->contact->full_name . "*!",
+            "Thank you for registering for Raag-E-Ishq at Chavara Hall, Kochi.",
+            "",
+            "📋 *Enquiry Reference:* " . $booking->booking_reference,
+            "💰 *Total Amount Payable:* ₹" . $amountFormatted,
+            "",
+            "💳 *UPI Payment Details:*",
+            "• UPI ID: *mujammilibrahim007@okhdfcbank*",
+            "• Payee: Joygivers Event Desk",
+            "",
+            "Please send your payment screenshot / UTR number here once done so our team can approve and issue your unique QR admission pass immediately. 🎟️",
+        ];
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Build clean wa.me URL with country code prefix.
+     */
+    public function buildWhatsAppUrl(string $phone, string $message): string
+    {
+        $phoneClean = preg_replace('/[^0-9]/', '', $phone);
+        if (strlen($phoneClean) === 10) {
+            $phoneClean = '91' . $phoneClean;
+        }
+        return "https://wa.me/" . $phoneClean . "?text=" . urlencode($message);
+    }
+
     protected function generateUniqueTicketNumber(): string
     {
         do {

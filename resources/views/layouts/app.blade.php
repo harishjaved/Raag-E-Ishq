@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>@yield('title', 'Raag-E-Ishq — Live Musical Evening | Joygivers')</title>
 
+    <!-- OpenGraph Meta Tags for Rich WhatsApp Previews -->
+    <meta property="og:title" content="@yield('title', 'Raag-E-Ishq — Live Musical Evening | Joygivers')">
+    <meta property="og:description" content="Official Admission Pass for Raag-E-Ishq at Chavara Hall, Kochi. Organized by Joygivers for girl education.">
+    <meta property="og:image" content="{{ asset('images/music-hero-bg.jpg') }}">
+    <meta property="og:type" content="website">
+
     <!-- Theme Preference Initialization (Prevents theme flash) -->
     <script>
         (function() {

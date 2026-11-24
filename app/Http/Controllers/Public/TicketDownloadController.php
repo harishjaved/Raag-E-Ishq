@@ -40,7 +40,7 @@ class TicketDownloadController extends Controller
 
         return response($qrSvg, 200, [
             'Content-Type' => 'image/svg+xml',
-            'Content-Disposition' => 'attachment; filename="SagarKinare-' . $ticket->ticket_number . '-QR.svg"',
+            'Content-Disposition' => 'attachment; filename="Raag-E-Ishq-' . $ticket->ticket_number . '-QR.svg"',
             'Cache-Control' => 'no-cache, private',
         ]);
     }

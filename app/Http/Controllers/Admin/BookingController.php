@@ -14,11 +14,11 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    public function index(Request $request, InventoryService $inventoryService): View
+    public function index(Request $request, InventoryService $inventoryService, TicketService $ticketService): View
     {
         $inventoryService->releaseExpiredHolds();
 
-        $query = Booking::with(['contact', 'items.category'])->latest();
+        $query = Booking::with(['contact', 'items.category', 'tickets.category'])->latest();
 
         $status = $request->query('status');
         if ($status) {
@@ -44,23 +44,41 @@ class BookingController extends Controller
 
         $bookings = $query->paginate(20);
 
-        // Precompute quick WhatsApp URLs for each booking
+        // Precompute quick WhatsApp URLs & QR codes for each booking
         foreach ($bookings as $booking) {
-            $phoneClean = preg_replace('/[^0-9]/', '', $booking->contact->phone);
-            if (strlen($phoneClean) === 10) {
-                $phoneClean = '91' . $phoneClean;
-            }
-            $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
-            
-            // Payment instructions message for Pending / In-Process enquiries
-            $payMsg = "Hello " . $booking->contact->full_name . "! Thank you for booking Raag-E-Ishq (Ref: " . $booking->booking_reference . "). Total payable is ₹" . $amountFormatted . ". Please pay via UPI to mujammilibrahim007@okhdfcbank and reply with your payment screenshot/UTR to confirm your tickets.";
-            $booking->whatsapp_payment_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($payMsg);
+            $booking->whatsapp_payment_url = $ticketService->buildWhatsAppUrl(
+                $booking->contact->phone,
+                $ticketService->buildWhatsAppPaymentMessage($booking)
+            );
 
-            // Tickets link for confirmed bookings
+            // Passes link & QR codes for confirmed bookings
             if ($booking->status === Booking::STATUS_CONFIRMED) {
-                $ticketsUrl = route('booking.confirmed', $booking->booking_reference);
-                $ticketMsg = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raag-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your QR entry passes here: " . $ticketsUrl;
-                $booking->whatsapp_ticket_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($ticketMsg);
+                $ticketMsg = $ticketService->buildWhatsAppTicketMessage($booking);
+                $booking->whatsapp_ticket_url = $ticketService->buildWhatsAppUrl($booking->contact->phone, $ticketMsg);
+                $booking->whatsapp_ticket_text = $ticketMsg;
+
+                // Precompute QR SVGs and download URLs so admin can view/copy immediately
+                foreach ($booking->tickets as $ticket) {
+                    $ticket->qr_svg = $ticketService->generateAdmissionQrSvg($ticket, 240);
+                    $ticket->qr_download_url = route('ticket.qr.download', ['uuid' => $ticket->qr_uuid]);
+                    $ticket->download_url = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
+                }
+            }
+        }
+
+        $justApprovedBooking = null;
+        if ($justApprovedId = session('just_approved_booking_id')) {
+            $justApprovedBooking = Booking::with(['contact', 'items.category', 'tickets.category'])->find($justApprovedId);
+            if ($justApprovedBooking) {
+                $ticketMsg = $ticketService->buildWhatsAppTicketMessage($justApprovedBooking);
+                $justApprovedBooking->whatsapp_ticket_url = $ticketService->buildWhatsAppUrl($justApprovedBooking->contact->phone, $ticketMsg);
+                $justApprovedBooking->whatsapp_ticket_text = $ticketMsg;
+
+                foreach ($justApprovedBooking->tickets as $ticket) {
+                    $ticket->qr_svg = $ticketService->generateAdmissionQrSvg($ticket, 240);
+                    $ticket->qr_download_url = route('ticket.qr.download', ['uuid' => $ticket->qr_uuid]);
+                    $ticket->download_url = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
+                }
             }
         }
 
@@ -77,6 +95,7 @@ class BookingController extends Controller
             'currentStatus' => $status,
             'search' => $search,
             'counts' => $counts,
+            'justApprovedBooking' => $justApprovedBooking,
         ]);
     }
 
@@ -91,18 +110,15 @@ class BookingController extends Controller
             'refunds',
         ])->findOrFail($id);
 
-        $phoneClean = preg_replace('/[^0-9]/', '', $booking->contact->phone);
-        if (strlen($phoneClean) === 10) {
-            $phoneClean = '91' . $phoneClean;
-        }
-        $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
-        $payMsg = "Hello " . $booking->contact->full_name . "! Thank you for booking Raag-E-Ishq (Ref: " . $booking->booking_reference . "). Total payable is ₹" . $amountFormatted . ". Please pay via UPI to mujammilibrahim007@okhdfcbank and reply with your payment screenshot/UTR to confirm your tickets.";
-        $booking->whatsapp_payment_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($payMsg);
+        $booking->whatsapp_payment_url = $ticketService->buildWhatsAppUrl(
+            $booking->contact->phone,
+            $ticketService->buildWhatsAppPaymentMessage($booking)
+        );
 
         if ($booking->status === Booking::STATUS_CONFIRMED) {
-            $ticketsUrl = route('booking.confirmed', $booking->booking_reference);
-            $ticketMsg = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raag-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your QR entry passes here: " . $ticketsUrl;
-            $booking->whatsapp_ticket_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($ticketMsg);
+            $ticketMsg = $ticketService->buildWhatsAppTicketMessage($booking);
+            $booking->whatsapp_ticket_url = $ticketService->buildWhatsAppUrl($booking->contact->phone, $ticketMsg);
+            $booking->whatsapp_ticket_text = $ticketMsg;
         }
 
         foreach ($booking->tickets as $ticket) {
@@ -149,7 +165,10 @@ class BookingController extends Controller
 
         $razorpayService->handleWebhook($providerEventId, 'payment.captured', $payload, $rawBody, $signature);
 
-        return back()->with('success', "Payment for booking {$booking->booking_reference} confirmed and tickets successfully issued.");
+        return back()->with([
+            'success' => "Payment for booking {$booking->booking_reference} confirmed and tickets successfully issued.",
+            'just_approved_booking_id' => $booking->id,
+        ]);
     }
 
     public function updateStatus(Request $request, int $id, RazorpayService $razorpayService, InventoryService $inventoryService): RedirectResponse

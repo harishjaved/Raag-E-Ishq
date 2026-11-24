@@ -50,14 +50,10 @@ class TicketDispatchController extends Controller
                 $ticket->download_url = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
                 $ticket->qr_download_url = route('ticket.qr.download', ['uuid' => $ticket->qr_uuid]);
             }
-            if ($booking->tickets->isNotEmpty()) {
-                $publicUrl = route('booking.confirmed', $booking->booking_reference);
-                $waText = "Hello " . $booking->contact->full_name . "! Your admission passes for Joygivers Raag-E-Ishq (Booking Ref: " . $booking->booking_reference . ") are confirmed! View and download your unique QR entry passes here: " . $publicUrl;
-                $phoneClean = preg_replace('/[^0-9]/', '', $booking->contact->phone);
-                if (strlen($phoneClean) === 10) {
-                    $phoneClean = '91' . $phoneClean;
-                }
-                $booking->whatsapp_dispatch_url = "https://wa.me/" . $phoneClean . "?text=" . urlencode($waText);
+            if ($booking->tickets->isNotEmpty() || $booking->status === Booking::STATUS_CONFIRMED) {
+                $waText = $ticketService->buildWhatsAppTicketMessage($booking);
+                $booking->whatsapp_dispatch_url = $ticketService->buildWhatsAppUrl($booking->contact->phone, $waText);
+                $booking->whatsapp_dispatch_text = $waText;
             }
         }
 

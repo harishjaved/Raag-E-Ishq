@@ -92,10 +92,16 @@
                 </form>
             @elseif ($booking->status === 'CONFIRMED')
                 @if (isset($booking->whatsapp_ticket_url))
-                    <a href="{{ $booking->whatsapp_ticket_url }}" target="_blank"
+                    <button type="button" onclick="openWhatsAppModal()"
                         class="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
+                        <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                         <span>Send Passes via WhatsApp</span>
-                    </a>
+                    </button>
+                    <button type="button" onclick="quickSendWhatsAppWithQr()"
+                        class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/40 border border-purple-500/40 text-purple-300 font-bold text-xs flex items-center gap-1.5 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                        <span>Copy QR &amp; Open WhatsApp</span>
+                    </button>
                 @endif
                 <a href="{{ route('booking.confirmed', $booking->booking_reference) }}" target="_blank"
                     class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
@@ -276,6 +282,15 @@
                                         <span>Download QR</span>
                                     </a>
                                 @endif
+                                @if (isset($ticket->qr_svg))
+                                    <span class="text-slate-600">&bull;</span>
+                                    <button type="button"
+                                        onclick="copyTicketCardQr({{ $loop->index }})"
+                                        class="text-[11px] text-purple-400 hover:underline flex items-center gap-1 font-semibold">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                                        <span>Copy QR Image</span>
+                                    </button>
+                                @endif
                                 @if (isset($ticket->download_url))
                                     <span class="text-slate-600">&bull;</span>
                                     <a href="{{ $ticket->download_url }}" target="_blank"
@@ -291,4 +306,442 @@
         @endif
     </div>
 </div>
+
+{{-- Embedded Meta & QR SVGs for this booking --}}
+<div id="booking-meta-{{ $booking->id }}" class="hidden"
+    data-id="{{ $booking->id }}"
+    data-reference="{{ $booking->booking_reference }}"
+    data-customer="{{ $booking->contact->full_name }}"
+    data-phone="{{ $booking->contact->phone }}"
+    data-amount="₹{{ number_format($booking->total_amount_paise / 100, 2) }}"
+    data-whatsapp-url="{{ $booking->whatsapp_ticket_url ?? '' }}"
+    data-whatsapp-text="{{ $booking->whatsapp_ticket_text ?? '' }}"
+    data-is-donation="{{ $booking->is_donation ? '1' : '0' }}"
+    data-tickets-count="{{ $booking->tickets->count() }}">
+    @foreach ($booking->tickets as $tIdx => $t)
+        <div class="ticket-meta"
+            data-ticket-id="{{ $t->id }}"
+            data-ticket-number="{{ $t->ticket_number }}"
+            data-attendee="{{ $t->attendee_name }}"
+            data-category="{{ $t->category->name ?? 'Tier Pass' }}"
+            data-qr-uuid="{{ $t->qr_uuid }}"
+            data-download-url="{{ $t->download_url ?? '' }}"
+            data-qr-download-url="{{ $t->qr_download_url ?? '' }}">
+            <div id="svg-holder-{{ $booking->id }}-{{ $tIdx }}">
+                {!! $t->qr_svg ?? '' !!}
+            </div>
+        </div>
+    @endforeach
+</div>
+
+<!-- WhatsApp Ticket Dispatch Modal -->
+<div id="whatsappDispatchModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#0e1424] border border-slate-700 rounded-3xl max-w-xl w-full p-6 shadow-2xl relative space-y-5 animate-scale-up">
+        <!-- Modal Header -->
+        <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+            <div class="space-y-1">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>WhatsApp QR Ticket Dispatch</span>
+                </div>
+                <h3 id="modalCustomerTitle" class="text-lg font-bold text-slate-100 font-serif-display">{{ $booking->contact->full_name }} ({{ $booking->booking_reference }})</h3>
+                <p id="modalSubtitle" class="text-xs text-slate-400">Total: ₹{{ number_format($booking->total_amount_paise / 100, 2) }} &bull; Phone: {{ $booking->contact->phone }}</p>
+            </div>
+            <button type="button" onclick="closeWhatsAppModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-100 flex items-center justify-center text-sm font-bold transition">
+                &times;
+            </button>
+        </div>
+
+        <!-- Ticket Switcher Tabs (if booking has multiple tickets) -->
+        <div id="modalTicketTabs" class="flex flex-wrap gap-2 hidden">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Active Ticket QR Preview Badge -->
+        <div class="p-5 rounded-2xl bg-white text-slate-900 shadow-xl border border-slate-200 text-center space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2 text-left">
+                <div>
+                    <div class="text-[10px] font-bold uppercase tracking-widest text-amber-600">Joygivers Presents</div>
+                    <div class="text-base font-black text-slate-950 font-serif-display">Raag-E-Ishq</div>
+                </div>
+                <div id="modalCategoryBadge" class="px-2.5 py-1 rounded-full bg-slate-900 text-white font-bold text-[11px]">
+                    Tier Pass
+                </div>
+            </div>
+
+            <div class="py-1">
+                <div id="modalAttendeeName" class="font-extrabold text-slate-900 text-base leading-tight">Customer Name</div>
+                <div id="modalTicketNumber" class="font-mono text-xs text-slate-500 font-bold mt-0.5">TKT-XXXX-XXXX</div>
+            </div>
+
+            <!-- Crisp QR Display -->
+            <div class="flex justify-center my-2">
+                <div id="modalQrDisplay" class="w-52 h-52 bg-white p-2 rounded-2xl border-2 border-slate-200 shadow-inner flex items-center justify-center [&>svg]:w-full [&>svg]:h-full">
+                    <!-- SVG injected here -->
+                </div>
+            </div>
+
+            <div class="text-[11px] font-semibold text-slate-600">
+                Scan at Chavara Hall gate entrance for instant check-in
+            </div>
+            <div class="text-[10px] text-amber-800 font-bold italic">
+                100% Proceeds Dedicated to Girl Education
+            </div>
+        </div>
+
+        <!-- Instructions Banner -->
+        <div class="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 text-xs text-slate-200 space-y-1">
+            <div class="flex items-center gap-1.5 font-bold text-emerald-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>How to send QR Ticket on WhatsApp:</span>
+            </div>
+            <div class="text-[11px] text-slate-300 pl-5 space-y-0.5">
+                <div>1. Click <strong>"Open WhatsApp Chat"</strong> (chat opens in a new tab with pre-filled message &amp; links).</div>
+                <div>2. Simply press <strong>Ctrl + V</strong> in WhatsApp to paste and attach the QR ticket image!</div>
+            </div>
+        </div>
+
+        <!-- Primary Action Buttons -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <!-- 1. Open WhatsApp (wa.me) & Auto-Copy QR -->
+            <button type="button" id="modalOpenWhatsAppBtn"
+                class="py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/25">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                <span>Open WhatsApp Chat</span>
+            </button>
+
+            <!-- 2. Copy QR Image as PNG to Clipboard -->
+            <button type="button" id="modalCopyQrBtn"
+                class="py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 text-purple-200 font-extrabold text-xs flex items-center justify-center gap-2 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                <span>Copy QR Ticket (Ctrl+V)</span>
+            </button>
+
+            <!-- 3. Download QR Image (PNG) -->
+            <button type="button" id="modalDownloadPngBtn"
+                class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Download QR Image (PNG)</span>
+            </button>
+
+            <!-- 4. Copy Text Message -->
+            <button type="button" id="modalCopyTextBtn"
+                class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Copy Message Text</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Toast Notification -->
+<div id="qrToast" class="fixed bottom-6 right-6 z-50 hidden p-4 rounded-2xl bg-slate-900 border-2 border-emerald-500 text-slate-100 text-xs font-bold shadow-2xl flex items-center gap-3 transition transform max-w-sm">
+    <div class="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">✓</div>
+    <div id="qrToastMessage">Action completed!</div>
+</div>
+
+<script>
+let currentActiveBooking = null;
+let currentActiveTicketIdx = 0;
+
+function showToast(message, duration = 3500) {
+    const toast = document.getElementById('qrToast');
+    const msg = document.getElementById('qrToastMessage');
+    if (!toast || !msg) return;
+    msg.textContent = message;
+    toast.classList.remove('hidden');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.classList.add('hidden');
+    }, duration);
+}
+
+function getBookingMetadata(bookingId) {
+    const el = document.getElementById('booking-meta-' + bookingId);
+    if (!el) return null;
+
+    const tickets = [];
+    el.querySelectorAll('.ticket-meta').forEach((tEl, idx) => {
+        const svgHolder = document.getElementById(`svg-holder-${bookingId}-${idx}`);
+        tickets.push({
+            id: tEl.dataset.ticketId,
+            number: tEl.dataset.ticketNumber,
+            attendee: tEl.dataset.attendee,
+            category: tEl.dataset.category,
+            qrUuid: tEl.dataset.qrUuid,
+            downloadUrl: tEl.dataset.downloadUrl,
+            qrDownloadUrl: tEl.dataset.qrDownloadUrl,
+            svg: svgHolder ? svgHolder.querySelector('svg') : null,
+        });
+    });
+
+    return {
+        id: bookingId,
+        reference: el.dataset.reference,
+        customer: el.dataset.customer,
+        phone: el.dataset.phone,
+        amount: el.dataset.amount,
+        whatsappUrl: el.dataset.whatsappUrl,
+        whatsappText: el.dataset.whatsappText,
+        isDonation: el.dataset.isDonation === '1',
+        tickets: tickets,
+    };
+}
+
+function renderTicketCanvas(svgEl, attendeeName, ref, categoryName, ticketNum) {
+    return new Promise((resolve, reject) => {
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 720;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, 110);
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText('JOYGIVERS PRESENTS', 32, 38);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 28px sans-serif';
+            ctx.fillText('Raag-E-Ishq', 32, 74);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('17 Dec 2026 • 7:00 PM • Chavara Hall, Kochi', 32, 96);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(24, 126, canvas.width - 48, 70);
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(24, 126, canvas.width - 48, 70);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('ADMITTEE / CATEGORY', 38, 148);
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 17px sans-serif';
+            ctx.fillText(attendeeName || 'Guest Admission', 38, 175);
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(categoryName || 'Admit 1', canvas.width - 38, 175);
+            ctx.textAlign = 'left';
+
+            if (!svgEl) return resolve(canvas);
+
+            const svgString = new XMLSerializer().serializeToString(svgEl);
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const URL = window.URL || window.webkitURL || window;
+            const blobUrl = URL.createObjectURL(svgBlob);
+            const img = new Image();
+
+            img.onload = () => {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(110, 210, 420, 420);
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.strokeRect(110, 210, 420, 420);
+
+                ctx.drawImage(img, 130, 230, 380, 380);
+                URL.revokeObjectURL(blobUrl);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 13px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText((ticketNum || ref || ''), canvas.width / 2, 652);
+
+                ctx.fillStyle = '#64748b';
+                ctx.font = '11px sans-serif';
+                ctx.fillText('Present this QR at Chavara Hall entrance for instant scan check-in', canvas.width / 2, 676);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'italic 10px sans-serif';
+                ctx.fillText('100% Proceeds Dedicated to Girl Education & Welfare', canvas.width / 2, 696);
+
+                ctx.textAlign = 'left';
+                resolve(canvas);
+            };
+            img.onerror = () => resolve(canvas);
+            img.src = blobUrl;
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+function copyCanvasToClipboard(canvas) {
+    return new Promise((resolve, reject) => {
+        canvas.toBlob(async (blob) => {
+            if (!blob) return reject(new Error('No blob'));
+            try {
+                if (navigator.clipboard && navigator.clipboard.write) {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                    resolve(true);
+                } else {
+                    reject(new Error('Clipboard API unavailable'));
+                }
+            } catch (err) {
+                reject(err);
+            }
+        }, 'image/png');
+    });
+}
+
+async function quickSendWhatsAppWithQr() {
+    const bookingId = {{ $booking->id }};
+    const data = getBookingMetadata(bookingId);
+    if (!data) return;
+
+    if (data.tickets && data.tickets.length > 0 && data.tickets[0].svg) {
+        try {
+            const ticket = data.tickets[0];
+            const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, data.reference, ticket.category, ticket.number);
+            await copyCanvasToClipboard(canvas);
+            showToast('📋 QR Ticket Image copied to clipboard! In WhatsApp, press Ctrl+V to attach & send!');
+        } catch (e) {
+            showToast('Opening WhatsApp with ticket details & links!');
+        }
+    }
+
+    if (data.whatsappUrl) {
+        window.open(data.whatsappUrl, '_blank');
+    }
+}
+
+async function copyTicketCardQr(idx) {
+    const bookingId = {{ $booking->id }};
+    const data = getBookingMetadata(bookingId);
+    if (!data || !data.tickets[idx] || !data.tickets[idx].svg) return;
+
+    try {
+        const ticket = data.tickets[idx];
+        const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, data.reference, ticket.category, ticket.number);
+        await copyCanvasToClipboard(canvas);
+        showToast(`✓ QR Ticket Image #${idx + 1} copied! Press Ctrl+V in WhatsApp to send image.`);
+    } catch (e) {
+        showToast('Clipboard copy failed. Please use "Download QR".');
+    }
+}
+
+function openWhatsAppModal() {
+    const bookingId = {{ $booking->id }};
+    const data = getBookingMetadata(bookingId);
+    if (!data) return;
+
+    currentActiveBooking = data;
+    currentActiveTicketIdx = 0;
+
+    const modal = document.getElementById('whatsappDispatchModal');
+
+    const tabsContainer = document.getElementById('modalTicketTabs');
+    tabsContainer.innerHTML = '';
+    if (data.tickets.length > 1) {
+        tabsContainer.classList.remove('hidden');
+        data.tickets.forEach((t, idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `px-3 py-1 rounded-xl text-xs font-bold transition ${idx === 0 ? 'bg-amber-500 text-slate-950 shadow' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`;
+            btn.textContent = `Pass #${idx + 1} (${t.category})`;
+            btn.onclick = () => selectModalTicket(idx);
+            tabsContainer.appendChild(btn);
+        });
+    } else {
+        tabsContainer.classList.add('hidden');
+    }
+
+    selectModalTicket(0);
+    modal.classList.remove('hidden');
+}
+
+function selectModalTicket(idx) {
+    if (!currentActiveBooking || !currentActiveBooking.tickets[idx]) return;
+    currentActiveTicketIdx = idx;
+    const ticket = currentActiveBooking.tickets[idx];
+
+    const tabsContainer = document.getElementById('modalTicketTabs');
+    tabsContainer.querySelectorAll('button').forEach((b, i) => {
+        if (i === idx) {
+            b.className = 'px-3 py-1 rounded-xl text-xs font-bold transition bg-amber-500 text-slate-950 shadow';
+        } else {
+            b.className = 'px-3 py-1 rounded-xl text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700';
+        }
+    });
+
+    document.getElementById('modalAttendeeName').textContent = ticket.attendee || currentActiveBooking.customer;
+    document.getElementById('modalTicketNumber').textContent = ticket.number || currentActiveBooking.reference;
+    document.getElementById('modalCategoryBadge').textContent = ticket.category || 'Admission';
+
+    const qrDisplay = document.getElementById('modalQrDisplay');
+    qrDisplay.innerHTML = '';
+    if (ticket.svg) {
+        qrDisplay.appendChild(ticket.svg.cloneNode(true));
+    }
+
+    const openBtn = document.getElementById('modalOpenWhatsAppBtn');
+    openBtn.onclick = async () => {
+        if (ticket.svg) {
+            try {
+                const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, currentActiveBooking.reference, ticket.category, ticket.number);
+                await copyCanvasToClipboard(canvas);
+                showToast('📋 QR Ticket Image copied to clipboard! In WhatsApp, press Ctrl+V to attach & send!');
+            } catch (e) {
+                showToast('Opening WhatsApp with ticket details & links!');
+            }
+        }
+        if (currentActiveBooking.whatsappUrl) {
+            window.open(currentActiveBooking.whatsappUrl, '_blank');
+        }
+    };
+
+    const copyBtn = document.getElementById('modalCopyQrBtn');
+    copyBtn.onclick = async () => {
+        if (!ticket.svg) return;
+        try {
+            const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, currentActiveBooking.reference, ticket.category, ticket.number);
+            await copyCanvasToClipboard(canvas);
+            showToast('✓ QR Ticket Image copied! Press Ctrl+V in WhatsApp to send image.');
+        } catch (e) {
+            showToast('Clipboard copy failed.');
+        }
+    };
+
+    const downloadBtn = document.getElementById('modalDownloadPngBtn');
+    downloadBtn.onclick = async () => {
+        if (!ticket.svg) return;
+        try {
+            const canvas = await renderTicketCanvas(ticket.svg, ticket.attendee, currentActiveBooking.reference, ticket.category, ticket.number);
+            const a = document.createElement('a');
+            a.download = `Raag-E-Ishq-${ticket.number || 'Pass'}-QR.png`;
+            a.href = canvas.toDataURL('image/png');
+            a.click();
+            showToast('✓ High-resolution QR Ticket downloaded as PNG!');
+        } catch (e) {
+            showToast('Download failed.');
+        }
+    };
+
+    const copyTextBtn = document.getElementById('modalCopyTextBtn');
+    copyTextBtn.onclick = async () => {
+        try {
+            await navigator.clipboard.writeText(currentActiveBooking.whatsappText || '');
+            showToast('✓ WhatsApp message text copied to clipboard!');
+        } catch (e) {
+            showToast('Text copy failed.');
+        }
+    };
+}
+
+function closeWhatsAppModal() {
+    const modal = document.getElementById('whatsappDispatchModal');
+    if (modal) modal.classList.add('hidden');
+}
+</script>
 @endsection

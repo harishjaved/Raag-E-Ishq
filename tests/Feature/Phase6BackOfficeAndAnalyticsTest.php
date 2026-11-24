@@ -313,4 +313,35 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $this->assertEquals(Booking::STATUS_CONFIRMED, $b->status);
         $this->assertEquals(2, $b->tickets()->count());
     }
+
+    public function test_whatsapp_pass_message_contains_structured_event_details_and_direct_qr_links(): void
+    {
+        $b = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Kavya Madhavan',
+            'email' => 'kavya@test.com',
+            'phone' => '9847333444',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 1,
+            'privacy_consent' => true,
+        ]);
+        $b->update(['status' => Booking::STATUS_CONFIRMED]);
+        $this->ticketService->issueTicketsForBooking($b);
+
+        $msg = $this->ticketService->buildWhatsAppTicketMessage($b);
+        $this->assertStringContainsString('Raag-E-Ishq', $msg);
+        $this->assertStringContainsString('Chavara Hall', $msg);
+        $this->assertStringContainsString('Kavya Madhavan', $msg);
+        $this->assertStringContainsString($b->booking_reference, $msg);
+        $this->assertStringContainsString('Pass #1', $msg);
+        $this->assertStringContainsString('17th December 2026', $msg);
+
+        $url = $this->ticketService->buildWhatsAppUrl($b->contact->phone, $msg);
+        $this->assertStringStartsWith('https://wa.me/919847333444?text=', $url);
+
+        // Also check bookings desk index returns the page with modal markup and button
+        $response = $this->actingAs($this->eventManager)->get('/admin/bookings');
+        $response->assertStatus(200);
+        $response->assertSee('whatsappDispatchModal');
+        $response->assertSee('WhatsApp Pass');
+    }
 }
