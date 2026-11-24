@@ -409,7 +409,7 @@
                 A grand musical evening of timeless Hindi melodies at Chavara Hall, Kochi. Organized for girl education and welfare.
             </p>
             <p class="text-[11px] dark:text-slate-500 text-slate-500">
-                17th December &bull; 7:00 PM &bull; Total Hall Capacity: 450 Seats &bull; All verified bookings strictly non-refundable.
+                17th January &bull; 7:00 PM &bull; Total Hall Capacity: 450 Seats &bull; All verified bookings strictly non-refundable.
             </p>
         </div>
     </footer>

@@ -14,7 +14,13 @@ class ConfirmationController extends Controller
     {
         $booking = Booking::with(['items.category', 'contact', 'tickets.category'])
             ->where('booking_reference', $reference)
-            ->firstOrFail();
+            ->first();
+
+        if (!$booking) {
+            return redirect()->route('home')->withErrors([
+                'quantity' => "Booking reference '{$reference}' not found. Please place an enquiry below or contact support."
+            ]);
+        }
 
         if ($booking->status !== Booking::STATUS_CONFIRMED) {
             return redirect()->route('booking.payment', ['reference' => $reference]);

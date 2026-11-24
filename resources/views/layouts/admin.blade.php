@@ -204,7 +204,7 @@
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span class="font-semibold">Shared Pool: 450 Seats</span>
                         <span class="text-slate-600">&bull;</span>
-                        <span class="text-amber-400 font-mono font-bold">17 Dec, 7PM</span>
+                        <span class="text-amber-400 font-mono font-bold">17 Jan, 7PM</span>
                     </div>
 
                     <!-- Public Site Shortcut -->

@@ -590,7 +590,7 @@ function renderTicketCanvas(svgEl, attendeeName, ref, categoryName, ticketNum) {
 
             ctx.fillStyle = '#94a3b8';
             ctx.font = '12px sans-serif';
-            ctx.fillText('17 Dec 2026 • 7:00 PM • Chavara Hall, Kochi', 32, 96);
+            ctx.fillText('17 Jan 2027 • 7:00 PM • Chavara Hall, Kochi', 32, 96);
 
             // 3. Attendee & Details Card
             ctx.fillStyle = '#f8fafc';

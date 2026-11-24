@@ -3,6 +3,7 @@
 // Ensure HTTPS is strictly recognized in Vercel serverless environment
 $_SERVER['HTTPS'] = 'on';
 $_SERVER['SERVER_PORT'] = 443;
+$_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
 
 // Vercel Serverless Function entry point for Laravel
 // Create writable directories in /tmp since Vercel's root filesystem is read-only
@@ -20,11 +21,13 @@ foreach ($tmpDirs as $dir) {
     }
 }
 
-// Copy pre-seeded SQLite database to /tmp if it doesn't already exist
+// Copy pre-seeded SQLite database to /tmp if it doesn't already exist or is empty
 $srcDb = __DIR__ . '/../database/database.sqlite';
 $dstDb = '/tmp/database.sqlite';
-if (!file_exists($dstDb) && file_exists($srcDb)) {
+if ((!file_exists($dstDb) || filesize($dstDb) === 0) && file_exists($srcDb)) {
     @copy($srcDb, $dstDb);
+} elseif (!file_exists($dstDb)) {
+    @touch($dstDb);
 }
 
 require __DIR__ . '/../public/index.php';

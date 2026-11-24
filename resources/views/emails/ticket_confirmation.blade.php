@@ -7,7 +7,7 @@
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background-color: #0c2238; color: #fff; padding: 20px; border-radius: 8px; text-align: center;">
         <h1 style="color: #e5a93b; margin: 0; font-size: 24px;">Raag-E-Ishq</h1>
-        <p style="margin: 5px 0 0; font-size: 14px;">Joygivers Presents &bull; 17th December, 7:00 PM &bull; For Girl Education</p>
+        <p style="margin: 5px 0 0; font-size: 14px;">Joygivers Presents &bull; 17th January, 7:00 PM &bull; For Girl Education</p>
     </div>
 
     <div style="padding: 20px 0;">

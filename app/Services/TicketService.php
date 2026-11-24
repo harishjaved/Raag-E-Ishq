@@ -312,7 +312,7 @@ class TicketService
             "",
             "📋 *Booking Ref:* " . $booking->booking_reference,
             "💺 *Tickets:* " . $ticketSummary,
-            "📅 *Date & Time:* Tuesday, 17th December 2026 • 7:00 PM",
+            "📅 *Date & Time:* Sunday, 17th January 2027 • 7:00 PM",
             "📍 *Venue:* Chavara Hall, Near South Railway Station, Kochi",
             "",
             "📲 *Open Your QR Ticket Pass:*",

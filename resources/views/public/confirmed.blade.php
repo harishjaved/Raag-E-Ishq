@@ -109,7 +109,7 @@
                 <div class="print-only-header text-center pb-3 border-b-2 border-slate-900 space-y-0.5">
                     <div class="text-[11px] font-bold uppercase tracking-widest text-slate-800">Joygivers Presents</div>
                     <div class="text-xl font-extrabold text-slate-950 font-serif-display">RAAG-E-ISHQ — OFFICIAL ADMISSION PASS</div>
-                    <div class="text-[10px] text-slate-700">A Musical Evening For Girl Education &bull; 17th December, 7:00 PM &bull; Chavara Hall, Kochi</div>
+                    <div class="text-[10px] text-slate-700">A Musical Evening For Girl Education &bull; 17th January, 7:00 PM &bull; Chavara Hall, Kochi</div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center gap-6 justify-between">

@@ -20,8 +20,8 @@ class AllocationController extends Controller
 {
     public function index(): View
     {
-        $event = Event::with('categories')->where('slug', 'sagar-kinare-2026')->firstOrFail();
-        $allocations = TicketAllocation::with(['category', 'createdBy', 'booking.tickets'])->latest()->get();
+        $event = Event::with('categories')->where('slug', 'sagar-kinare-2026')->first() ?? Event::with('categories')->firstOrFail();
+        $allocations = TicketAllocation::with(['category', 'createdBy', 'booking.tickets'])->latest()->paginate(20);
 
         return view('admin.allocations.index', [
             'event' => $event,

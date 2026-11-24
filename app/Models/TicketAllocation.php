@@ -44,6 +44,11 @@ class TicketAllocation extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    public function allocatedBy(): BelongsTo
+    {
+        return $this->createdBy();
+    }
+
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

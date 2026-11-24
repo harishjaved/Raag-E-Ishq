@@ -67,7 +67,7 @@
             <div class="text-center space-y-1 pb-4 border-b border-slate-800">
                 <div class="text-xs uppercase tracking-widest text-amber-400 font-bold">Joygivers Presents</div>
                 <h1 class="text-2xl font-bold font-serif-display text-slate-100">Raag-E-Ishq</h1>
-                <p class="text-xs text-slate-400">Official Event Admission Pass &bull; 17th December, 7:00 PM</p>
+                <p class="text-xs text-slate-400">Official Event Admission Pass &bull; 17th January, 7:00 PM</p>
             </div>
 
             <!-- Admission Details (NO PRIVATE BILLING DATA) -->

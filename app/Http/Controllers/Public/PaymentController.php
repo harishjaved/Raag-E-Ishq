@@ -18,7 +18,13 @@ class PaymentController extends Controller
 
         $booking = Booking::with(['items.category', 'contact'])
             ->where('booking_reference', $reference)
-            ->firstOrFail();
+            ->first();
+
+        if (!$booking) {
+            return redirect()->route('home')->withErrors([
+                'quantity' => "Booking reference '{$reference}' not found or has expired. Please select your seats below to place an enquiry."
+            ]);
+        }
 
         if ($booking->status === Booking::STATUS_CONFIRMED) {
             return redirect()->route('booking.confirmed', ['reference' => $reference]);

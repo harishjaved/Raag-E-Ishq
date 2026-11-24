@@ -72,10 +72,10 @@
                 <div class="text-xs font-bold dark:text-slate-300 text-slate-700">Near South Rly Stn, Kochi</div>
             </div>
 
-            <!-- Date & Time (17th December, 7pm) -->
+            <!-- Date & Time (17th January, 7pm) -->
             <div class="p-4 rounded-2xl border transition-all dark:bg-slate-900/90 dark:border-slate-800 light:bg-white light:border-slate-300 shadow-md">
                 <div class="text-xs uppercase font-extrabold tracking-wider text-amber-600 dark:text-amber-400">Date &amp; Time</div>
-                <div class="text-base font-extrabold dark:text-slate-100 text-slate-900 mt-1">17th December</div>
+                <div class="text-base font-extrabold dark:text-slate-100 text-slate-900 mt-1">17th January</div>
                 <div class="text-xs font-bold dark:text-amber-300 text-amber-700">7:00 PM IST Evening</div>
             </div>
 
@@ -203,7 +203,7 @@
             </p>
         </div>
 
-        <form action="{{ route('register.store') }}" method="POST" class="space-y-6">
+        <form action="/register" method="POST" class="space-y-6">
             @csrf
             <input type="hidden" name="utm_source" value="{{ $utmParams['utm_source'] }}">
             <input type="hidden" name="utm_medium" value="{{ $utmParams['utm_medium'] }}">

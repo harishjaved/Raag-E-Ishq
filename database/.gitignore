@@ -1,1 +1,2 @@
-*.sqlite*
+# Keep database.sqlite in git so serverless environments like Vercel have seed data
+!database.sqlite

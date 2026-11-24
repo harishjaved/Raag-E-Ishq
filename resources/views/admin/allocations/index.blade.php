@@ -89,7 +89,9 @@
                         <td class="py-3.5 px-3 font-bold text-amber-400">{{ $allocation->category->name }}</td>
                         <td class="py-3.5 px-3">
                             <div class="font-bold text-slate-100">{{ $allocation->beneficiary_name }}</div>
-                            <div class="text-[11px] text-slate-400">{{ $allocation->beneficiary_email }}</div>
+                            @if(!empty($allocation->notes))
+                                <div class="text-[11px] text-slate-400">{{ $allocation->notes }}</div>
+                            @endif
                         </td>
                         <td class="py-3.5 px-3">
                             <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[10px] font-bold">
@@ -97,7 +99,7 @@
                             </span>
                         </td>
                         <td class="py-3.5 px-3 font-mono font-bold text-slate-100">{{ $allocation->quantity }} seats</td>
-                        <td class="py-3.5 px-3 text-right text-slate-400 font-sans">{{ $allocation->allocatedBy->name }}</td>
+                        <td class="py-3.5 px-3 text-right text-slate-400 font-sans">{{ $allocation->createdBy?->name ?? $allocation->allocatedBy?->name ?? 'Admin Team' }}</td>
                     </tr>
                 @empty
                     <tr>
@@ -108,7 +110,9 @@
         </table>
 
         <div class="mt-4 pt-4 border-t border-slate-800/60">
-            {{ $allocations->links() }}
+            @if(method_exists($allocations, 'links'))
+                {{ $allocations->links() }}
+            @endif
         </div>
     </div>
 </div>

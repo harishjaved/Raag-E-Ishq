@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public Registration & Event
 Route::get('/', [EventController::class, 'show'])->name('home');
+Route::get('/register', fn () => redirect()->route('home'))->name('register.show');
 Route::post('/register', [RegistrationController::class, 'store'])->name('register.store')->middleware('throttle:30,1');
 
 // Booking Payment & Polling

@@ -333,7 +333,7 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $this->assertStringContainsString('Kavya Madhavan', $msg);
         $this->assertStringContainsString($b->booking_reference, $msg);
         $this->assertStringContainsString('Pass #1', $msg);
-        $this->assertStringContainsString('17th December 2026', $msg);
+        $this->assertStringContainsString('17th January 2027', $msg);
 
         $url = $this->ticketService->buildWhatsAppUrl($b->contact->phone, $msg);
         $this->assertStringStartsWith('https://wa.me/919847333444?text=', $url);
