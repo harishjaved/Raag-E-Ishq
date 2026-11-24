@@ -73,10 +73,12 @@
         }
 
         html.light .theme-text-sub {
-            color: #475569 !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
         }
         html.dark .theme-text-sub {
-            color: #94a3b8 !important;
+            color: #e2e8f0 !important;
+            font-weight: 700 !important;
         }
 
         html.light .theme-input {
