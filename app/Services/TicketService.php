@@ -359,7 +359,7 @@ class TicketService
         if (strlen($phoneClean) === 10) {
             $phoneClean = '91' . $phoneClean;
         }
-        return "https://wa.me/" . $phoneClean . "?text=" . urlencode($message);
+        return "https://wa.me/" . $phoneClean . "?text=" . rawurlencode($message);
     }
 
     protected function generateUniqueTicketNumber(): string
