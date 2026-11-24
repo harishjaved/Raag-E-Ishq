@@ -79,7 +79,7 @@
             @if ($booking->is_attending)
                 Your admission tickets have been generated. Present each unique QR code at Chavara Hall gate check-in.
             @else
-                Thank you for your generous support of Joygivers' initiative for child girls education! Your contribution has been verified.
+                Thank you for your generous support of Joygivers' initiative for girl education! Your contribution has been verified.
             @endif
         </p>
         <div class="pt-2 text-xs text-slate-400">
@@ -107,7 +107,7 @@
                 <div class="print-only-header text-center pb-3 border-b-2 border-slate-900 space-y-0.5">
                     <div class="text-[11px] font-bold uppercase tracking-widest text-slate-800">Joygivers Presents</div>
                     <div class="text-xl font-extrabold text-slate-950 font-serif-display">RAAG-E-ISHQ — OFFICIAL ADMISSION PASS</div>
-                    <div class="text-[10px] text-slate-700">A Musical Evening For Child Girls Education &bull; 17th December, 7:00 PM &bull; Chavara Hall, Kochi</div>
+                    <div class="text-[10px] text-slate-700">A Musical Evening For Girl Education &bull; 17th December, 7:00 PM &bull; Chavara Hall, Kochi</div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center gap-6 justify-between">
@@ -190,7 +190,7 @@
         <div class="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400 space-y-1">
             <div class="font-semibold text-slate-200">Joygivers Charitable Initiative Notice</div>
             <p>
-                Your registration has been recorded in our official patron ledger. Since you indicated that you will not be attending in person, no hall seating has been withheld, and your entire contribution directly fuels our initiatives for child girls education.
+                Your registration has been recorded in our official patron ledger. Since you indicated that you will not be attending in person, no hall seating has been withheld, and your entire contribution directly fuels our initiatives for girl education.
             </p>
         </div>
     </div>
@@ -206,7 +206,7 @@
         </div>
 
         <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <a href="https://wa.me/919876543210?text={{ urlencode('Hi Joygivers, I have an enquiry regarding my confirmed booking ' . $booking->booking_reference) }}"
+            <a href="https://wa.me/917736606506?text={{ urlencode('Hi Joygivers, I have an enquiry regarding my confirmed booking ' . $booking->booking_reference) }}"
                 target="_blank"
                 class="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2 transition">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>

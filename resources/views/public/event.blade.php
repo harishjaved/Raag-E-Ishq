@@ -21,7 +21,7 @@
                 Raag-E-Ishq
             </h1>
             <p class="text-lg sm:text-2xl dark:text-slate-100 text-slate-900 max-w-2xl mx-auto font-bold leading-relaxed drop-shadow-sm">
-                A celebration of timeless Hindi melodies in Kochi, for child girls education.
+                A celebration of timeless Hindi melodies in Kochi, for girl education.
             </p>
         </div>
 
@@ -82,7 +82,7 @@
             <!-- Noble Cause -->
             <div class="p-4 rounded-2xl border transition-all dark:bg-slate-900/90 dark:border-slate-800 light:bg-white light:border-slate-300 shadow-md">
                 <div class="text-xs uppercase font-extrabold tracking-wider text-purple-600 dark:text-purple-400">Noble Cause</div>
-                <div class="text-base font-extrabold dark:text-slate-100 text-slate-900 mt-1">For Child Girls Education</div>
+                <div class="text-base font-extrabold dark:text-slate-100 text-slate-900 mt-1">For Girl Education</div>
                 <div class="text-xs font-bold dark:text-slate-300 text-slate-700">Welfare &amp; Development</div>
             </div>
 
@@ -148,7 +148,7 @@
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                <span class="text-slate-900 dark:text-slate-100 font-bold text-xs sm:text-sm">100% Proceeds For Child Girls Education</span>
+                                <span class="text-slate-900 dark:text-slate-100 font-bold text-xs sm:text-sm">100% Proceeds For Girl Education</span>
                             </li>
                         </ul>
                     </div>
@@ -166,7 +166,7 @@
         </div>
     </section>
 
-    <!-- Cause Feature Spotlight: For Child Girls Education -->
+    <!-- Cause Feature Spotlight: For Girl Education -->
     <section class="p-8 sm:p-10 rounded-3xl border-2 transition-all dark:bg-gradient-to-r dark:from-slate-900 dark:via-purple-950/30 dark:to-slate-900 dark:border-slate-800 light:bg-gradient-to-r light:from-rose-50 light:via-purple-50 light:to-amber-50 light:border-rose-300 shadow-xl">
         <div class="flex flex-col md:flex-row items-center gap-6 justify-between">
             <div class="space-y-3 max-w-xl text-center md:text-left">
@@ -174,13 +174,13 @@
                     Our Core Mission
                 </div>
                 <h3 class="text-2xl sm:text-3xl font-extrabold font-serif-display dark:text-slate-100 text-slate-950">
-                    Every Melodic Note Sings For Child Girls Education
+                    Every Melodic Note Sings For Girl Education
                 </h3>
                 <p class="text-sm sm:text-base dark:text-slate-200 text-slate-800 font-bold leading-relaxed">
-                    Joygivers believes that every child girl deserves access to quality education, safe shelter, and bright opportunities. All proceeds from <strong>Raag-E-Ishq</strong> are dedicated to our girl-child welfare programmes.
+                    Joygivers believes that every girl deserves access to quality education, safe shelter, and bright opportunities. All proceeds from <strong>Raag-E-Ishq</strong> are dedicated to girl education and welfare programmes.
                 </p>
                 <p class="text-xs sm:text-sm dark:text-amber-300 text-amber-900 font-bold italic">
-                    Unable to attend in person? You can still book your ticket and select "No" for in-person attendance — 100% of your amount will directly fund child girls' education, and you will receive an Official Supporter Receipt.
+                    Unable to attend in person? You can still book your ticket and select "No" for in-person attendance — 100% of your amount will directly fund girl education, and you will receive an Official Supporter Receipt.
                 </p>
             </div>
             <div class="flex-shrink-0 text-center">
@@ -270,7 +270,7 @@
                         <input type="radio" name="attending" value="no" {{ old('attending') === 'no' ? 'checked' : '' }} class="w-4 h-4 text-amber-500 focus:ring-0">
                         <div class="text-xs">
                             <span class="font-black dark:text-slate-100 text-slate-950 text-sm block">No (Charitable Supporter)</span>
-                            <span class="text-xs font-bold dark:text-slate-300 text-slate-700">Unable to attend (100% for child girls education)</span>
+                            <span class="text-xs font-bold dark:text-slate-300 text-slate-700">Unable to attend (100% for girl education)</span>
                         </div>
                     </label>
                 </div>
@@ -305,7 +305,7 @@
                         <span>Strict No-Cancellation &amp; Non-Refundable Policy</span>
                     </div>
                     <p class="text-xs font-bold dark:text-slate-200 text-slate-900 leading-relaxed">
-                        All ticket bookings and payments are strictly final and non-refundable once confirmed, as all proceeds directly support child girls' education and welfare.
+                        All ticket bookings and payments are strictly final and non-refundable once confirmed, as all proceeds directly support girl education and welfare.
                     </p>
                 </div>
 

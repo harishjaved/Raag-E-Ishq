@@ -56,7 +56,7 @@
 
             <div class="space-y-1">
                 <label class="text-[11px] font-semibold text-slate-400">Beneficiary Phone (Optional)</label>
-                <input type="text" name="beneficiary_phone" placeholder="9876543210"
+                <input type="text" name="beneficiary_phone" placeholder="7736606506"
                     class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
             </div>
 

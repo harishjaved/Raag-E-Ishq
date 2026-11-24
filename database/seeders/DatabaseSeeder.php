@@ -62,7 +62,7 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'sagar-kinare-2026'],
             [
                 'name' => 'Raag-E-Ishq',
-                'description' => 'A celebration of timeless Hindi melodies in Kochi, for child girls education.',
+                'description' => 'A celebration of timeless Hindi melodies in Kochi, for girl education.',
                 'venue_name' => 'Chavara Hall',
                 'venue_address' => 'Chavara Cultural Centre, Near South Railway Station, Kochi, Kerala',
                 'event_start_at' => Carbon::create(2026, 12, 17, 19, 0, 0),
@@ -114,7 +114,7 @@ class DatabaseSeeder extends Seeder
         // 4. Seed Event Settings
         EventSetting::set('hold_duration_minutes', '10', 'Default inventory hold TTL in minutes');
         EventSetting::set('support_email', 'events@joygivers.org', 'Support contact for ticket enquiries');
-        EventSetting::set('support_phone', '+91 98765 43210', 'Support phone line');
+        EventSetting::set('support_phone', '+91 7736606506', 'Support phone line');
         EventSetting::set('razorpay_mode', 'test', 'Gateway mode: test or live');
         EventSetting::set('ticket_hmac_secret', 'sagar_kinare_hmac_production_key_nonce_secret_2026', 'HMAC admission QR signing secret');
     }

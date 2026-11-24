@@ -400,7 +400,7 @@
                 <span class="font-serif-display font-bold text-sm tracking-wide dark:text-slate-200 text-slate-800">Joygivers Presents — Raag-E-Ishq</span>
             </div>
             <p class="text-xs dark:text-slate-400 text-slate-600 max-w-md mx-auto">
-                A grand musical evening of timeless Hindi melodies at Chavara Hall, Kochi. Organized for child girls education and welfare.
+                A grand musical evening of timeless Hindi melodies at Chavara Hall, Kochi. Organized for girl education and welfare.
             </p>
             <p class="text-[11px] dark:text-slate-500 text-slate-500">
                 17th December &bull; 7:00 PM &bull; Total Hall Capacity: 450 Seats &bull; All verified bookings strictly non-refundable.
