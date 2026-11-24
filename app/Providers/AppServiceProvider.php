@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Booking;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (config('app.env') === 'production' || env('APP_ENV') === 'production' || isset($_SERVER['VERCEL'])) {
+            URL::forceScheme('https');
+        }
         // Share live counters with the admin sidebar
         View::composer('layouts.admin', function ($view) {
             if (Schema::hasTable('bookings')) {

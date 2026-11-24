@@ -1,5 +1,9 @@
 <?php
 
+// Ensure HTTPS is strictly recognized in Vercel serverless environment
+$_SERVER['HTTPS'] = 'on';
+$_SERVER['SERVER_PORT'] = 443;
+
 // Vercel Serverless Function entry point for Laravel
 // Create writable directories in /tmp since Vercel's root filesystem is read-only
 $tmpDirs = [
