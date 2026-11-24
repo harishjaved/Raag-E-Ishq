@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Share live counters with the admin sidebar
+        View::composer('layouts.admin', function ($view) {
+            if (Schema::hasTable('bookings')) {
+                $pendingCount = Booking::whereIn('status', [Booking::STATUS_PAYMENT_PENDING, 'PENDING'])->count();
+                $inProcessCount = Booking::where('status', Booking::STATUS_IN_PROCESS)->count();
+                $needsDispatchCount = Booking::whereDoesntHave('tickets')
+                    ->whereIn('status', [Booking::STATUS_CONFIRMED, Booking::STATUS_IN_PROCESS, Booking::STATUS_PAYMENT_PENDING])
+                    ->count();
+
+                $view->with([
+                    'sidebarPendingCount' => $pendingCount,
+                    'sidebarInProcessCount' => $inProcessCount,
+                    'sidebarNeedsDispatchCount' => $needsDispatchCount,
+                ]);
+            }
+        });
     }
 }
