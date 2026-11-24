@@ -90,8 +90,184 @@
             color: #f8fafc !important;
         }
 
+        /* ==========================================================================
+           MUSIC THEME DYNAMIC MOVING BACKGROUND
+           ========================================================================== */
+        .music-bg-container {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+
+        /* 1. Cinematic Moving Image Layer (Ken-Burns Pan & Breathe) */
+        .music-bg-canvas {
+            position: absolute;
+            top: -6%;
+            left: -6%;
+            width: 112%;
+            height: 112%;
+            background-image: url('/images/music-hero-bg.jpg');
+            background-size: cover;
+            background-position: center 20%;
+            background-repeat: no-repeat;
+            animation: musicHeroDrift 28s ease-in-out infinite alternate;
+            will-change: transform;
+        }
+
+        @keyframes musicHeroDrift {
+            0% {
+                transform: scale(1.02) translate3d(0, 0, 0) rotate(0deg);
+            }
+            33% {
+                transform: scale(1.07) translate3d(-1.5%, -1.2%, 0) rotate(0.2deg);
+            }
+            66% {
+                transform: scale(1.04) translate3d(1.2%, -0.8%, 0) rotate(-0.15deg);
+            }
+            100% {
+                transform: scale(1.09) translate3d(-0.8%, -1.5%, 0) rotate(0.1deg);
+            }
+        }
+
+        /* 2. Theme-Adaptive Gradient Veil (Preserves pristine text contrast) */
+        html.dark .music-bg-veil {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 95% 70% at 50% 28%, rgba(8, 11, 18, 0.65) 0%, rgba(8, 11, 18, 0.88) 60%, #080b12 100%),
+                linear-gradient(180deg, rgba(8, 11, 18, 0.72) 0%, rgba(8, 11, 18, 0.45) 30%, rgba(8, 11, 18, 0.88) 75%, #080b12 100%);
+        }
+
+        html.light .music-bg-veil {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 95% 70% at 50% 28%, rgba(255, 255, 255, 0.82) 0%, rgba(248, 250, 252, 0.92) 60%, #f8fafc 100%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.65) 30%, rgba(241, 245, 249, 0.92) 75%, #f8fafc 100%);
+        }
+
+        /* 3. Floating Musical Notes Particles */
+        .music-notes-field {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .music-note {
+            position: absolute;
+            user-select: none;
+            pointer-events: none;
+            font-family: 'Times New Roman', serif;
+            font-weight: bold;
+            animation: floatNote 18s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            will-change: transform, opacity;
+        }
+
+        @keyframes floatNote {
+            0% {
+                transform: translate3d(0, 105vh, 0) rotate(0deg) scale(0.7);
+                opacity: 0;
+            }
+            15% {
+                opacity: var(--note-opacity, 0.35);
+            }
+            50% {
+                transform: translate3d(var(--note-sway, 30px), 50vh, 0) rotate(var(--note-rot, 20deg)) scale(1.1);
+                opacity: var(--note-opacity, 0.5);
+            }
+            85% {
+                opacity: var(--note-opacity, 0.3);
+            }
+            100% {
+                transform: translate3d(calc(var(--note-sway, 30px) * -1), -10vh, 0) rotate(calc(var(--note-rot, 20deg) * 2)) scale(0.85);
+                opacity: 0;
+            }
+        }
+
+        html.dark .music-note {
+            color: #f59e0b;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5), 0 0 20px rgba(225, 29, 72, 0.35);
+        }
+
+        html.light .music-note {
+            color: #e11d48;
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
+        }
+
+        /* 4. Undulating Harmonic Soundwave Ribbons */
+        .music-wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            top: 20%;
+            left: -50%;
+            animation: waveHarmonic 22s ease-in-out infinite alternate;
+            will-change: transform;
+        }
+
+        .music-wave-2 {
+            top: 35%;
+            animation-duration: 26s;
+            animation-delay: -5s;
+        }
+
+        @keyframes waveHarmonic {
+            0% {
+                transform: translate3d(-5%, 0, 0) scaleY(1);
+            }
+            50% {
+                transform: translate3d(5%, 2.5%, 0) scaleY(1.12);
+            }
+            100% {
+                transform: translate3d(-3%, -2%, 0) scaleY(0.95);
+            }
+        }
+
+        /* 5. Audio Frequency Equalizer Bars */
+        .music-bar {
+            display: inline-block;
+            width: 3px;
+            border-radius: 9999px;
+            background: linear-gradient(180deg, #f59e0b, #e11d48, #9333ea);
+            animation: barDance 1.2s ease-in-out infinite alternate;
+            transform-origin: bottom;
+        }
+        .bar-1  { height: 10px; animation-delay: 0.1s; }
+        .bar-2  { height: 20px; animation-delay: 0.35s; }
+        .bar-3  { height: 8px;  animation-delay: 0.5s; }
+        .bar-4  { height: 24px; animation-delay: 0.2s; }
+        .bar-5  { height: 14px; animation-delay: 0.65s; }
+        .bar-6  { height: 28px; animation-delay: 0.4s; }
+        .bar-7  { height: 16px; animation-delay: 0.25s; }
+        .bar-8  { height: 22px; animation-delay: 0.55s; }
+        .bar-9  { height: 9px;  animation-delay: 0.15s; }
+        .bar-10 { height: 26px; animation-delay: 0.3s; }
+        .bar-11 { height: 12px; animation-delay: 0.45s; }
+        .bar-12 { height: 18px; animation-delay: 0.05s; }
+
+        @keyframes barDance {
+            0% { transform: scaleY(0.25); opacity: 0.6; }
+            50% { transform: scaleY(1); opacity: 1; }
+            100% { transform: scaleY(0.4); opacity: 0.75; }
+        }
+
+        /* Reduced Motion Fallback */
+        @media (prefers-reduced-motion: reduce) {
+            .music-bg-canvas,
+            .music-note,
+            .music-wave,
+            .music-bar {
+                animation: none !important;
+            }
+        }
+
         @media print {
-            header, footer, nav, .no-print {
+            header, footer, nav, .no-print, .music-bg-container {
                 display: none !important;
             }
             body {
@@ -105,9 +281,54 @@
         }
     </style>
 </head>
-<body class="min-h-full flex flex-col transition-colors duration-200">
+<body class="min-h-full flex flex-col transition-colors duration-200 relative">
+    <!-- Dynamic Moving Music Theme Background -->
+    <div class="music-bg-container" aria-hidden="true">
+        <!-- 1. Cinematic Moving Image Layer -->
+        <div class="music-bg-canvas"></div>
+
+        <!-- 2. Dual-Mode Harmonizing Veil -->
+        <div class="music-bg-veil"></div>
+
+        <!-- 3. Undulating Melodic Soundwave Ribbons -->
+        <svg class="music-wave music-wave-1 opacity-25 dark:opacity-30" viewBox="0 0 1440 320" preserveAspectRatio="none" fill="none">
+            <path d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,229.3C1248,224,1344,160,1392,128L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="url(#wave-grad-1)"></path>
+            <defs>
+                <linearGradient id="wave-grad-1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.5"/>
+                    <stop offset="50%" stop-color="#e11d48" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.5"/>
+                </linearGradient>
+            </defs>
+        </svg>
+
+        <svg class="music-wave music-wave-2 opacity-20 dark:opacity-25" viewBox="0 0 1440 320" preserveAspectRatio="none" fill="none">
+            <path d="M0,64L48,80C96,96,192,128,288,149.3C384,171,480,181,576,165.3C672,149,768,107,864,117.3C960,128,1056,192,1152,202.7C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="url(#wave-grad-2)"></path>
+            <defs>
+                <linearGradient id="wave-grad-2" x1="100%" y1="0%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#9333ea" stop-opacity="0.45"/>
+                    <stop offset="50%" stop-color="#e11d48" stop-opacity="0.25"/>
+                    <stop offset="100%" stop-color="#e5a93b" stop-opacity="0.45"/>
+                </linearGradient>
+            </defs>
+        </svg>
+
+        <!-- 4. Floating Musical Notes Particles (♪ ♫ ♬ 𝄞 ♩) -->
+        <div class="music-notes-field">
+            <span class="music-note" style="left: 6%; font-size: 28px; --note-opacity: 0.42; --note-sway: 35px; --note-rot: 25deg; animation-duration: 17s; animation-delay: 0s;">𝄞</span>
+            <span class="music-note" style="left: 17%; font-size: 20px; --note-opacity: 0.35; --note-sway: -25px; --note-rot: -15deg; animation-duration: 21s; animation-delay: 3s;">♪</span>
+            <span class="music-note" style="left: 27%; font-size: 24px; --note-opacity: 0.45; --note-sway: 40px; --note-rot: 30deg; animation-duration: 16s; animation-delay: 7s;">♫</span>
+            <span class="music-note" style="left: 39%; font-size: 19px; --note-opacity: 0.32; --note-sway: -30px; --note-rot: -20deg; animation-duration: 24s; animation-delay: 2s;">♬</span>
+            <span class="music-note" style="left: 52%; font-size: 30px; --note-opacity: 0.4; --note-sway: 30px; --note-rot: 18deg; animation-duration: 19s; animation-delay: 9s;">𝄞</span>
+            <span class="music-note" style="left: 65%; font-size: 22px; --note-opacity: 0.36; --note-sway: -35px; --note-rot: -25deg; animation-duration: 20s; animation-delay: 5s;">♫</span>
+            <span class="music-note" style="left: 76%; font-size: 19px; --note-opacity: 0.38; --note-sway: 25px; --note-rot: 15deg; animation-duration: 18s; animation-delay: 11s;">♪</span>
+            <span class="music-note" style="left: 87%; font-size: 24px; --note-opacity: 0.42; --note-sway: -40px; --note-rot: -30deg; animation-duration: 22s; animation-delay: 1.5s;">♬</span>
+            <span class="music-note" style="left: 94%; font-size: 18px; --note-opacity: 0.3; --note-sway: 20px; --note-rot: 20deg; animation-duration: 25s; animation-delay: 8s;">♩</span>
+        </div>
+    </div>
+
     <!-- Main Top Navigation -->
-    <header class="border-b transition-colors duration-200 sticky top-0 z-50 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/80 light:border-slate-200 light:bg-white/80">
+    <header class="border-b transition-colors duration-200 sticky top-0 z-50 backdrop-blur-md relative dark:border-slate-800/80 dark:bg-slate-950/80 light:border-slate-200 light:bg-white/80">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <a href="/" class="flex items-center gap-2.5">
                 <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-amber-400 via-rose-500 to-purple-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-rose-500/20">
@@ -143,7 +364,7 @@
         </div>
     </header>
 
-    <main class="flex-grow">
+    <main class="flex-grow relative z-10">
         @if (session('success'))
             <div class="max-w-4xl mx-auto px-4 mt-4">
                 <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center gap-3 shadow">
@@ -170,7 +391,7 @@
     </main>
 
     <!-- Global Footer -->
-    <footer class="border-t mt-20 py-10 transition-colors duration-200 dark:border-slate-800/80 dark:bg-slate-950/60 light:border-slate-200 light:bg-slate-100/60">
+    <footer class="border-t mt-20 py-10 transition-colors duration-200 relative z-10 dark:border-slate-800/80 dark:bg-slate-950/60 light:border-slate-200 light:bg-slate-100/60">
         <div class="max-w-5xl mx-auto px-4 text-center space-y-3">
             <div class="flex items-center justify-center gap-2">
                 <span class="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-400 to-rose-500 text-white flex items-center justify-center font-bold text-xs">REI</span>

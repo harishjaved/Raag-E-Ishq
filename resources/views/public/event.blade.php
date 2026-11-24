@@ -25,6 +25,30 @@
             </p>
         </div>
 
+        <!-- Live Music Equalizer Visualizer Accent -->
+        <div class="flex items-center justify-center gap-1.5 py-1 select-none" aria-hidden="true">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full dark:bg-slate-900/60 light:bg-white/70 border border-amber-500/30 backdrop-blur-md shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                <span class="text-[11px] uppercase tracking-wider text-amber-500 dark:text-amber-400 font-bold mr-1">
+                    Live Orchestra
+                </span>
+                <div class="flex items-end gap-1 h-5 px-1">
+                    <span class="music-bar bar-1"></span>
+                    <span class="music-bar bar-2"></span>
+                    <span class="music-bar bar-3"></span>
+                    <span class="music-bar bar-4"></span>
+                    <span class="music-bar bar-5"></span>
+                    <span class="music-bar bar-6"></span>
+                    <span class="music-bar bar-7"></span>
+                    <span class="music-bar bar-8"></span>
+                    <span class="music-bar bar-9"></span>
+                    <span class="music-bar bar-10"></span>
+                    <span class="music-bar bar-11"></span>
+                    <span class="music-bar bar-12"></span>
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Action Buttons -->
         <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
             <a href="#register"
