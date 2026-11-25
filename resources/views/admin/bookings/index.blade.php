@@ -319,8 +319,12 @@
                                     <span>CANCELLED</span>
                                 </span>
                             @elseif ($booking->status === 'HOLD_EXPIRED')
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 text-slate-500 text-[10px] font-semibold">
-                                    <span>EXPIRED</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-semibold">
+                                    <span>EXPIRED HOLD</span>
+                                </span>
+                            @elseif ($booking->status === 'RECONCILIATION_REQUIRED')
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold">
+                                    <span>RECONCILE</span>
                                 </span>
                             @else
                                 <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 text-[10px]">{{ $booking->status }}</span>
@@ -387,6 +391,13 @@
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                                         </button>
                                     </div>
+                                @elseif (in_array($booking->status, ['HOLD_EXPIRED', 'PAYMENT_FAILED', 'RECONCILIATION_REQUIRED']))
+                                    <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm late payment of ₹{{ number_format($booking->total_amount_paise / 100, 2) }} for {{ $booking->contact->full_name }} and issue tickets (if seats remain)?');">
+                                        @csrf
+                                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs transition">
+                                            Re-Approve &amp; Issue
+                                        </button>
+                                    </form>
                                 @endif
 
                                 <a href="{{ route('admin.bookings.show', $booking->id) }}" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition">

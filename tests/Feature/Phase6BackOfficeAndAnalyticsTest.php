@@ -460,4 +460,74 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
             ->assertSee('8493939393')
             ->assertDontSee('9847000111');
     }
+
+    public function test_dashboard_updates_seats_gross_collections_and_isolates_comps_and_expired_holds(): void
+    {
+        // 1. Issue 2 Tier 1 sponsor comp tickets (₹0, consumes 2 seats)
+        $this->actingAs($this->eventManager)->post('/admin/allocations', [
+            'ticket_category_id' => $this->tier1->id,
+            'allocation_type' => 'SPONSOR',
+            'quantity' => 2,
+            'beneficiary_name' => 'Sponsor Patron',
+        ])->assertRedirect();
+
+        // 2. Create 1 expired hold in Tier 2 (should be released on dashboard load)
+        $expired = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Expired Guest',
+            'email' => 'expired@test.com',
+            'phone' => '9847000222',
+            'ticket_category_id' => $this->tier2->id,
+            'quantity' => 3,
+            'privacy_consent' => true,
+        ]);
+        $expired->update(['hold_expires_at' => now()->subMinutes(5)]);
+        $expired->inventoryHolds()->update(['expires_at' => now()->subMinutes(5)]);
+
+        // 3. Create 1 pending Tier 1 booking (2 seats @ 2500 = ₹5,000) & approve via admin
+        $paid = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Lakshmi Nair',
+            'email' => 'lakshmi@test.com',
+            'phone' => '9847111999',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 2,
+            'privacy_consent' => true,
+        ]);
+        $this->actingAs($this->eventManager)->post("/admin/bookings/{$paid->id}/confirm-payment")->assertRedirect();
+
+        // 4. Create 1 non-attending donation in Tier 3 (4 x ₹1,000 = ₹4,000, 0 seats) & approve via admin
+        $donor = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Charity Patron',
+            'email' => 'donor@test.com',
+            'phone' => '9847888999',
+            'ticket_category_id' => $this->tier3->id,
+            'quantity' => 4,
+            'attending' => 'no',
+            'privacy_consent' => true,
+        ]);
+        $this->actingAs($this->eventManager)->post("/admin/bookings/{$donor->id}/confirm-payment")->assertRedirect();
+
+        // Load dashboard — must release expired hold, forbid caching, and match exact KPIs
+        $dash = $this->actingAs($this->eventManager)->get('/admin/dashboard');
+        $dash->assertOk();
+        $this->assertStringContainsString('no-store', (string) $dash->headers->get('Cache-Control'));
+
+        $metrics = $this->analyticsService->getDashboardMetrics();
+        // Gross = ₹5,000 (paid) + ₹4,000 (donation) + ₹0 (sponsor) = ₹9,000
+        $this->assertEquals(900000, $metrics['gross_collections_paise']);
+        // Paid tickets issued = 2 only (NOT sponsor comp 2 or non-attending donation 4)
+        $this->assertEquals(2, $metrics['paid_tickets_issued']);
+        $this->assertEquals(2, $metrics['comps_issued']);
+        // Remaining seats: 450 - 2 (paid) - 2 (sponsor) = 446 (expired 3 seats released)
+        $this->assertEquals(446, $metrics['global_remaining']);
+        $this->assertEquals(4, $metrics['total_allocated']);
+
+        $tier1Row = collect($metrics['category_breakdown'])->firstWhere('name', 'Tier 1');
+        $this->assertEquals(2, $tier1Row['sold']);
+        $this->assertEquals(2, $tier1Row['comps']);
+        $this->assertEquals(96, $tier1Row['available']);
+        $this->assertEquals(500000, $tier1Row['revenue_paise']); // Does NOT add ₹5,000 fake revenue for comp
+
+        $tier2Row = collect($metrics['category_breakdown'])->firstWhere('name', 'Tier 2');
+        $this->assertEquals(100, $tier2Row['available']); // Expired hold freed cleanly
+    }
 }

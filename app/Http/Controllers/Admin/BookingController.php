@@ -157,7 +157,12 @@ class BookingController extends Controller
         config(['services.razorpay.webhook_secret' => $secret]);
         $signature = hash_hmac('sha256', $rawBody, $secret);
 
-        $razorpayService->handleWebhook($providerEventId, 'payment.captured', $payload, $rawBody, $signature);
+        $result = $razorpayService->handleWebhook($providerEventId, 'payment.captured', $payload, $rawBody, $signature);
+        $booking->refresh();
+
+        if ($booking->status !== Booking::STATUS_CONFIRMED) {
+            return back()->with('error', "Could not confirm booking {$booking->booking_reference}: " . ($result['message'] ?? "Current status is {$booking->status}."));
+        }
 
         return back()->with([
             'success' => "Payment for booking {$booking->booking_reference} confirmed and tickets successfully issued.",

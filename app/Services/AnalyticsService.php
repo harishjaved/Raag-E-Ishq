@@ -3,13 +3,16 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\BookingItem;
 use App\Models\Checkin;
 use App\Models\Contact;
 use App\Models\Event;
+use App\Models\InventoryHold;
 use App\Models\PaymentAttempt;
 use App\Models\Ticket;
 use App\Models\TicketAllocation;
 use App\Models\TicketCategory;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AnalyticsService
@@ -31,11 +34,22 @@ class AnalyticsService
         $totalContacts = Contact::count();
         $totalBookings = Booking::count();
 
-        $pendingBookings = Booking::where('status', Booking::STATUS_PAYMENT_PENDING)->count();
+        $pendingBookings = Booking::whereIn('status', [
+            Booking::STATUS_PAYMENT_PENDING,
+            Booking::STATUS_PENDING,
+            Booking::STATUS_IN_PROCESS,
+        ])->count();
         $paidBookings = Booking::where('status', Booking::STATUS_CONFIRMED)->count();
 
         $paidTicketsIssued = Ticket::whereHas('booking', function ($q) {
-            $q->where('status', Booking::STATUS_CONFIRMED);
+            $q->where('status', Booking::STATUS_CONFIRMED)
+              ->where('is_attending', true)
+              ->where('total_amount_paise', '>', 0);
+        })->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])->count();
+
+        $admittableTicketsTotal = Ticket::whereHas('booking', function ($q) {
+            $q->where('status', Booking::STATUS_CONFIRMED)
+              ->where('is_attending', true);
         })->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])->count();
 
         $compsIssued = TicketAllocation::sum('quantity');
@@ -60,8 +74,9 @@ class AnalyticsService
         $globalRemaining = $this->inventoryService->getGlobalRemainingCapacity($event);
         $totalAllocated = $event->total_capacity - $globalRemaining;
 
-        $showupRate = $paidTicketsIssued > 0
-            ? round(($totalCheckedIn / $paidTicketsIssued) * 100, 1)
+        $showupDenominator = max($paidTicketsIssued, $admittableTicketsTotal);
+        $showupRate = $showupDenominator > 0
+            ? min(100.0, round(($totalCheckedIn / $showupDenominator) * 100, 1))
             : 0.0;
 
         $conversionRate = $totalBookings > 0
@@ -69,14 +84,32 @@ class AnalyticsService
             : 0.0;
 
         // Sales and inventory breakdown by category
+        $now = Carbon::now();
         $categoryBreakdown = [];
         $categories = $event->categories()->orderBy('display_order')->get();
         foreach ($categories as $cat) {
             $soldTickets = Ticket::where('ticket_category_id', $cat->id)
+                ->whereHas('booking', function ($q) {
+                    $q->where('status', Booking::STATUS_CONFIRMED)
+                      ->where('is_attending', true)
+                      ->where('total_amount_paise', '>', 0);
+                })
                 ->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])
                 ->count();
             $compTickets = TicketAllocation::where('ticket_category_id', $cat->id)->sum('quantity');
+            $heldTickets = InventoryHold::where('ticket_category_id', $cat->id)
+                ->whereHas('booking', function ($q) {
+                    $q->where('is_attending', true);
+                })
+                ->where('status', InventoryHold::STATUS_ACTIVE)
+                ->where('expires_at', '>', $now)
+                ->sum('quantity');
             $available = $this->inventoryService->getAvailableCapacity($cat);
+            $categoryRevenuePaise = (int) BookingItem::where('ticket_category_id', $cat->id)
+                ->whereHas('booking', function ($q) {
+                    $q->where('status', Booking::STATUS_CONFIRMED);
+                })
+                ->sum('subtotal_paise');
 
             $categoryBreakdown[] = [
                 'id' => $cat->id,
@@ -84,9 +117,9 @@ class AnalyticsService
                 'price_paise' => $cat->price_paise,
                 'capacity' => $cat->capacity,
                 'sold' => $soldTickets,
-                'comps' => $compTickets,
+                'comps' => $compTickets + $heldTickets,
                 'available' => $available,
-                'revenue_paise' => $soldTickets * $cat->price_paise,
+                'revenue_paise' => $categoryRevenuePaise,
             ];
         }
 

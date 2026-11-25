@@ -30,6 +30,12 @@ class SecurityHeadersMiddleware
         // Restrict unnecessary device hardware APIs (allow camera for QR scanning on self)
         $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
 
+        // Prevent stale browser/CDN caching on back office and gate scanner responses
+        if ($request->is('admin', 'admin/*', 'staff', 'staff/*')) {
+            $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+            $response->headers->set('Pragma', 'no-cache');
+        }
+
         return $response;
     }
 }

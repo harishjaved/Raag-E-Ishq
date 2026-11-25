@@ -298,43 +298,45 @@ class RazorpayService
                 ];
             }
 
-            // Check if hold has expired (Late payment arrival)
-            if ($booking->status === Booking::STATUS_HOLD_EXPIRED || ($booking->hold_expires_at && $booking->hold_expires_at->isPast())) {
-                // Check if capacity is still available
+            // Check if hold has expired (Late payment arrival) for attending bookings
+            if ($booking->is_attending && ($booking->status === Booking::STATUS_HOLD_EXPIRED || ($booking->hold_expires_at && $booking->hold_expires_at->isPast()))) {
                 $bookingItem = $booking->items()->first();
-                $category = $bookingItem->category()->lockForUpdate()->first();
-                $available = $this->inventoryService->getAvailableCapacity($category);
+                $category = $bookingItem?->category()->lockForUpdate()->first();
 
-                if ($available < $bookingItem->quantity) {
-                    // CAPACITY EXHAUSTED: ROUTE TO RECONCILIATION - NEVER OVERSELL 451ST SEAT!
-                    $booking->update([
-                        'status' => Booking::STATUS_RECONCILIATION_REQUIRED,
-                    ]);
+                if ($bookingItem && $category) {
+                    $available = $this->inventoryService->getAvailableCapacity($category);
 
-                    $paymentAttempt = $booking->paymentAttempts()->latest()->first();
-                    $paymentAttempt?->update([
-                        'status' => PaymentAttempt::STATUS_RECONCILIATION_REQUIRED,
-                        'provider_payment_id' => $entity['id'] ?? null,
-                    ]);
+                    if ($available < $bookingItem->quantity) {
+                        // CAPACITY EXHAUSTED: ROUTE TO RECONCILIATION - NEVER OVERSELL 451ST SEAT!
+                        $booking->update([
+                            'status' => Booking::STATUS_RECONCILIATION_REQUIRED,
+                        ]);
 
-                    $webhookRecord->update([
-                        'processing_status' => GatewayWebhookEvent::STATUS_PROCESSED,
-                        'processed_at' => Carbon::now(),
-                        'error_message' => 'Payment received after hold expiry and category is full. Requires manual refund/reassignment.',
-                    ]);
+                        $paymentAttempt = $booking->paymentAttempts()->latest()->first();
+                        $paymentAttempt?->update([
+                            'status' => PaymentAttempt::STATUS_RECONCILIATION_REQUIRED,
+                            'provider_payment_id' => $entity['id'] ?? null,
+                        ]);
 
-                    AuditLog::log(
-                        action: 'LATE_PAYMENT_CAPACITY_EXHAUSTED',
-                        targetType: 'Booking',
-                        targetId: $booking->id,
-                        newValues: ['reason' => 'Late payment arrived after stock was reallocated. Reconcile required.']
-                    );
+                        $webhookRecord->update([
+                            'processing_status' => GatewayWebhookEvent::STATUS_PROCESSED,
+                            'processed_at' => Carbon::now(),
+                            'error_message' => 'Payment received after hold expiry and category is full. Requires manual refund/reassignment.',
+                        ]);
 
-                    return [
-                        'status' => 'reconciliation_required',
-                        'code' => 200,
-                        'message' => 'Late payment with exhausted capacity routed to reconciliation',
-                    ];
+                        AuditLog::log(
+                            action: 'LATE_PAYMENT_CAPACITY_EXHAUSTED',
+                            targetType: 'Booking',
+                            targetId: $booking->id,
+                            newValues: ['reason' => 'Late payment arrived after stock was reallocated. Reconcile required.']
+                        );
+
+                        return [
+                            'status' => 'reconciliation_required',
+                            'code' => 200,
+                            'message' => 'Late payment with exhausted capacity routed to reconciliation',
+                        ];
+                    }
                 }
             }
 

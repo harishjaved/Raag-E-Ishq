@@ -238,6 +238,27 @@
             </div>
         @endif
 
+        @if (session('info'))
+            <div class="mx-6 mt-6 p-4 rounded-2xl bg-sky-950/80 border border-sky-500/40 text-sky-200 flex items-center justify-between text-xs font-semibold shadow-lg shadow-sky-950/30">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">i</div>
+                    <span>{{ session('info') }}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-sky-400 hover:text-sky-200">&times;</button>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="mx-6 mt-6 p-4 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-rose-300 flex items-center justify-between text-xs font-semibold shadow-lg shadow-rose-950/30">
+                <div class="space-y-1">
+                    @foreach ($errors->all() as $err)
+                        <div>&bull; {{ $err }}</div>
+                    @endforeach
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-200">&times;</button>
+            </div>
+        @endif
+
         <!-- Main View Container -->
         <main class="p-6 md:p-8 flex-grow">
             @yield('content')
