@@ -212,6 +212,8 @@ class Phase5GateOperationsTest extends TestCase
         $scanPage->assertOk();
         $scanPage->assertSee('manual_inline_feedback');
         $scanPage->assertSee('"/staff/lookup/manual"', false);
+        $scanPage->assertSee('playSiren');
+        $scanPage->assertSee('sound_toggle_btn');
 
         // Lookup without TKT- prefix and lowercase with extra spaces works cleanly
         $admit = $this->actingAs($this->gateStaff)->postJson('/staff/lookup/manual', [

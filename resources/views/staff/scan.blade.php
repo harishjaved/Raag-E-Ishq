@@ -12,6 +12,13 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; touch-action: manipulation; }
         #reader video { border-radius: 1rem; width: 100% !important; height: auto !important; }
         #reader__scan_region { background: rgba(0,0,0,0.4); border-radius: 1rem; }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px #020617 inset;
+            -webkit-text-fill-color: #f1f5f9;
+            caret-color: #f1f5f9;
+        }
     </style>
 </head>
 <body class="min-h-full flex flex-col bg-slate-950 text-slate-100">
@@ -26,6 +33,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                <button type="button" id="sound_toggle_btn" onclick="toggleGateSound()" class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold transition">Siren: ON</button>
                 <span id="gate_indicator" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-semibold">GATE 1</span>
                 <form action="{{ route('logout') }}" method="POST" class="inline">
                     @csrf
@@ -100,29 +108,122 @@
         let admittedCounter = {{ $todayCheckinsCount }};
         let resultAutoHideTimer = null;
 
-        // Web Audio Synthesizer for Immediate Beeps
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playBeep(frequency, type, duration) {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch (e) {
-                console.warn('Audio feedback failed:', e);
+        // Web Audio Synthesizer for Gate Feedback & Denial Siren
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = AudioContextClass ? new AudioContextClass() : null;
+        let soundEnabled = true;
+
+        function unlockAudioContext() {
+            if (!audioCtx || !soundEnabled) return Promise.resolve();
+            if (audioCtx.state === 'suspended') {
+                return audioCtx.resume().catch(() => {});
             }
+            return Promise.resolve();
         }
 
-        function playSuccessSound() { playBeep(880, 'sine', 0.2); }
-        function playDuplicateSound() { playBeep(440, 'triangle', 0.15); setTimeout(() => playBeep(330, 'triangle', 0.25), 180); }
-        function playInvalidSound() { playBeep(220, 'sawtooth', 0.35); }
+        ['pointerdown', 'keydown', 'click'].forEach(evt => {
+            document.addEventListener(evt, () => {
+                unlockAudioContext();
+            }, { passive: true });
+        });
+
+        function toggleGateSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound_toggle_btn');
+            if (btn) {
+                btn.textContent = soundEnabled ? 'Siren: ON' : 'Siren: OFF';
+                btn.className = soundEnabled
+                    ? 'text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold transition'
+                    : 'text-[11px] px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 font-semibold transition';
+            }
+            if (soundEnabled) unlockAudioContext();
+        }
+
+        function withAudioReady(fn) {
+            if (!audioCtx || !soundEnabled) return;
+            unlockAudioContext().then(() => {
+                try {
+                    fn(audioCtx.currentTime);
+                } catch (e) {
+                    console.warn('Audio feedback failed:', e);
+                }
+            });
+        }
+
+        function playSuccessSound() {
+            withAudioReady((now) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(660, now);
+                osc.frequency.setValueAtTime(990, now + 0.11);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.33);
+            });
+        }
+
+        function playSiren(mode = 'wail') {
+            try {
+                if (navigator.vibrate) navigator.vibrate([180, 80, 180, 80, 260]);
+            } catch (e) {}
+
+            withAudioReady((now) => {
+                const duration = mode === 'hilo' ? 1.2 : 1.45;
+                const master = audioCtx.createGain();
+                master.gain.setValueAtTime(0.001, now);
+                master.gain.exponentialRampToValueAtTime(0.45, now + 0.04);
+                master.gain.setValueAtTime(0.45, now + duration - 0.12);
+                master.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                master.connect(audioCtx.destination);
+
+                // Dual slightly-detuned oscillators produce an unmistakable security siren
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                osc1.type = 'sawtooth';
+                osc2.type = 'square';
+
+                if (mode === 'hilo') {
+                    const tones = [880, 620, 880, 620, 880, 620];
+                    const step = duration / tones.length;
+                    tones.forEach((hz, idx) => {
+                        osc1.frequency.setValueAtTime(hz, now + idx * step);
+                        osc2.frequency.setValueAtTime(hz * 1.01, now + idx * step);
+                    });
+                } else {
+                    osc1.frequency.setValueAtTime(520, now);
+                    osc1.frequency.exponentialRampToValueAtTime(1020, now + 0.36);
+                    osc1.frequency.exponentialRampToValueAtTime(500, now + 0.72);
+                    osc1.frequency.exponentialRampToValueAtTime(1020, now + 1.08);
+                    osc1.frequency.exponentialRampToValueAtTime(460, now + duration);
+
+                    osc2.frequency.setValueAtTime(525, now);
+                    osc2.frequency.exponentialRampToValueAtTime(1030, now + 0.36);
+                    osc2.frequency.exponentialRampToValueAtTime(505, now + 0.72);
+                    osc2.frequency.exponentialRampToValueAtTime(1030, now + 1.08);
+                    osc2.frequency.exponentialRampToValueAtTime(465, now + duration);
+                }
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2200, now);
+
+                osc1.connect(filter);
+                osc2.connect(filter);
+                filter.connect(master);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + duration + 0.02);
+                osc2.stop(now + duration + 0.02);
+            });
+        }
+
+        function playDuplicateSound() { playSiren('hilo'); }
+        function playInvalidSound() { playSiren('wail'); }
 
         // Tri-State UI Card Renderer
         function showResultCard(type, title, message, details = {}) {
