@@ -202,4 +202,37 @@ class Phase5GateOperationsTest extends TestCase
         $this->assertEquals($this->gateStaff->id, $audit->user_id);
         $this->assertStringContainsString('Passport', $audit->new_values['reason']);
     }
+
+    public function test_manual_lookup_accepts_lowercase_and_missing_tkt_prefix_and_renders_inline_feedback_ui(): void
+    {
+        $ticket = $this->createValidTicket();
+        $bareCode = str_replace('TKT-', '', strtolower($ticket->ticket_number));
+
+        $scanPage = $this->actingAs($this->gateStaff)->get('/staff/scan');
+        $scanPage->assertOk();
+        $scanPage->assertSee('manual_inline_feedback');
+        $scanPage->assertSee('"/staff/lookup/manual"', false);
+
+        // Lookup without TKT- prefix and lowercase with extra spaces works cleanly
+        $admit = $this->actingAs($this->gateStaff)->postJson('/staff/lookup/manual', [
+            'ticket_number' => "  {$bareCode}  ",
+            'reason' => 'Others',
+        ]);
+
+        $admit->assertStatus(200);
+        $admit->assertJson([
+            'result' => 'GREEN_VALID',
+            'ticket_number' => $ticket->ticket_number,
+            'attendee_name' => 'Aditya Varma',
+        ]);
+
+        // Duplicate manual check-in must return 409 ORANGE_ALREADY_USED
+        $dup = $this->actingAs($this->gateStaff)->postJson('/staff/lookup/manual', [
+            'ticket_number' => $ticket->ticket_number,
+            'reason' => 'Others',
+        ]);
+
+        $dup->assertStatus(409);
+        $dup->assertJson(['result' => 'ORANGE_ALREADY_USED']);
+    }
 }

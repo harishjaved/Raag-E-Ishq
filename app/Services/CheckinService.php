@@ -53,76 +53,15 @@ class CheckinService
 
         $ticket = $verification['ticket'];
 
-        // 2. Atomic database transaction with row lock
-        try {
-            return DB::transaction(function () use ($ticket, $gate, $staff) {
-                // Lock ticket row
-                $lockedTicket = Ticket::where('id', $ticket->id)->lockForUpdate()->first();
-
-                if ($lockedTicket->status === Ticket::STATUS_CHECKED_IN) {
-                    $existingCheckin = Checkin::where('ticket_id', $lockedTicket->id)->first();
-                    return [
-                        'result' => 'ORANGE_ALREADY_USED',
-                        'code' => 409,
-                        'message' => "Already admitted at " . ($existingCheckin?->checked_in_at?->format('H:i:s d M') ?? 'earlier'),
-                        'ticket' => $lockedTicket,
-                        'checkin' => $existingCheckin,
-                    ];
-                }
-
-                if ($lockedTicket->status !== Ticket::STATUS_ISSUED) {
-                    return [
-                        'result' => 'RED_INVALID',
-                        'code' => 422,
-                        'message' => "Ticket is not valid for admission (Status: {$lockedTicket->status})",
-                        'ticket' => $lockedTicket,
-                        'checkin' => null,
-                    ];
-                }
-
-                // Insert into checkins with database UNIQUE constraint on ticket_id
-                $checkin = Checkin::create([
-                    'ticket_id' => $lockedTicket->id,
-                    'scanned_by_user_id' => $staff?->id,
-                    'checked_in_at' => Carbon::now(),
-                    'gate_identifier' => $gate,
-                    'verification_method' => Checkin::METHOD_QR_SCAN,
-                ]);
-
-                // Update ticket status
-                $lockedTicket->update(['status' => Ticket::STATUS_CHECKED_IN]);
-
-                AuditLog::log(
-                    action: 'GATE_ADMISSION_CHECKIN',
-                    targetType: 'Ticket',
-                    targetId: $lockedTicket->id,
-                    newValues: [
-                        'gate' => $gate,
-                        'scanned_by' => $staff?->name ?? 'System',
-                        'checked_in_at' => $checkin->checked_in_at->toIso8601String(),
-                    ],
-                    userId: $staff?->id
-                );
-
-                return [
-                    'result' => 'GREEN_VALID',
-                    'code' => 200,
-                    'message' => 'Admission Confirmed. Valid Entry.',
-                    'ticket' => $lockedTicket,
-                    'checkin' => $checkin,
-                ];
-            });
-        } catch (Throwable $e) {
-            // Concurrent race condition: another device scanned the same millisecond
-            $existingCheckin = Checkin::where('ticket_id', $ticket->id)->first();
-            return [
-                'result' => 'ORANGE_ALREADY_USED',
-                'code' => 409,
-                'message' => "Concurrent entry detected: Already admitted at " . ($existingCheckin?->checked_in_at?->format('H:i:s') ?? 'just now'),
-                'ticket' => $ticket,
-                'checkin' => $existingCheckin,
-            ];
-        }
+        return $this->admitLockedTicket(
+            ticket: $ticket,
+            method: Checkin::METHOD_QR_SCAN,
+            gate: $gate,
+            staff: $staff,
+            notes: null,
+            auditAction: 'GATE_ADMISSION_CHECKIN',
+            successMessage: 'Admission Confirmed. Valid Entry.'
+        );
     }
 
     /**
@@ -130,8 +69,23 @@ class CheckinService
      */
     public function manualLookupAndCheckin(string $ticketNumber, string $reason, string $gate = 'GATE_1', User $staff): array
     {
+        $normalized = strtoupper(preg_replace('/\s+/', '', trim($ticketNumber)));
+        $candidates = [$normalized];
+        if (!str_starts_with($normalized, 'TKT-')) {
+            if (preg_match('/^TKT([A-Z0-9]{4})([A-Z0-9]{4})$/', $normalized, $m)) {
+                $candidates[] = "TKT-{$m[1]}-{$m[2]}";
+            } elseif (preg_match('/^[A-Z0-9]{4}-[A-Z0-9]{4}$/', $normalized)) {
+                $candidates[] = 'TKT-' . $normalized;
+            }
+        }
+
         $ticket = Ticket::with(['category', 'booking.contact', 'checkin.scannedBy'])
-            ->where('ticket_number', trim($ticketNumber))
+            ->where(function ($q) use ($candidates) {
+                foreach ($candidates as $idx => $candidate) {
+                    $method = $idx === 0 ? 'whereRaw' : 'orWhereRaw';
+                    $q->{$method}('UPPER(ticket_number) = ?', [$candidate]);
+                }
+            })
             ->first();
 
         if (!$ticket) {
@@ -155,49 +109,112 @@ class CheckinService
         }
 
         if ($ticket->status !== Ticket::STATUS_ISSUED) {
+            $reasonSuffix = $ticket->void_reason ? ", Reason: {$ticket->void_reason}" : '';
             return [
                 'result' => 'RED_INVALID',
                 'code' => 422,
-                'message' => "Ticket cannot be admitted (Status: {$ticket->status}, Reason: {$ticket->void_reason})",
+                'message' => "Ticket cannot be admitted (Status: {$ticket->status}{$reasonSuffix})",
                 'ticket' => $ticket,
                 'checkin' => null,
             ];
         }
 
-        return DB::transaction(function () use ($ticket, $reason, $gate, $staff) {
-            $lockedTicket = Ticket::where('id', $ticket->id)->lockForUpdate()->first();
+        return $this->admitLockedTicket(
+            ticket: $ticket,
+            method: Checkin::METHOD_MANUAL_LOOKUP,
+            gate: $gate,
+            staff: $staff,
+            notes: trim($reason),
+            auditAction: 'MANUAL_GATE_ADMISSION',
+            successMessage: 'Manual Admission Confirmed.'
+        );
+    }
 
-            $checkin = Checkin::create([
-                'ticket_id' => $lockedTicket->id,
-                'scanned_by_user_id' => $staff->id,
-                'checked_in_at' => Carbon::now(),
-                'gate_identifier' => $gate,
-                'verification_method' => Checkin::METHOD_MANUAL_LOOKUP,
-                'notes' => $reason,
-            ]);
+    /**
+     * Atomically lock and admit an eligible ticket inside a transaction.
+     *
+     * @return array{result: string, code: int, message: string, ticket: Ticket, checkin: ?Checkin}
+     */
+    protected function admitLockedTicket(
+        Ticket $ticket,
+        string $method,
+        string $gate,
+        ?User $staff,
+        ?string $notes,
+        string $auditAction,
+        string $successMessage
+    ): array {
+        try {
+            return DB::transaction(function () use ($ticket, $method, $gate, $staff, $notes, $auditAction, $successMessage) {
+                $lockedTicket = Ticket::with('category')->where('id', $ticket->id)->lockForUpdate()->first();
 
-            $lockedTicket->update(['status' => Ticket::STATUS_CHECKED_IN]);
+                if ($lockedTicket->status === Ticket::STATUS_CHECKED_IN) {
+                    $existingCheckin = Checkin::where('ticket_id', $lockedTicket->id)->first();
+                    return [
+                        'result' => 'ORANGE_ALREADY_USED',
+                        'code' => 409,
+                        'message' => "Already admitted at " . ($existingCheckin?->checked_in_at?->format('H:i:s d M') ?? 'earlier'),
+                        'ticket' => $lockedTicket,
+                        'checkin' => $existingCheckin,
+                    ];
+                }
 
-            AuditLog::log(
-                action: 'MANUAL_GATE_ADMISSION',
-                targetType: 'Ticket',
-                targetId: $lockedTicket->id,
-                newValues: [
+                if ($lockedTicket->status !== Ticket::STATUS_ISSUED) {
+                    return [
+                        'result' => 'RED_INVALID',
+                        'code' => 422,
+                        'message' => "Ticket is not valid for admission (Status: {$lockedTicket->status})",
+                        'ticket' => $lockedTicket,
+                        'checkin' => null,
+                    ];
+                }
+
+                $checkin = Checkin::create([
+                    'ticket_id' => $lockedTicket->id,
+                    'scanned_by_user_id' => $staff?->id,
+                    'checked_in_at' => Carbon::now(),
+                    'gate_identifier' => $gate,
+                    'verification_method' => $method,
+                    'notes' => $notes,
+                ]);
+
+                $lockedTicket->update(['status' => Ticket::STATUS_CHECKED_IN]);
+
+                $auditPayload = [
                     'ticket_number' => $lockedTicket->ticket_number,
-                    'reason' => $reason,
-                    'staff' => $staff->name,
                     'gate' => $gate,
-                ],
-                userId: $staff->id
-            );
+                    'scanned_by' => $staff?->name ?? 'System',
+                    'checked_in_at' => $checkin->checked_in_at->toIso8601String(),
+                ];
+                if ($notes !== null && $notes !== '') {
+                    $auditPayload['reason'] = $notes;
+                }
 
+                AuditLog::log(
+                    action: $auditAction,
+                    targetType: 'Ticket',
+                    targetId: $lockedTicket->id,
+                    newValues: $auditPayload,
+                    userId: $staff?->id
+                );
+
+                return [
+                    'result' => 'GREEN_VALID',
+                    'code' => 200,
+                    'message' => $successMessage,
+                    'ticket' => $lockedTicket,
+                    'checkin' => $checkin,
+                ];
+            });
+        } catch (Throwable $e) {
+            $existingCheckin = Checkin::where('ticket_id', $ticket->id)->first();
             return [
-                'result' => 'GREEN_VALID',
-                'code' => 200,
-                'message' => 'Manual Admission Confirmed.',
-                'ticket' => $lockedTicket,
-                'checkin' => $checkin,
+                'result' => 'ORANGE_ALREADY_USED',
+                'code' => 409,
+                'message' => "Concurrent entry detected: Already admitted at " . ($existingCheckin?->checked_in_at?->format('H:i:s') ?? 'just now'),
+                'ticket' => $ticket,
+                'checkin' => $existingCheckin,
             ];
-        });
+        }
     }
 }

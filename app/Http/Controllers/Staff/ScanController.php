@@ -52,7 +52,7 @@ class ScanController extends Controller
     {
         $validated = $request->validate([
             'ticket_number' => ['required', 'string'],
-            'reason' => ['required', 'string', 'min:5', 'max:255'],
+            'reason' => ['required', 'string', 'min:3', 'max:255'],
             'gate' => ['nullable', 'string', 'max:20'],
         ]);
 

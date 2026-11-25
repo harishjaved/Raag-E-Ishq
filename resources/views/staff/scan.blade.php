@@ -68,24 +68,27 @@
                 <span id="manual_toggle_icon" class="text-xs text-slate-400">&darr;</span>
             </div>
 
-            <div id="manual_section" class="hidden space-y-3 pt-2 border-t border-slate-800">
+            <form id="manual_section" class="hidden space-y-3 pt-2 border-t border-slate-800" onsubmit="event.preventDefault(); submitManualLookup();">
                 <div class="space-y-1">
-                    <label class="text-[11px] font-semibold text-slate-400">Ticket Number</label>
+                    <label for="manual_ticket_number" class="text-[11px] font-semibold text-slate-400">Ticket Number</label>
                     <input type="text" id="manual_ticket_number" placeholder="e.g. TKT-ABCD-1234"
+                        oninput="this.value = this.value.toUpperCase()"
                         class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 uppercase text-xs focus:outline-none focus:border-amber-400 font-mono">
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-semibold text-slate-400">Audit Reason / Justification <span class="text-rose-400">*</span></label>
+                    <label for="manual_reason" class="text-[11px] font-semibold text-slate-400">Audit Reason / Justification <span class="text-rose-400">*</span></label>
                     <input type="text" id="manual_reason" placeholder="e.g. Screen cracked, verified Govt Photo ID"
                         class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-amber-400">
                 </div>
 
-                <button onclick="submitManualLookup()" id="manual_submit_btn"
-                    class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs transition">
+                <div id="manual_inline_feedback" class="hidden rounded-xl px-3 py-2 text-xs font-semibold border"></div>
+
+                <button type="submit" id="manual_submit_btn"
+                    class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs transition disabled:opacity-50 disabled:cursor-not-allowed">
                     Admit via Manual Override
                 </button>
-            </div>
+            </form>
         </div>
     </main>
 
@@ -95,6 +98,7 @@
         let isProcessing = false;
         let cameraRunning = false;
         let admittedCounter = {{ $todayCheckinsCount }};
+        let resultAutoHideTimer = null;
 
         // Web Audio Synthesizer for Immediate Beeps
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -165,11 +169,19 @@
                 </div>
             `;
 
-            // Auto-hide after 6 seconds if not dismissed
-            setTimeout(dismissResult, 6000);
+            // Clear any prior timer so back-to-back checks don't get hidden early
+            if (resultAutoHideTimer) {
+                clearTimeout(resultAutoHideTimer);
+            }
+            resultAutoHideTimer = setTimeout(dismissResult, 10000);
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function dismissResult() {
+            if (resultAutoHideTimer) {
+                clearTimeout(resultAutoHideTimer);
+                resultAutoHideTimer = null;
+            }
             document.getElementById('result_container').classList.add('hidden');
             isProcessing = false;
         }
@@ -235,9 +247,9 @@
             // Noisy scan frames ignored
         }
 
-        // Verify with Backend
+        // Verify with Backend (use same-origin relative URL to avoid host/scheme mismatches)
         function verifyScan(uuid, signature) {
-            fetch("{{ route('staff.scan.verify') }}", {
+            fetch("{{ route('staff.scan.verify', [], false) }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -277,17 +289,41 @@
             }
         }
 
-        function submitManualLookup() {
-            const ticketNum = document.getElementById('manual_ticket_number').value.trim();
-            const reason = document.getElementById('manual_reason').value.trim();
+        function setManualFeedback(type, message) {
+            const box = document.getElementById('manual_inline_feedback');
+            if (!box) return;
+            box.classList.remove('hidden', 'bg-emerald-950/70', 'border-emerald-500/40', 'text-emerald-300', 'bg-amber-950/70', 'border-amber-500/40', 'text-amber-300', 'bg-rose-950/70', 'border-rose-500/40', 'text-rose-300');
+            if (type === 'GREEN_VALID') {
+                box.classList.add('bg-emerald-950/70', 'border-emerald-500/40', 'text-emerald-300');
+            } else if (type === 'ORANGE_ALREADY_USED') {
+                box.classList.add('bg-amber-950/70', 'border-amber-500/40', 'text-amber-300');
+            } else {
+                box.classList.add('bg-rose-950/70', 'border-rose-500/40', 'text-rose-300');
+            }
+            box.textContent = message;
+        }
 
-            if (!ticketNum || !reason) {
-                alert('Please enter both the Ticket Number and the Audit Reason.');
+        function submitManualLookup() {
+            const ticketInput = document.getElementById('manual_ticket_number');
+            const reasonInput = document.getElementById('manual_reason');
+            const submitBtn = document.getElementById('manual_submit_btn');
+            const ticketNum = ticketInput.value.trim().toUpperCase();
+            const reason = reasonInput.value.trim();
+
+            ticketInput.value = ticketNum;
+
+            if (!ticketNum || reason.length < 3) {
+                setManualFeedback('RED_INVALID', 'Enter a valid Ticket Number and an Audit Reason (at least 3 characters).');
+                showResultCard('RED_INVALID', 'Missing Details', 'Enter both Ticket Number and Audit Reason (minimum 3 characters).');
                 return;
             }
 
-            fetch("{{ route('staff.lookup.manual') }}", {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Verifying Ticket...';
+
+            fetch("{{ route('staff.lookup.manual', [], false) }}", {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
@@ -295,20 +331,41 @@
                 },
                 body: JSON.stringify({ ticket_number: ticketNum, reason: reason, gate: 'GATE_1' })
             })
-            .then(res => res.json().then(data => ({ status: res.status, data: data })))
+            .then(async res => {
+                const rawText = await res.text();
+                let data = {};
+                try {
+                    data = rawText ? JSON.parse(rawText) : {};
+                } catch (e) {
+                    data = { message: res.status === 419 ? 'Session expired — please refresh the page and log in again.' : 'Unexpected server response (HTTP ' + res.status + ').' };
+                }
+                return { status: res.status, data: data };
+            })
             .then(res => {
+                const validationMsg = res.data.errors ? Object.values(res.data.errors).flat()[0] : null;
+                const msg = validationMsg || res.data.message || 'Verification failed.';
+
                 if (res.status === 200) {
                     admittedCounter++;
                     document.getElementById('admitted_count').textContent = admittedCounter;
-                    showResultCard('GREEN_VALID', 'Manual Entry Admitted', res.data.message, res.data);
+                    setManualFeedback('GREEN_VALID', msg + (res.data.attendee_name ? ' — ' + res.data.attendee_name : ''));
+                    showResultCard('GREEN_VALID', 'Manual Entry Admitted', msg, res.data);
                 } else if (res.status === 409) {
-                    showResultCard('ORANGE_ALREADY_USED', 'Already Checked In', res.data.message, res.data);
+                    setManualFeedback('ORANGE_ALREADY_USED', msg);
+                    showResultCard('ORANGE_ALREADY_USED', 'Already Checked In', msg, res.data);
                 } else {
-                    showResultCard('RED_INVALID', 'Manual Entry Rejected', res.data.message, res.data);
+                    setManualFeedback('RED_INVALID', msg);
+                    showResultCard('RED_INVALID', 'Manual Entry Rejected', msg, res.data);
                 }
             })
-            .catch(err => {
-                alert('Manual lookup request failed. Check network connection.');
+            .catch(() => {
+                const netMsg = 'Manual lookup request failed. Check network connection or reload the page.';
+                setManualFeedback('RED_INVALID', netMsg);
+                showResultCard('RED_INVALID', 'Network Error', netMsg);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Admit via Manual Override';
             });
         }
 
