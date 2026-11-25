@@ -14,10 +14,12 @@ class TicketConfirmationMail extends Mailable
     use Queueable, SerializesModels;
 
     public Booking $booking;
+    public string $passUrl;
 
     public function __construct(Booking $booking)
     {
         $this->booking = $booking;
+        $this->passUrl = app(\App\Services\TicketService::class)->buildSignedPassUrl($booking);
     }
 
     public function envelope(): Envelope

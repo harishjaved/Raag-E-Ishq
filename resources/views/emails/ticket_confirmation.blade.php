@@ -30,7 +30,7 @@
         </table>
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="{{ route('booking.confirmed', ['reference' => $booking->booking_reference]) }}" 
+            <a href="{{ $passUrl ?? route('booking.confirmed', ['reference' => $booking->booking_reference]) }}" 
                style="background-color: #e5a93b; color: #000; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 6px; display: inline-block;">
                 View &amp; Download Admission Tickets
             </a>

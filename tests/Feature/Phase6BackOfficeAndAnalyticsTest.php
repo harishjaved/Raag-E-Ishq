@@ -344,4 +344,52 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $response->assertSee('whatsappDispatchModal');
         $response->assertSee('WhatsApp Pass');
     }
+
+    public function test_signed_pass_url_renders_tickets_even_when_booking_is_absent_from_database(): void
+    {
+        $b = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Devika Menon',
+            'email' => 'devika@test.com',
+            'phone' => '9847555666',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 1,
+            'privacy_consent' => true,
+        ]);
+        $b->update(['status' => Booking::STATUS_CONFIRMED]);
+        $tickets = $this->ticketService->issueTicketsForBooking($b);
+        $ticketNumber = $tickets->first()->ticket_number;
+        $reference = $b->booking_reference;
+
+        $signedUrl = $this->ticketService->buildSignedPassUrl($b);
+        $msg = $this->ticketService->buildWhatsAppTicketMessage($b);
+
+        $this->assertStringContainsString('?p=', $signedUrl);
+        $this->assertStringContainsString('&s=', $signedUrl);
+        $this->assertStringContainsString($signedUrl, $msg);
+        $this->assertStringNotContainsString("\u{FFFD}", $msg);
+
+        // Simulate serverless /tmp/database.sqlite container reset by removing DB rows
+        $b->emailDeliveries()->delete();
+        $b->tickets()->delete();
+        $b->inventoryHolds()->delete();
+        $b->items()->delete();
+        $b->delete();
+
+        $this->assertDatabaseMissing('bookings', ['booking_reference' => $reference]);
+
+        $response = $this->get($signedUrl);
+        $response->assertStatus(200);
+        $response->assertSee('Devika Menon');
+        $response->assertSee($reference);
+        $response->assertSee($ticketNumber);
+        $response->assertSee('<svg', false);
+        $response->assertSee('data:image/svg+xml;base64,', false);
+
+        // Tampered token or signature must be rejected
+        $tamperedResponse = $this->get('/booking/' . $reference . '/confirmed?p=tampered&s=badsignature');
+        $tamperedResponse->assertRedirect(route('home'));
+
+        $badSigUrl = preg_replace('/&s=.+$/', '&s=forgedsignature', $signedUrl);
+        $this->get($badSigUrl)->assertRedirect(route('home'));
+    }
 }

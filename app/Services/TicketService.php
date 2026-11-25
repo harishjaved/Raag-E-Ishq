@@ -4,13 +4,17 @@ namespace App\Services;
 
 use App\Models\AuditLog;
 use App\Models\Booking;
+use App\Models\BookingItem;
+use App\Models\Contact;
 use App\Models\EventSetting;
 use App\Models\Ticket;
+use App\Models\TicketCategory;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -266,6 +270,133 @@ class TicketService
         ];
     }
 
+    protected function getPassTokenSecret(): string
+    {
+        return (string) (config('app.key') ?: 'joygivers-pass-token-fallback');
+    }
+
+    /**
+     * Build a stateless, HMAC-signed confirmed pass URL so customer ticket links
+     * remain viewable even across ephemeral serverless container restarts.
+     */
+    public function buildSignedPassUrl(Booking $booking): string
+    {
+        $booking->loadMissing(['contact', 'items.category', 'tickets.category']);
+
+        $payload = [
+            'r' => $booking->booking_reference,
+            'n' => $booking->contact?->full_name ?? 'Guest',
+            'e' => $booking->contact?->email ?? 'events@joygivers.org',
+            'a' => (bool) $booking->is_attending,
+            'd' => (bool) $booking->is_donation,
+            'm' => (int) $booking->total_amount_paise,
+            'i' => $booking->items->map(fn ($item) => [
+                'c' => $item->category?->name ?? 'Tier',
+                'q' => (int) $item->quantity,
+                's' => (int) $item->subtotal_paise,
+            ])->values()->all(),
+            't' => $booking->tickets->map(fn ($ticket) => [
+                'id' => (int) $ticket->id,
+                'num' => $ticket->ticket_number,
+                'u' => $ticket->qr_uuid,
+                'nc' => $ticket->qr_nonce,
+                'cat' => $ticket->category?->name ?? 'Admission',
+                'att' => $ticket->attendee_name,
+            ])->values()->all(),
+        ];
+
+        $compressed = gzcompress(json_encode($payload), 9);
+        $encoded = rtrim(strtr(base64_encode($compressed), '+/', '-_'), '=');
+        $sig = rtrim(strtr(base64_encode(hash_hmac('sha256', $encoded, $this->getPassTokenSecret(), true)), '+/', '-_'), '=');
+
+        return route('booking.confirmed', ['reference' => $booking->booking_reference]) . '?p=' . $encoded . '&s=' . $sig;
+    }
+
+    /**
+     * Verify and reconstruct booking + tickets from a signed pass URL token.
+     *
+     * @return array{booking: Booking, tickets: Collection<int, Ticket>}|null
+     */
+    public function restoreConfirmedBookingFromToken(string $reference, string $encoded, string $signature): ?array
+    {
+        if ($encoded === '' || $signature === '') {
+            return null;
+        }
+
+        $expectedSig = rtrim(strtr(base64_encode(hash_hmac('sha256', $encoded, $this->getPassTokenSecret(), true)), '+/', '-_'), '=');
+        if (!hash_equals($expectedSig, $signature)) {
+            return null;
+        }
+
+        $padded = strtr($encoded, '-_', '+/');
+        $mod = strlen($padded) % 4;
+        if ($mod > 0) {
+            $padded .= str_repeat('=', 4 - $mod);
+        }
+
+        $rawCompressed = base64_decode($padded, true);
+        if ($rawCompressed === false) {
+            return null;
+        }
+
+        $rawJson = @gzuncompress($rawCompressed);
+        if ($rawJson === false) {
+            return null;
+        }
+
+        $data = json_decode($rawJson, true);
+        if (!is_array($data) || ($data['r'] ?? null) !== $reference) {
+            return null;
+        }
+
+        $booking = new Booking([
+            'booking_reference' => $data['r'],
+            'is_attending' => (bool) ($data['a'] ?? true),
+            'is_donation' => (bool) ($data['d'] ?? false),
+            'total_amount_paise' => (int) ($data['m'] ?? 0),
+            'status' => Booking::STATUS_CONFIRMED,
+        ]);
+
+        $contact = new Contact([
+            'full_name' => (string) ($data['n'] ?? 'Guest'),
+            'email' => (string) ($data['e'] ?? 'events@joygivers.org'),
+        ]);
+        $booking->setRelation('contact', $contact);
+
+        $items = collect($data['i'] ?? [])->map(function (array $row) {
+            $item = new BookingItem([
+                'quantity' => (int) ($row['q'] ?? 1),
+                'subtotal_paise' => (int) ($row['s'] ?? 0),
+            ]);
+            $item->setRelation('category', new TicketCategory(['name' => (string) ($row['c'] ?? 'Tier')]));
+            return $item;
+        });
+        $booking->setRelation('items', $items);
+
+        $tickets = collect($data['t'] ?? [])->map(function (array $t) {
+            $ticket = new Ticket([
+                'ticket_number' => (string) ($t['num'] ?? ''),
+                'qr_uuid' => (string) ($t['u'] ?? ''),
+                'qr_nonce' => (string) ($t['nc'] ?? ''),
+                'attendee_name' => (string) ($t['att'] ?? 'Guest'),
+                'status' => Ticket::STATUS_ISSUED,
+            ]);
+            $ticket->id = (int) ($t['id'] ?? 0);
+            $ticket->setRelation('category', new TicketCategory(['name' => (string) ($t['cat'] ?? 'Admission')]));
+
+            $ticket->qr_svg = $this->generateAdmissionQrSvg($ticket);
+            $ticket->verification_url = $this->getAdmissionQrPayload($ticket);
+            $ticket->qr_data_uri = 'data:image/svg+xml;base64,' . base64_encode($ticket->qr_svg);
+            return $ticket;
+        });
+        $booking->setRelation('tickets', $tickets);
+
+        return [
+            'booking' => $booking,
+            'tickets' => $tickets,
+        ];
+    }
+
     /**
      * Build structured WhatsApp text message for confirmed admission tickets.
      */
@@ -273,20 +404,21 @@ class TicketService
     {
         $booking->loadMissing(['contact', 'items.category', 'tickets.category']);
         $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
-        $ticketsUrl = route('booking.confirmed', $booking->booking_reference);
+        $ticketsUrl = $this->buildSignedPassUrl($booking);
 
         if ($booking->is_donation) {
             $lines = [
-                "💖 *Joygivers Presents: Raag-E-Ishq*",
+                "*Joygivers Presents: Raag-E-Ishq*",
                 "*Official Supporter & Donation Receipt*",
                 "",
                 "Dear *" . $booking->contact->full_name . "*,",
-                "Thank you for your generous contribution of *₹" . $amountFormatted . "* supporting girl education! 🌟",
+                "Thank you for your generous contribution of *₹" . $amountFormatted . "* supporting girl education!",
                 "",
-                "📋 *Booking Reference:* " . $booking->booking_reference,
-                "📄 *Official Supporter Receipt:* " . $ticketsUrl,
+                "• *Booking Reference:* " . $booking->booking_reference,
+                "• *Official Supporter Receipt:*",
+                $ticketsUrl,
                 "",
-                "100% of proceeds fund girl education and welfare programmes. Thank you for making a lasting difference! ✨",
+                "100% of proceeds fund girl education and welfare programmes. Thank you for making a lasting difference!",
             ];
             return implode("\n", $lines);
         }
@@ -305,21 +437,21 @@ class TicketService
         }
 
         $lines = [
-            "🎟️ *Raag-E-Ishq — Admission Pass*",
+            "*Raag-E-Ishq — Official Admission Pass*",
             "",
             "Dear *" . $booking->contact->full_name . "*,",
             "Your ticket booking is confirmed! Here is your official entry pass:",
             "",
-            "📋 *Booking Ref:* " . $booking->booking_reference,
-            "💺 *Tickets:* " . $ticketSummary,
-            "📅 *Date & Time:* Sunday, 17th January 2027 • 7:00 PM",
-            "📍 *Venue:* Chavara Hall, Near South Railway Station, Kochi",
+            "• *Booking Ref:* " . $booking->booking_reference,
+            "• *Tickets:* " . $ticketSummary,
+            "• *Date & Time:* Sunday, 17th January 2027 • 7:00 PM",
+            "• *Venue:* Chavara Hall, Near South Railway Station, Kochi",
             "",
-            "📲 *Open Your QR Ticket Pass:*",
+            "*Open Your QR Ticket Pass:*",
             $ticketsUrl,
             "",
             "Present this QR pass at the entrance for instant check-in.",
-            "(100% proceeds dedicated to girl education ✨)",
+            "(100% proceeds dedicated to girl education)",
         ];
 
         return implode("\n", $lines);
@@ -332,20 +464,20 @@ class TicketService
     {
         $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
         $lines = [
-            "🎵 *Joygivers Presents: Raag-E-Ishq*",
+            "*Joygivers Presents: Raag-E-Ishq*",
             "*Ticket Booking Enquiry Confirmation*",
             "",
             "Hello *" . $booking->contact->full_name . "*!",
             "Thank you for registering for Raag-E-Ishq at Chavara Hall, Kochi.",
             "",
-            "📋 *Enquiry Reference:* " . $booking->booking_reference,
-            "💰 *Total Amount Payable:* ₹" . $amountFormatted,
+            "• *Enquiry Reference:* " . $booking->booking_reference,
+            "• *Total Amount Payable:* ₹" . $amountFormatted,
             "",
-            "💳 *UPI Payment Details:*",
+            "*UPI Payment Details:*",
             "• UPI ID: *mujammilibrahim007@okhdfcbank*",
             "• Payee: Joygivers Event Desk",
             "",
-            "Please send your payment screenshot / UTR number here once done so our team can approve and issue your unique QR admission pass immediately. 🎟️",
+            "Please send your payment screenshot / UTR number here once done so our team can approve and issue your unique QR admission pass immediately.",
         ];
         return implode("\n", $lines);
     }
