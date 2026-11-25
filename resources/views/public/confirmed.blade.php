@@ -201,7 +201,11 @@
     <!-- Support Card (Screen Only) -->
     <div class="support-card no-print p-6 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 shadow-xl">
         <div class="space-y-1">
-            <p class="text-xs text-slate-300">A confirmation receipt has been emailed to <strong class="text-amber-400">{{ $booking->contact->email }}</strong>.</p>
+            @if (!empty($booking->contact->email))
+                <p class="text-xs text-slate-300">A confirmation receipt has been emailed to <strong class="text-amber-400">{{ $booking->contact->email }}</strong>.</p>
+            @else
+                <p class="text-xs text-slate-300">Save or print this official confirmation pass for smooth venue entry at Chavara Hall.</p>
+            @endif
             <p class="text-[11px] text-slate-500">
                 <strong>Cancellation Policy:</strong> All ticket bookings are final, non-cancellable, and non-refundable. All proceeds support Joygivers educational initiatives.
             </p>

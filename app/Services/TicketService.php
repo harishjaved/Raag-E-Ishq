@@ -276,44 +276,129 @@ class TicketService
     }
 
     /**
-     * Build a stateless, HMAC-signed confirmed pass URL so customer ticket links
-     * remain viewable even across ephemeral serverless container restarts.
+     * Build a compact, tamper-proof HMAC-signed /p/{token} URL so customer ticket links
+     * stay short in WhatsApp/email while remaining viewable across serverless resets.
      */
     public function buildSignedPassUrl(Booking $booking): string
     {
         $booking->loadMissing(['contact', 'items.category', 'tickets.category']);
 
-        $payload = [
-            'r' => $booking->booking_reference,
-            'n' => $booking->contact?->full_name ?? 'Guest',
-            'e' => $booking->contact?->email ?? 'events@joygivers.org',
-            'a' => (bool) $booking->is_attending,
-            'd' => (bool) $booking->is_donation,
-            'm' => (int) $booking->total_amount_paise,
-            'i' => $booking->items->map(fn ($item) => [
-                'c' => $item->category?->name ?? 'Tier',
-                'q' => (int) $item->quantity,
-                's' => (int) $item->subtotal_paise,
-            ])->values()->all(),
-            't' => $booking->tickets->map(fn ($ticket) => [
-                'id' => (int) $ticket->id,
-                'num' => $ticket->ticket_number,
-                'u' => $ticket->qr_uuid,
-                'nc' => $ticket->qr_nonce,
-                'cat' => $ticket->category?->name ?? 'Admission',
-                'att' => $ticket->attendee_name,
-            ])->values()->all(),
+        $holderName = $booking->contact?->full_name ?? 'Guest';
+        $defaultCategory = $booking->items->first()?->category?->name ?? 'Admission';
+
+        $itemsPayload = $booking->items->map(fn ($item) => [
+            $item->category?->name ?? 'Tier',
+            (int) $item->quantity,
+            (int) $item->subtotal_paise,
+        ])->values()->all();
+
+        $ticketsPayload = $booking->tickets->values()->map(function ($ticket, int $idx) use ($holderName, $defaultCategory) {
+            $defaultAttendee = $idx === 0 ? $holderName : "{$holderName} (Guest #" . ($idx + 1) . ")";
+            $ticketCat = $ticket->category?->name ?? 'Admission';
+
+            if ($ticket->attendee_name === $defaultAttendee && $ticketCat === $defaultCategory) {
+                return $ticket->ticket_number;
+            }
+
+            return [$ticket->ticket_number, $ticketCat, $ticket->attendee_name];
+        })->all();
+
+        $compactPayload = [
+            $booking->booking_reference,
+            $holderName,
+            ($booking->is_attending ? 1 : 0) | ($booking->is_donation ? 2 : 0),
+            (int) $booking->total_amount_paise,
+            $itemsPayload,
+            $ticketsPayload,
         ];
 
-        $compressed = gzcompress(json_encode($payload), 9);
-        $encoded = rtrim(strtr(base64_encode($compressed), '+/', '-_'), '=');
-        $sig = rtrim(strtr(base64_encode(hash_hmac('sha256', $encoded, $this->getPassTokenSecret(), true)), '+/', '-_'), '=');
+        $deflated = gzdeflate(json_encode($compactPayload, JSON_UNESCAPED_UNICODE), 9);
+        $mac = substr(hash_hmac('sha256', "\x01" . $deflated, $this->getPassTokenSecret(), true), 0, 12);
+        $token = rtrim(strtr(base64_encode("\x01" . $mac . $deflated), '+/', '-_'), '=');
 
-        return route('booking.confirmed', ['reference' => $booking->booking_reference]) . '?p=' . $encoded . '&s=' . $sig;
+        return route('booking.pass.short', ['token' => $token]);
     }
 
     /**
-     * Verify and reconstruct booking + tickets from a signed pass URL token.
+     * Verify and reconstruct booking + tickets from the compact /p/{token} pass format.
+     *
+     * @return array{booking: Booking, tickets: Collection<int, Ticket>}|null
+     */
+    public function restoreConfirmedBookingFromShortToken(string $token): ?array
+    {
+        if ($token === '') {
+            return null;
+        }
+
+        $padded = strtr($token, '-_', '+/');
+        $mod = strlen($padded) % 4;
+        if ($mod > 0) {
+            $padded .= str_repeat('=', 4 - $mod);
+        }
+
+        $raw = base64_decode($padded, true);
+        if ($raw === false || strlen($raw) < 14 || $raw[0] !== "\x01") {
+            return null;
+        }
+
+        $providedMac = substr($raw, 1, 12);
+        $deflated = substr($raw, 13);
+        $expectedMac = substr(hash_hmac('sha256', "\x01" . $deflated, $this->getPassTokenSecret(), true), 0, 12);
+
+        if (!hash_equals($expectedMac, $providedMac)) {
+            return null;
+        }
+
+        $json = @gzinflate($deflated);
+        if ($json === false) {
+            return null;
+        }
+
+        $arr = json_decode($json, true);
+        if (!is_array($arr) || count($arr) < 6 || empty($arr[0])) {
+            return null;
+        }
+
+        $reference = (string) $arr[0];
+        $holderName = (string) ($arr[1] ?? 'Guest');
+        $flags = (int) ($arr[2] ?? 1);
+        $totalPaise = (int) ($arr[3] ?? 0);
+        $rawItems = is_array($arr[4]) ? $arr[4] : [];
+        $rawTickets = is_array($arr[5]) ? $arr[5] : [];
+        $defaultCategory = (string) ($rawItems[0][0] ?? 'Admission');
+
+        return $this->hydrateRestoredBooking([
+            'r' => $reference,
+            'n' => $holderName,
+            'e' => '',
+            'a' => (bool) ($flags & 1),
+            'd' => (bool) ($flags & 2),
+            'm' => $totalPaise,
+            'i' => array_map(fn ($row) => [
+                'c' => (string) ($row[0] ?? 'Tier'),
+                'q' => (int) ($row[1] ?? 1),
+                's' => (int) ($row[2] ?? 0),
+            ], $rawItems),
+            't' => collect($rawTickets)->values()->map(function ($t, int $idx) use ($reference, $holderName, $defaultCategory) {
+                $num = is_array($t) ? (string) ($t[0] ?? '') : (string) $t;
+                $cat = is_array($t) ? (string) ($t[1] ?? $defaultCategory) : $defaultCategory;
+                $defaultAtt = $idx === 0 ? $holderName : "{$holderName} (Guest #" . ($idx + 1) . ")";
+                $att = is_array($t) ? (string) ($t[2] ?? $defaultAtt) : $defaultAtt;
+
+                return [
+                    'id' => $idx + 1,
+                    'num' => $num,
+                    'u' => $this->deriveDeterministicUuid($reference, $num),
+                    'nc' => $this->deriveDeterministicNonce($reference, $num),
+                    'cat' => $cat,
+                    'att' => $att,
+                ];
+            })->all(),
+        ]);
+    }
+
+    /**
+     * Verify and reconstruct booking + tickets from legacy ?p=...&s=... pass URL tokens.
      *
      * @return array{booking: Booking, tickets: Collection<int, Ticket>}|null
      */
@@ -349,6 +434,14 @@ class TicketService
             return null;
         }
 
+        return $this->hydrateRestoredBooking($data);
+    }
+
+    /**
+     * @return array{booking: Booking, tickets: Collection<int, Ticket>}
+     */
+    protected function hydrateRestoredBooking(array $data): array
+    {
         $booking = new Booking([
             'booking_reference' => $data['r'],
             'is_attending' => (bool) ($data['a'] ?? true),
@@ -359,7 +452,7 @@ class TicketService
 
         $contact = new Contact([
             'full_name' => (string) ($data['n'] ?? 'Guest'),
-            'email' => (string) ($data['e'] ?? 'events@joygivers.org'),
+            'email' => (string) ($data['e'] ?? ''),
         ]);
         $booking->setRelation('contact', $contact);
 
@@ -395,6 +488,17 @@ class TicketService
             'booking' => $booking,
             'tickets' => $tickets,
         ];
+    }
+
+    protected function deriveDeterministicUuid(string $reference, string $ticketNumber): string
+    {
+        $hex = substr(hash_hmac('sha256', "uuid:{$reference}:{$ticketNumber}", $this->getPassTokenSecret()), 0, 32);
+        return sprintf('%s-%s-%s-%s-%s', substr($hex, 0, 8), substr($hex, 8, 4), substr($hex, 12, 4), substr($hex, 16, 4), substr($hex, 20, 12));
+    }
+
+    protected function deriveDeterministicNonce(string $reference, string $ticketNumber): string
+    {
+        return substr(hash_hmac('sha256', "nonce:{$reference}:{$ticketNumber}", $this->getPassTokenSecret()), 0, 32);
     }
 
     /**

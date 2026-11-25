@@ -96,6 +96,7 @@ Route::get('/booking/{reference}/payment', [PaymentController::class, 'show'])->
 Route::get('/booking/{reference}/status', [PaymentController::class, 'status'])->name('booking.status');
 Route::get('/booking/{reference}/confirmed', [ConfirmationController::class, 'show'])->name('booking.confirmed');
 Route::get('/pass/{reference}', [ConfirmationController::class, 'show'])->name('booking.pass');
+Route::get('/p/{token}', [ConfirmationController::class, 'showShort'])->name('booking.pass.short');
 Route::post('/booking/{reference}/simulate-payment', [PaymentController::class, 'simulatePayment'])->name('booking.simulate-payment')->middleware('throttle:30,1');
 
 // Ticket Download (Signed URL) & Self-service Resend (Rate limited)

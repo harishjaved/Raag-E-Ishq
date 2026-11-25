@@ -33,8 +33,34 @@ class ConfirmationController extends Controller
             ]);
         }
 
+        return $this->renderConfirmedBooking($booking, $ticketService);
+    }
+
+    public function showShort(string $token, TicketService $ticketService): View|RedirectResponse
+    {
+        $restored = $ticketService->restoreConfirmedBookingFromShortToken($token);
+        if ($restored === null) {
+            return redirect()->route('home')->withErrors([
+                'quantity' => 'Ticket pass link is invalid or corrupted. Please place an enquiry or request a resend below.',
+            ]);
+        }
+
+        $reference = $restored['booking']->booking_reference;
+        $booking = Booking::with(['items.category', 'contact', 'tickets.category'])
+            ->where('booking_reference', $reference)
+            ->first();
+
+        if ($booking) {
+            return $this->renderConfirmedBooking($booking, $ticketService);
+        }
+
+        return view('public.confirmed', $restored);
+    }
+
+    protected function renderConfirmedBooking(Booking $booking, TicketService $ticketService): View|RedirectResponse
+    {
         if ($booking->status !== Booking::STATUS_CONFIRMED) {
-            return redirect()->route('booking.payment', ['reference' => $reference]);
+            return redirect()->route('booking.payment', ['reference' => $booking->booking_reference]);
         }
 
         // Ensure tickets are loaded with admission QR SVGs and download URLs

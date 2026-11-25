@@ -363,10 +363,16 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $signedUrl = $this->ticketService->buildSignedPassUrl($b);
         $msg = $this->ticketService->buildWhatsAppTicketMessage($b);
 
-        $this->assertStringContainsString('?p=', $signedUrl);
-        $this->assertStringContainsString('&s=', $signedUrl);
+        $this->assertStringContainsString('/p/', $signedUrl);
+        $this->assertStringNotContainsString('?p=', $signedUrl);
+        $this->assertLessThan(160, strlen((string) parse_url($signedUrl, PHP_URL_PATH)));
         $this->assertStringContainsString($signedUrl, $msg);
         $this->assertStringNotContainsString("\u{FFFD}", $msg);
+
+        // When DB row exists, short link renders live DB record (including email)
+        $this->get($signedUrl)
+            ->assertStatus(200)
+            ->assertSee('devika@test.com');
 
         // Simulate serverless /tmp/database.sqlite container reset by removing DB rows
         $b->emailDeliveries()->delete();
@@ -385,11 +391,10 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $response->assertSee('<svg', false);
         $response->assertSee('data:image/svg+xml;base64,', false);
 
-        // Tampered token or signature must be rejected
-        $tamperedResponse = $this->get('/booking/' . $reference . '/confirmed?p=tampered&s=badsignature');
-        $tamperedResponse->assertRedirect(route('home'));
-
-        $badSigUrl = preg_replace('/&s=.+$/', '&s=forgedsignature', $signedUrl);
-        $this->get($badSigUrl)->assertRedirect(route('home'));
+        // Tampered short tokens and legacy tokens must be rejected
+        $this->get('/p/tampered-invalid-token')->assertRedirect(route('home'));
+        $tamperedShortUrl = substr($signedUrl, 0, -4) . 'AAAA';
+        $this->get($tamperedShortUrl)->assertRedirect(route('home'));
+        $this->get('/booking/' . $reference . '/confirmed?p=tampered&s=badsignature')->assertRedirect(route('home'));
     }
 }
