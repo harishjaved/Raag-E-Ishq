@@ -151,30 +151,33 @@ class Booking extends Model
         $like = "%{$term}%";
         $phoneDigits = Contact::normalizeSearchPhoneDigits($term);
         $phoneLike = $phoneDigits ? "%{$phoneDigits}%" : $like;
+        $isPgsql = $query->getConnection()->getDriverName() === 'pgsql';
+        $likeOp = $isPgsql ? 'ilike' : 'like';
+        $sqlLike = $isPgsql ? 'ILIKE' : 'LIKE';
 
-        $query->where(function (Builder $q) use ($like, $phoneDigits, $phoneLike) {
-            $q->where('booking_reference', 'like', $like)
-              ->orWhereHas('contact', function (Builder $cq) use ($like, $phoneDigits, $phoneLike) {
-                  $cq->where('full_name', 'like', $like)
-                     ->orWhere('phone', 'like', $like)
-                     ->orWhere('email', 'like', $like);
+        $query->where(function (Builder $q) use ($likeOp, $like, $phoneDigits, $phoneLike) {
+            $q->where('booking_reference', $likeOp, $like)
+              ->orWhereHas('contact', function (Builder $cq) use ($likeOp, $like, $phoneDigits, $phoneLike) {
+                  $cq->where('full_name', $likeOp, $like)
+                     ->orWhere('phone', $likeOp, $like)
+                     ->orWhere('email', $likeOp, $like);
 
                   if ($phoneDigits !== null) {
-                      $cq->orWhere('phone', 'like', $phoneLike);
+                      $cq->orWhere('phone', $likeOp, $phoneLike);
                   }
               });
         });
 
         return $query->orderByRaw(
-            'CASE
-                WHEN booking_reference LIKE ? THEN 0
+            "CASE
+                WHEN booking_reference {$sqlLike} ? THEN 0
                 WHEN EXISTS (
                     SELECT 1 FROM contacts c
                     WHERE c.id = bookings.contact_id
-                      AND (c.full_name LIKE ? OR c.phone LIKE ? OR c.phone LIKE ?)
+                      AND (c.full_name {$sqlLike} ? OR c.phone {$sqlLike} ? OR c.phone {$sqlLike} ?)
                 ) THEN 1
                 ELSE 2
-            END ASC',
+            END ASC",
             [$like, $like, $like, $phoneLike]
         );
     }

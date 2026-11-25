@@ -21,13 +21,37 @@ foreach ($tmpDirs as $dir) {
     }
 }
 
-// Copy pre-seeded SQLite database to /tmp if it doesn't already exist or is empty
-$srcDb = __DIR__ . '/../database/database.sqlite';
-$dstDb = '/tmp/database.sqlite';
-if ((!file_exists($dstDb) || filesize($dstDb) === 0) && file_exists($srcDb)) {
-    @copy($srcDb, $dstDb);
-} elseif (!file_exists($dstDb)) {
-    @touch($dstDb);
+// Use managed Postgres automatically when Vercel database env vars exist; otherwise fall back to /tmp SQLite
+$hasPostgresEnv = (bool) (
+    getenv('DB_URL')
+    ?: getenv('DATABASE_URL')
+    ?: getenv('POSTGRES_URL')
+    ?: getenv('STORAGE_POSTGRES_URL')
+);
+
+if ($hasPostgresEnv) {
+    if (!getenv('DB_CONNECTION')) {
+        putenv('DB_CONNECTION=pgsql');
+        $_ENV['DB_CONNECTION'] = $_SERVER['DB_CONNECTION'] = 'pgsql';
+    }
+} else {
+    if (!getenv('DB_CONNECTION')) {
+        putenv('DB_CONNECTION=sqlite');
+        $_ENV['DB_CONNECTION'] = $_SERVER['DB_CONNECTION'] = 'sqlite';
+    }
+    if (!getenv('DB_DATABASE')) {
+        putenv('DB_DATABASE=/tmp/database.sqlite');
+        $_ENV['DB_DATABASE'] = $_SERVER['DB_DATABASE'] = '/tmp/database.sqlite';
+    }
+
+    // Copy pre-seeded SQLite database to /tmp if it doesn't already exist or is empty
+    $srcDb = __DIR__ . '/../database/database.sqlite';
+    $dstDb = '/tmp/database.sqlite';
+    if ((!file_exists($dstDb) || filesize($dstDb) === 0) && file_exists($srcDb)) {
+        @copy($srcDb, $dstDb);
+    } elseif (!file_exists($dstDb)) {
+        @touch($dstDb);
+    }
 }
 
 require __DIR__ . '/../public/index.php';

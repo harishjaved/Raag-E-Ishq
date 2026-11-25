@@ -26,6 +26,23 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') === 'production' || env('APP_ENV') === 'production' || isset($_SERVER['VERCEL'])) {
             URL::forceScheme('https');
         }
+
+        // Auto-initialize managed PostgreSQL schema & baseline seed on first serverless request
+        if (config('database.default') === 'pgsql' && !app()->runningInConsole() && !file_exists('/tmp/.pg_schema_ready')) {
+            try {
+                if (!Schema::hasTable('events')) {
+                    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+                }
+                if (Schema::hasTable('events') && \App\Models\Event::count() === 0) {
+                    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+                }
+                if (is_dir('/tmp')) {
+                    @file_put_contents('/tmp/.pg_schema_ready', '1');
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('PostgreSQL auto-bootstrap failed: ' . $e->getMessage());
+            }
+        }
         // Share live counters with the admin sidebar
         View::composer('layouts.admin', function ($view) {
             if (Schema::hasTable('bookings')) {

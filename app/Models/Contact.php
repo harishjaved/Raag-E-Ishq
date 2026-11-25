@@ -63,19 +63,22 @@ class Contact extends Model
         $like = "%{$term}%";
         $phoneDigits = self::normalizeSearchPhoneDigits($term);
         $phoneLike = $phoneDigits ? "%{$phoneDigits}%" : $like;
+        $isPgsql = $query->getConnection()->getDriverName() === 'pgsql';
+        $likeOp = $isPgsql ? 'ilike' : 'like';
+        $sqlLike = $isPgsql ? 'ILIKE' : 'LIKE';
 
-        $query->where(function (Builder $q) use ($like, $phoneDigits, $phoneLike) {
-            $q->where('full_name', 'like', $like)
-              ->orWhere('email', 'like', $like)
-              ->orWhere('phone', 'like', $like);
+        $query->where(function (Builder $q) use ($likeOp, $like, $phoneDigits, $phoneLike) {
+            $q->where('full_name', $likeOp, $like)
+              ->orWhere('email', $likeOp, $like)
+              ->orWhere('phone', $likeOp, $like);
 
             if ($phoneDigits !== null) {
-                $q->orWhere('phone', 'like', $phoneLike);
+                $q->orWhere('phone', $likeOp, $phoneLike);
             }
         });
 
         return $query->orderByRaw(
-            'CASE WHEN full_name LIKE ? THEN 0 WHEN phone LIKE ? OR phone LIKE ? THEN 1 ELSE 2 END ASC',
+            "CASE WHEN full_name {$sqlLike} ? THEN 0 WHEN phone {$sqlLike} ? OR phone {$sqlLike} ? THEN 1 ELSE 2 END ASC",
             [$like, $like, $phoneLike]
         );
     }
