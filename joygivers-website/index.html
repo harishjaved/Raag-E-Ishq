@@ -998,7 +998,6 @@
         isPaused = true;
         clearInterval(autoTimer);
         if (progressEl) progressEl.classList.remove('is-running');
-        if (statusEl) statusEl.textContent = 'Paused';
       }
 
       function resumeCarousel() {
@@ -1019,15 +1018,6 @@
 
       document.getElementById('hero-next')?.addEventListener('click', nextSlide);
       document.getElementById('hero-prev')?.addEventListener('click', prevSlide);
-
-      carousel?.addEventListener('mouseenter', pauseCarousel);
-      carousel?.addEventListener('mouseleave', resumeCarousel);
-      carousel?.addEventListener('focusin', (e) => {
-        if (e.target && e.target.matches(':focus-visible')) pauseCarousel();
-      });
-      carousel?.addEventListener('focusout', (e) => {
-        if (!carousel.contains(e.relatedTarget) && !carousel.matches(':hover')) resumeCarousel();
-      });
 
       carousel?.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight') nextSlide();

@@ -61,6 +61,8 @@ class JoygiversLandingTest extends TestCase
         $response->assertSee('Chavara Hall, Kochi');
         $response->assertSee('Charitable Supporter');
         $response->assertSee('+91 77366 06506');
+        $response->assertDontSee("addEventListener('mouseenter', pauseCarousel)", false);
+        $response->assertDontSee("statusEl.textContent = 'Paused'", false);
     }
 
     public function test_inline_json_booking_submission_creates_real_booking(): void
