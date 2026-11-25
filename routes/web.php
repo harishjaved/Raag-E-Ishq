@@ -21,6 +21,73 @@ use Illuminate\Support\Facades\Route;
 
 // Public Registration & Event
 Route::get('/', [EventController::class, 'show'])->name('home');
+// Joygivers Foundation Main Landing Page (serves unified standalone + live-connected joygivers-website/)
+Route::get('/joygivers', function (\App\Services\InventoryService $inventoryService) {
+    $html = file_get_contents(base_path('joygivers-website/index.html'));
+    $html = str_replace(
+        ['src="./images/', 'content="./images/', 'href="./images/'],
+        ['src="/joygivers/images/', 'content="/joygivers/images/', 'href="/joygivers/images/'],
+        $html
+    );
+
+    $categoriesPayload = [];
+    try {
+        $event = \App\Models\Event::with(['categories' => function ($q) {
+            $q->where('is_active', true)->orderBy('display_order');
+        }])->where('slug', 'sagar-kinare-2026')->first();
+
+        if ($event) {
+            $categoriesPayload = $event->categories->map(function ($cat) use ($inventoryService) {
+                return [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'price_paise' => $cat->price_paise,
+                    'available' => $inventoryService->getAvailableCapacity($cat),
+                ];
+            })->values()->all();
+        }
+    } catch (\Throwable $e) {
+        // Fallback to static tier definitions inside joygivers-website/index.html
+    }
+
+    $runtimeInjection = '<meta name="csrf-token" content="' . csrf_token() . '" />' . "\n"
+        . '  <script>window.JOYGIVERS_LIVE = ' . json_encode([
+            'enabled' => true,
+            'registerUrl' => route('register.store', [], false),
+            'eventPageUrl' => app()->environment('production') ? 'https://raag-e-ishq.vercel.app' : route('home', [], false),
+            'categories' => $categoriesPayload,
+        ]) . ';</script>' . "\n</head>";
+
+    $html = str_replace('</head>', $runtimeInjection, $html);
+
+    return response($html, 200, [
+        'Content-Type' => 'text/html; charset=UTF-8',
+    ]);
+})->name('joygivers.landing');
+
+Route::get('/joygivers/images/{file}', function (string $file) {
+    if (!preg_match('/^[a-zA-Z0-9._-]+$/', $file)) {
+        abort(404);
+    }
+    $path = base_path('joygivers-website/images/' . $file);
+    if (!is_file($path)) {
+        abort(404);
+    }
+
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $mimeTypes = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'svg' => 'image/svg+xml',
+    ];
+
+    return response(file_get_contents($path), 200, [
+        'Content-Type' => $mimeTypes[$ext] ?? 'application/octet-stream',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->name('joygivers.asset');
 Route::get('/register', fn () => redirect()->route('home'))->name('register.show');
 Route::post('/register', [RegistrationController::class, 'store'])->name('register.store')->middleware('throttle:30,1');
 

@@ -349,7 +349,11 @@
             </a>
 
             <!-- Right Navigation Actions -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="{{ route('joygivers.landing') }}"
+                   class="text-xs font-bold px-3 py-2 rounded-xl border transition dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-amber-400/50 light:border-slate-200 light:bg-slate-100 light:text-slate-700 light:hover:bg-slate-200">
+                    &larr; Joygivers
+                </a>
                 <!-- Theme Toggle Button -->
                 <button id="theme_toggle_btn" onclick="toggleTheme()" aria-label="Toggle Theme"
                     class="p-2 rounded-xl border transition-all duration-200 flex items-center justify-center dark:border-slate-800 dark:bg-slate-900/60 dark:hover:bg-slate-800 dark:text-amber-400 light:border-slate-200 light:bg-slate-100 light:hover:bg-slate-200 light:text-slate-700 shadow-sm">

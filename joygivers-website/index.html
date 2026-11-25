@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joygivers — Empowering Her Future Through Education | Kerala</title>
+  <meta name="description" content="Joygivers is a grassroots NGO and social initiative in Kerala dedicated to empowering underprivileged girls through scholarships, books, digital learning kits, and cultural fundraising events like Raag-E-Ishq." />
+  <meta property="og:title" content="Joygivers — Empowering Girl Education in Kerala" />
+  <meta property="og:description" content="Funding scholarships, books, and digital learning access for girls across Kerala. Explore our mission and book Raag-E-Ishq concert passes." />
+  <meta property="og:image" content="./images/girl-education-hero.jpg" />
+  <meta property="og:type" content="website" />
+
+  <link rel="icon" type="image/jpeg" href="./images/joygivers-icon.jpg" />
+  <link rel="apple-touch-icon" href="./images/joygivers-icon.jpg" />
+
+  <!-- Fonts: Playfair Display & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              950: '#050608',
+              900: '#0B0E14',
+              800: '#121722',
+              700: '#1E2536',
+            },
+            joy: {
+              400: '#7AF038',
+              500: '#64E818',
+              600: '#16A34A',
+              700: '#15803D',
+              800: '#166534',
+            },
+            mintbg: {
+              50: '#F9FCF7',
+              100: '#F2F7EF',
+              200: '#E2ECDC',
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background-color: #050608;
+      color: #F8FAFC;
+    }
+
+    h1, h2, h3, .font-serif-editorial {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+
+    /* CSS Grid Stacked Carousel */
+    .hero-track {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero-slide {
+      grid-area: 1 / 1;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.8s;
+      z-index: 1;
+    }
+
+    .hero-slide.is-active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    .hero-slide .hero-bg-img {
+      transform: scale(1.04);
+      transition: transform 6.5s ease-out;
+    }
+
+    .hero-slide.is-active .hero-bg-img {
+      transform: scale(1);
+    }
+
+    /* Animated 6-Second Timer Progress Bar */
+    .slide-progress-fill {
+      width: 0%;
+      transition: none;
+    }
+
+    .slide-progress-fill.is-running {
+      width: 100%;
+      transition: width 6000ms linear;
+    }
+
+    @keyframes modalStepIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-animate {
+      animation: modalStepIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Native Dialog Best Practices: Zero Background Scroll Chaining */
+    dialog:modal {
+      overscroll-behavior: contain;
+    }
+
+    dialog::backdrop {
+      background: rgba(5, 6, 8, 0.84);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+
+    #mobile-nav-dialog {
+      margin: 0 0 0 auto;
+      height: 100svh;
+      max-height: 100svh;
+    }
+
+    :focus-visible {
+      outline: 2px solid #64E818;
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-slide,
+      .hero-slide .hero-bg-img,
+      .slide-progress-fill,
+      .step-animate {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body id="top" class="bg-obsidian-950 text-slate-100 antialiased selection:bg-joy-500 selection:text-obsidian-950">
+
+  <!-- Sticky Navigation Bar -->
+  <header class="sticky top-0 z-40 border-b border-white/10 bg-obsidian-950/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <!-- Brand Logo -->
+      <a href="#top" class="flex items-center gap-3.5 group flex-shrink-0" aria-label="Joygivers Home">
+        <img src="./images/joygivers-logo.jpg"
+             alt="Joygivers"
+             width="955"
+             height="248"
+             class="h-8 w-auto sm:h-9 object-contain mix-blend-screen transition-transform group-hover:scale-[1.02]" />
+        <span class="hidden lg:inline-block border-l border-white/15 pl-3.5 text-xs font-bold uppercase tracking-[0.14em] text-joy-500">
+          For Girl Education &bull; Kerala
+        </span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav aria-label="Main navigation" class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-semibold text-slate-300">
+        <a href="#top" class="hover:text-joy-400 transition-colors whitespace-nowrap">Home</a>
+        <a href="#mission" class="hover:text-joy-400 transition-colors whitespace-nowrap">Our Mission</a>
+        <a href="#event-spotlight" class="hover:text-joy-400 transition-colors whitespace-nowrap">Raag-E-Ishq Event</a>
+        <a href="#impact" class="hover:text-joy-400 transition-colors whitespace-nowrap">Impact</a>
+        <a href="#contact" class="hover:text-joy-400 transition-colors whitespace-nowrap">Contact</a>
+      </nav>
+
+      <!-- Desktop Primary Action: Opens In-Page Booking Modal -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <button type="button"
+                onclick="openBookingModal()"
+                class="hidden sm:inline-flex items-center gap-2 rounded-full bg-joy-500 px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider text-obsidian-950 shadow-lg shadow-joy-500/20 transition hover:bg-joy-400 active:scale-[0.98] whitespace-nowrap">
+          <span>Book Event Tickets</span>
+          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </button>
+
+        <button type="button"
+                id="mobile-menu-open"
+                aria-label="Open navigation menu"
+                aria-controls="mobile-nav-dialog"
+                aria-expanded="false"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-obsidian-900 text-white hover:border-joy-500/60 md:hidden">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- Auto-Sliding Hero Banner Carousel -->
+    <section id="hero-carousel"
+             aria-roledescription="carousel"
+             aria-label="Featured Initiatives and Charity Concert"
+             class="relative w-full overflow-hidden bg-obsidian-950 text-white">
+
+      <div class="hero-track">
+
+        <!-- SLIDE 1: Joygivers Girl Education Mission (Default Active Slide) -->
+        <article id="slide-0"
+                 role="group"
+                 aria-roledescription="slide"
+                 aria-label="Slide 1 of 2: Joygivers Girl Education Mission"
+                 aria-hidden="false"
+                 class="hero-slide is-active relative flex min-h-[85vh] items-center">
+          <img src="./images/girl-education-hero.jpg"
+               alt="Smiling young schoolgirls in Kerala studying and reading books together in a sunlit community classroom"
+               fetchpriority="high"
+               width="1920"
+               height="1080"
+               class="hero-bg-img absolute inset-0 h-full w-full object-cover object-center sm:object-right" />
+
+          <div class="absolute inset-0 bg-gradient-to-r from-obsidian-950/95 via-obsidian-950/78 to-obsidian-950/20"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-obsidian-950 via-transparent to-obsidian-950/35"></div>
+
+          <div class="relative z-10 mx-auto w-full max-w-7xl px-5 pt-14 pb-32 sm:px-8 sm:pt-16 sm:pb-36 lg:px-10">
+            <div class="max-w-2xl space-y-5">
+              <div class="inline-flex items-center gap-2 rounded-full border border-joy-500/40 bg-obsidian-950/80 px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.14em] text-joy-400 backdrop-blur-sm">
+                <span class="h-2 w-2 rounded-full bg-joy-500"></span>
+                <span>Joygivers Foundation &bull; Kerala Initiative</span>
+              </div>
+
+              <h1 class="font-serif text-3xl font-extrabold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-[3.35rem]">
+                Empowering Her Future
+                <span class="block text-joy-400">Through Education</span>
+              </h1>
+
+              <p class="max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg">
+                Across Kerala's rural and underserved communities, Joygivers funds annual school scholarships, learning kits, books, and digital literacy access — helping bright young girls stay in school and dream without limits.
+              </p>
+
+              <div class="flex flex-wrap items-center gap-3.5 pt-2">
+                <a href="#mission"
+                   class="inline-flex items-center justify-center gap-2 rounded-full bg-joy-500 px-7 py-3.5 text-sm font-extrabold text-obsidian-950 shadow-lg shadow-joy-500/25 transition hover:bg-joy-400 active:scale-[0.98]">
+                  <span>Support Our Mission</span>
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+                  </svg>
+                </a>
+
+                <button type="button"
+                        onclick="goToSlide(1)"
+                        class="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-obsidian-900/70 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition hover:border-joy-400 hover:bg-obsidian-800 active:scale-[0.98]">
+                  <span>Upcoming Charity Concert</span>
+                  <svg class="h-4 w-4 text-joy-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- SLIDE 2: Featured Event "Joygivers Presents: Raag-E-Ishq" -->
+        <article id="slide-1"
+                 role="group"
+                 aria-roledescription="slide"
+                 aria-label="Slide 2 of 2: Featured Event Raag-E-Ishq"
+                 aria-hidden="true"
+                 class="hero-slide relative flex min-h-[85vh] items-center">
+          <img src="./images/raag-e-ishq-hero.jpg"
+               alt="Warm golden stage lighting and musical notes for the Raag-E-Ishq live Sufi and classical charity concert"
+               fetchpriority="low"
+               loading="lazy"
+               width="1920"
+               height="1080"
+               class="hero-bg-img absolute inset-0 h-full w-full object-cover object-center" />
+
+          <div class="absolute inset-0 bg-gradient-to-r from-obsidian-950/95 via-obsidian-950/82 to-obsidian-950/45"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-obsidian-950 via-transparent to-obsidian-950/40"></div>
+
+          <div class="relative z-10 mx-auto w-full max-w-7xl px-5 pt-14 pb-32 sm:px-8 sm:pt-16 sm:pb-36 lg:px-10">
+            <div class="max-w-2xl space-y-5">
+              <div class="inline-flex items-center gap-2 rounded-full border border-amber-400/45 bg-obsidian-950/80 px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.13em] text-amber-300 backdrop-blur-sm">
+                <span class="h-2 w-2 rounded-full bg-joy-500 animate-pulse"></span>
+                <span>CHARITY CONCERT &bull; 17TH JANUARY &bull; 7:00 PM IST &bull; CHAVARA HALL, KOCHI</span>
+              </div>
+
+              <h2 class="font-serif text-3xl font-extrabold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-[3.35rem]">
+                Joygivers Presents:
+                <span class="block italic text-amber-400">Raag-E-Ishq</span>
+              </h2>
+
+              <p class="max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg">
+                An unforgettable evening of soulful music dedicated to funding girl child education. Limited to 450 seats — 100% of proceeds directly educate young girls across Kerala.
+              </p>
+
+              <!-- More Details -> Goes to Raag-E-Ishq Event Page | Book Now -> Opens Booking Ticket Dialog -->
+              <div class="flex flex-wrap items-center gap-3.5 pt-2">
+                <a href="https://raag-e-ishq.vercel.app"
+                   data-event-page-link
+                   class="inline-flex items-center justify-center gap-2 rounded-full border border-white/35 bg-obsidian-900/75 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition hover:border-joy-400 hover:bg-obsidian-800 active:scale-[0.98]">
+                  <svg class="h-4 w-4 text-joy-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                  </svg>
+                  <span>More Details</span>
+                </a>
+
+                <button type="button"
+                        onclick="openBookingModal()"
+                        class="inline-flex items-center justify-center gap-2 rounded-full bg-joy-500 px-8 py-3.5 text-sm font-extrabold text-obsidian-950 shadow-xl shadow-joy-500/25 transition hover:bg-joy-400 active:scale-[0.98]">
+                  <span>Book Now</span>
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Bottom Slider Control Deck -->
+      <div class="absolute bottom-5 left-0 right-0 z-20 mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+        <div class="flex flex-col gap-3 rounded-2xl border border-white/10 bg-obsidian-950/75 p-3.5 backdrop-blur-md">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2" role="tablist" aria-label="Select hero slide">
+              <button type="button"
+                      role="tab"
+                      id="dot-0"
+                      aria-selected="true"
+                      aria-controls="slide-0"
+                      onclick="goToSlide(0)"
+                      class="flex items-center gap-2 rounded-full border border-joy-500/60 bg-obsidian-900 px-3.5 py-1.5 text-xs font-bold text-joy-400 transition">
+                <span class="h-2 w-2 rounded-full bg-joy-500"></span>
+                <span>01. Girl Education</span>
+              </button>
+
+              <button type="button"
+                      role="tab"
+                      id="dot-1"
+                      aria-selected="false"
+                      aria-controls="slide-1"
+                      onclick="goToSlide(1)"
+                      class="flex items-center gap-2 rounded-full border border-white/20 bg-obsidian-900/60 px-3.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-white/40">
+                <span class="h-2 w-2 rounded-full bg-slate-500"></span>
+                <span>02. Raag-E-Ishq Concert</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2.5 ml-auto">
+              <span id="carousel-status" class="hidden sm:inline-block text-xs font-medium text-slate-400">Auto-sliding (6s)</span>
+              <div class="flex items-center gap-1.5">
+                <button type="button"
+                        id="hero-prev"
+                        aria-label="Previous slide"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-obsidian-900 text-white transition hover:border-joy-400 hover:text-joy-400">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                  </svg>
+                </button>
+                <button type="button"
+                        id="hero-next"
+                        aria-label="Next slide"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-obsidian-900 text-white transition hover:border-joy-400 hover:text-joy-400">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="h-1 w-full overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+            <div id="slide-progress" class="slide-progress-fill h-full rounded-full bg-joy-500"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Impact Stats Strip -->
+    <section id="impact" class="scroll-mt-20 bg-obsidian-900 py-12 text-white border-y border-white/10">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+          <div class="rounded-2xl border border-white/10 bg-obsidian-950/70 p-5 sm:p-6">
+            <div class="font-serif text-3xl font-extrabold text-joy-500 sm:text-4xl">1,200+</div>
+            <div class="mt-1.5 text-sm font-bold text-white">Girls Educated</div>
+            <p class="mt-1 text-xs leading-relaxed text-slate-400">Supported with tuition, books &amp; exam fees across Kerala.</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-obsidian-950/70 p-5 sm:p-6">
+            <div class="font-serif text-3xl font-extrabold text-joy-500 sm:text-4xl">45+</div>
+            <div class="mt-1.5 text-sm font-bold text-white">Partner Schools</div>
+            <p class="mt-1 text-xs leading-relaxed text-slate-400">Collaborating with rural &amp; community schools statewide.</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-obsidian-950/70 p-5 sm:p-6">
+            <div class="font-serif text-3xl font-extrabold text-joy-500 sm:text-4xl">100%</div>
+            <div class="mt-1.5 text-sm font-bold text-white">Proceeds to Cause</div>
+            <p class="mt-1 text-xs leading-relaxed text-slate-400">Every rupee from charity concerts funds education programmes.</p>
+          </div>
+
+          <div class="rounded-2xl border border-amber-400/25 bg-obsidian-950/70 p-5 sm:p-6">
+            <div class="font-serif text-3xl font-extrabold text-amber-400 sm:text-4xl">450</div>
+            <div class="mt-1.5 text-sm font-bold text-white">Concert Seats</div>
+            <p class="mt-1 text-xs leading-relaxed text-slate-400">Intimate charity gathering at Chavara Hall, Kochi.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Joygivers & Girl Education Initiatives -->
+    <section id="mission" class="scroll-mt-20 py-16 sm:py-24 bg-mintbg-50 text-obsidian-900">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-14">
+
+        <!-- 2-Column Editorial Story -->
+        <div class="grid gap-10 lg:grid-cols-12 lg:items-center">
+          <div class="lg:col-span-7 space-y-5">
+            <div class="inline-flex items-center gap-2 rounded-full border border-joy-700/25 bg-joy-500/15 px-3.5 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-joy-800">
+              <span class="h-1.5 w-1.5 rounded-full bg-joy-700"></span>
+              <span>Our Story &amp; Vision</span>
+            </div>
+            <h2 class="font-serif text-3xl font-extrabold tracking-tight text-obsidian-950 sm:text-4xl lg:text-5xl">
+              When One Girl Learns, an Entire Community Rises.
+            </h2>
+            <p class="text-base leading-relaxed text-slate-700 sm:text-lg">
+              Founded in Kerala, <strong>Joygivers</strong> is a volunteer-driven social initiative bridging financial and digital barriers for girls from underserved households. Too many capable young students leave classrooms early due to textbook costs, commute hurdles, or lack of mentorship.
+            </p>
+            <p class="text-base leading-relaxed text-slate-700">
+              By uniting compassionate citizens, educators, and cultural patrons through soulful community events like <em>Raag-E-Ishq</em>, we turn every seat and contribution into sustained academic support from primary school through college.
+            </p>
+          </div>
+
+          <!-- Editorial Highlight Card -->
+          <div class="lg:col-span-5">
+            <div class="rounded-3xl bg-obsidian-950 p-7 sm:p-9 text-white shadow-2xl space-y-6 border border-obsidian-800">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-joy-500/15 text-joy-400 border border-joy-500/30">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                </svg>
+              </div>
+              <blockquote class="font-serif text-xl font-semibold italic leading-relaxed text-white sm:text-2xl">
+                "Education is not charity — it is a girl's rightful foundation for dignity, confidence, and independence."
+              </blockquote>
+              <div class="border-t border-white/10 pt-4 flex items-center justify-between text-xs font-bold text-slate-300">
+                <span>Joygivers Grassroots Trust</span>
+                <span class="text-joy-500">Kochi, Kerala</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Initiative Cards -->
+        <div class="grid gap-6 md:grid-cols-3">
+          <div class="group rounded-3xl border border-mintbg-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-joy-600/40 hover:shadow-xl space-y-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-obsidian-950 text-joy-500">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+              </svg>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-obsidian-950">School Scholarships</h3>
+            <p class="text-sm leading-relaxed text-slate-600">
+              Direct annual tuition stipends, exam fee coverage, and uniform grants so financial hardship never forces a girl out of high school or college.
+            </p>
+            <div class="pt-2 text-xs font-extrabold uppercase tracking-wider text-joy-700">&#8377;2,500 covers 1 term kit</div>
+          </div>
+
+          <div class="group rounded-3xl border border-mintbg-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-joy-600/40 hover:shadow-xl space-y-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-obsidian-950 text-joy-500">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+              </svg>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-obsidian-950">Digital Literacy Kits</h3>
+            <p class="text-sm leading-relaxed text-slate-600">
+              Equipping partner learning centres with shared study tablets, curated coding &amp; science modules, and solar study lamps for evening study.
+            </p>
+            <div class="pt-2 text-xs font-extrabold uppercase tracking-wider text-joy-700">Bridging the STEM divide</div>
+          </div>
+
+          <div class="group rounded-3xl border border-mintbg-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-joy-600/40 hover:shadow-xl space-y-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-obsidian-950 text-joy-500">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+              </svg>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-obsidian-950">Mentorship &amp; Books</h3>
+            <p class="text-sm leading-relaxed text-slate-600">
+              Stocking bilingual school libraries with textbooks and literature alongside monthly women-in-leadership guidance circles for senior students.
+            </p>
+            <div class="pt-2 text-xs font-extrabold uppercase tracking-wider text-joy-700">Holistic community care</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Event Spotlight Section -->
+    <section id="event-spotlight" class="scroll-mt-20 py-16 sm:py-24 bg-obsidian-950 text-white relative overflow-hidden">
+      <div class="pointer-events-none absolute -top-24 right-0 h-80 w-80 rounded-full bg-joy-500/10 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-24 left-0 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl"></div>
+
+      <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="overflow-hidden rounded-3xl border border-white/10 bg-obsidian-900 shadow-2xl">
+          <div class="grid lg:grid-cols-12">
+            <!-- Left Visual Banner -->
+            <div class="relative min-h-[260px] lg:col-span-5">
+              <img src="./images/raag-e-ishq-hero.jpg"
+                   alt="Raag-E-Ishq musical evening concert stage"
+                   loading="lazy"
+                   width="1200"
+                   height="800"
+                   class="h-full w-full object-cover object-center" />
+              <div class="absolute inset-0 bg-gradient-to-t from-obsidian-900 via-obsidian-900/40 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-obsidian-900"></div>
+              <div class="absolute bottom-5 left-5 right-5 flex flex-wrap gap-2">
+                <span class="rounded-full bg-obsidian-950/90 border border-joy-500/40 px-3.5 py-1 text-xs font-bold text-joy-400 backdrop-blur-sm">
+                  17th January &bull; 7:00 PM IST
+                </span>
+                <span class="rounded-full bg-obsidian-950/90 border border-white/20 px-3.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                  Chavara Hall, Kochi
+                </span>
+              </div>
+            </div>
+
+            <!-- Right Details & Quick Tier Selection -->
+            <div class="p-7 sm:p-10 lg:col-span-7 space-y-6">
+              <div class="space-y-2">
+                <div class="text-xs font-extrabold uppercase tracking-[0.16em] text-joy-400">
+                  Upcoming Fundraising Concert
+                </div>
+                <h2 class="font-serif text-3xl font-extrabold text-white sm:text-4xl">
+                  Joygivers Presents: <span class="text-amber-400">Raag-E-Ishq</span>
+                </h2>
+                <p class="text-sm leading-relaxed text-slate-300 sm:text-base">
+                  Join music lovers across Kochi for a soulful live evening of timeless Hindi &amp; Sufi melodies at <strong>Chavara Hall, Near South Railway Station</strong>. Only <strong>450 seats</strong> available across 3 tiers — click any tier below or tap <strong>Book Now</strong> to reserve right here.
+                </p>
+              </div>
+
+              <!-- 3 Clickable Ticket Tiers (Clicking opens Booking Modal directly on that Tier!) -->
+              <div class="grid gap-3 sm:grid-cols-3">
+                <button type="button" onclick="openBookingModal(0)"
+                        class="text-left rounded-2xl border border-amber-400/35 bg-obsidian-950/80 p-4 transition hover:border-amber-400 hover:-translate-y-0.5 cursor-pointer">
+                  <div class="text-xs font-bold uppercase tracking-wider text-amber-400">Tier 1</div>
+                  <div class="mt-1 font-serif text-2xl font-extrabold text-white">&#8377;2,500</div>
+                  <div class="mt-1 text-xs text-slate-400">Front VIP Priority</div>
+                </button>
+
+                <button type="button" onclick="openBookingModal(1)"
+                        class="text-left rounded-2xl border border-white/15 bg-obsidian-950/80 p-4 transition hover:border-joy-400 hover:-translate-y-0.5 cursor-pointer">
+                  <div class="text-xs font-bold uppercase tracking-wider text-slate-300">Tier 2</div>
+                  <div class="mt-1 font-serif text-2xl font-extrabold text-white">&#8377;1,500</div>
+                  <div class="mt-1 text-xs text-slate-400">Prime Auditorium</div>
+                </button>
+
+                <button type="button" onclick="openBookingModal(2)"
+                        class="text-left rounded-2xl border border-joy-500/30 bg-obsidian-950/80 p-4 transition hover:border-joy-400 hover:-translate-y-0.5 cursor-pointer">
+                  <div class="text-xs font-bold uppercase tracking-wider text-joy-400">Tier 3</div>
+                  <div class="mt-1 font-serif text-2xl font-extrabold text-white">&#8377;1,000</div>
+                  <div class="mt-1 text-xs text-slate-400">Classic Hall Seat</div>
+                </button>
+              </div>
+
+              <!-- Supporter Note -->
+              <div class="flex items-start gap-2.5 rounded-2xl border border-joy-500/25 bg-joy-500/10 px-4 py-3 text-xs text-slate-200">
+                <svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-joy-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                </svg>
+                <span>
+                  <strong>Can't attend in person?</strong> Choose <em>Charitable Supporter</em> inside Book Now — 100% of your contribution directly supports girl education and earns an Official Supporter Receipt.
+                </span>
+              </div>
+
+              <!-- Buttons: More Details -> Goes to Raag-E-Ishq Event Page | Book Now -> Opens Booking Modal -->
+              <div class="flex flex-wrap items-center gap-3.5 pt-1">
+                <a href="https://raag-e-ishq.vercel.app"
+                   data-event-page-link
+                   class="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-obsidian-800 px-6 py-3 text-sm font-bold text-white transition hover:border-joy-400 hover:bg-obsidian-700 active:scale-[0.98]">
+                  <span>More Details</span>
+                </a>
+
+                <button type="button"
+                        onclick="openBookingModal()"
+                        class="inline-flex items-center justify-center gap-2 rounded-full bg-joy-500 px-8 py-3 text-sm font-extrabold text-obsidian-950 shadow-lg shadow-joy-500/20 transition hover:bg-joy-400 active:scale-[0.98]">
+                  <span>Book Now</span>
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer id="contact" class="scroll-mt-20 border-t border-white/10 bg-obsidian-950 py-14 text-slate-300">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid gap-10 md:grid-cols-3">
+        <!-- Column 1: Brand -->
+        <div class="space-y-4">
+          <a href="#top" class="inline-block" aria-label="Joygivers Home">
+            <img src="./images/joygivers-logo.jpg"
+                 alt="Joygivers"
+                 loading="lazy"
+                 width="955"
+                 height="248"
+                 class="h-8 w-auto object-contain mix-blend-screen" />
+          </a>
+          <p class="max-w-xs text-sm leading-relaxed text-slate-400">
+            A Kerala-based social initiative committed to empowering young girls through sustained schooling, scholarships, and community culture.
+          </p>
+        </div>
+
+        <!-- Column 2: Kochi Details & Concierge -->
+        <div class="space-y-3">
+          <h3 class="font-serif text-base font-bold text-white">Location &amp; WhatsApp Concierge</h3>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li>Kochi, Ernakulam District, Kerala, India</li>
+            <li>Event Venue: Chavara Hall, Near South Railway Station</li>
+            <li>
+              WhatsApp Desk:
+              <a href="https://wa.me/917736606506" target="_blank" rel="noopener noreferrer" class="font-bold text-joy-400 hover:underline">
+                +91 77366 06506
+              </a>
+            </li>
+            <li>
+              Email:
+              <a href="mailto:events@joygivers.org" class="font-semibold text-slate-200 hover:text-joy-400">events@joygivers.org</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Quick Links -->
+        <div class="space-y-3">
+          <h3 class="font-serif text-base font-bold text-white">Quick Links</h3>
+          <ul class="space-y-2 text-sm font-medium text-slate-400">
+            <li><a href="#top" class="hover:text-joy-400 transition-colors">Home</a></li>
+            <li><a href="#mission" class="hover:text-joy-400 transition-colors">Girl Education Mission</a></li>
+            <li><a href="#impact" class="hover:text-joy-400 transition-colors">Community Impact</a></li>
+            <li>
+              <a href="https://raag-e-ishq.vercel.app" data-event-page-link class="inline-flex items-center gap-1.5 font-semibold text-slate-300 hover:text-joy-400 transition-colors">
+                <span>Raag-E-Ishq Event Page</span>
+                <span aria-hidden="true">&rarr;</span>
+              </a>
+            </li>
+            <li>
+              <button type="button" onclick="openBookingModal()" class="inline-flex items-center gap-1.5 font-bold text-joy-400 hover:underline">
+                <span>Book Event Tickets</span>
+                <span aria-hidden="true">&rarr;</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-10 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <p>&copy; 2026&ndash;2027 Joygivers Initiative. 100% Concert Proceeds Dedicated to Girl Education.</p>
+        <p>Kochi, Kerala</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- BOOK NOW INTERACTIVE MODAL (Appears on Book Now click — stays all in one interface!) -->
+  <dialog id="booking-modal"
+          closedby="any"
+          aria-labelledby="booking-modal-title"
+          class="m-auto w-[min(94vw,42rem)] max-h-[90svh] overflow-y-auto rounded-3xl border border-white/15 bg-obsidian-900 p-0 text-white shadow-2xl">
+
+    <!-- Compact Modal Header -->
+    <div class="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-white/10 bg-obsidian-900/95 px-5 py-4 sm:px-6 backdrop-blur-md">
+      <div>
+        <div class="text-xs font-extrabold uppercase tracking-[0.14em] text-joy-400">Official Event Ticket Desk</div>
+        <h1 id="booking-modal-title" class="font-serif text-xl sm:text-2xl font-extrabold text-white">
+          Joygivers Presents: <span class="text-amber-400">Raag-E-Ishq</span>
+        </h1>
+      </div>
+      <form method="dialog">
+        <button type="submit"
+                aria-label="Close booking dialog"
+                autofocus
+                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-obsidian-800 text-slate-200 transition hover:border-joy-400 hover:text-white">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="p-5 sm:p-6">
+
+      <!-- MODAL STEP 1: Select Ticket Category & Quantity (Matches Screenshot 1 Cleanly Without Clipping!) -->
+      <div id="modal-step-1" class="step-animate space-y-4">
+        <!-- Date & Venue Strip -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-2xl border border-white/10 bg-obsidian-950/80 px-4 py-3">
+            <div class="text-xs font-bold uppercase tracking-wider text-joy-400">Date &amp; Time</div>
+            <div class="mt-0.5 text-sm font-bold text-white">17th January, 7:00 PM IST</div>
+            <div class="text-xs text-slate-400">Gates open 6:15 PM for QR check-in</div>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-obsidian-950/80 px-4 py-3">
+            <div class="text-xs font-bold uppercase tracking-wider text-joy-400">Venue</div>
+            <div class="mt-0.5 text-sm font-bold text-white">Chavara Hall, Kochi</div>
+            <div class="text-xs text-slate-400">Near South Rly Stn (450 seats)</div>
+          </div>
+        </div>
+
+        <!-- Interactive Ticket Categories & Supporter Pass List -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-300">
+            <span>Select Ticket Category &amp; Supporter Pass</span>
+            <span class="text-joy-400">Click to Choose</span>
+          </div>
+
+          <div id="modal-tier-list" class="divide-y divide-white/10 rounded-2xl border border-white/15 bg-obsidian-950/85 overflow-hidden">
+            <!-- Dynamically populated by JS for crisp selection & live counts -->
+          </div>
+        </div>
+
+        <!-- Compact Quantity & Total Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-obsidian-950/85 px-4 py-3">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Seats:</span>
+            <div class="inline-flex items-center rounded-xl border border-white/15 bg-obsidian-900 p-0.5">
+              <button type="button" onclick="adjustModalQty(-1)" aria-label="Decrease seats"
+                      class="h-7 w-7 rounded-lg text-white font-bold hover:bg-white/10 transition">&minus;</button>
+              <span id="modal-qty-display" class="w-8 text-center font-mono text-sm font-extrabold text-white">1</span>
+              <button type="button" onclick="adjustModalQty(1)" aria-label="Increase seats"
+                      class="h-7 w-7 rounded-lg text-white font-bold hover:bg-white/10 transition">+</button>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-400 mr-2" id="modal-summary-label">Tier 1 &times; 1</span>
+            <span id="modal-total-display" class="font-serif text-xl font-extrabold text-joy-400">&#8377;2,500</span>
+          </div>
+        </div>
+
+        <!-- Commitment Banner -->
+        <div class="rounded-2xl border border-joy-500/30 bg-joy-500/10 px-4 py-3 text-xs leading-relaxed text-slate-100">
+          <strong>100% Girl Education Commitment:</strong> Every ticket booked directly funds Joygivers school scholarships and learning kits in Kerala. Confirmed bookings are non-refundable.
+        </div>
+
+        <!-- Step 1 Footer Buttons -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <a href="https://raag-e-ishq.vercel.app"
+             data-event-page-link
+             class="text-xs font-bold text-slate-400 hover:text-joy-400 underline underline-offset-4 transition">
+            Open Full Raag-E-Ishq Event Page &rarr;
+          </a>
+          <div class="flex items-center gap-2.5 ml-auto">
+            <form method="dialog">
+              <button type="submit" class="rounded-full border border-white/20 px-5 py-2.5 text-xs font-bold text-slate-200 transition hover:bg-obsidian-800">
+                Close
+              </button>
+            </form>
+            <button type="button"
+                    onclick="goToModalStep(2)"
+                    class="inline-flex items-center gap-2 rounded-full bg-joy-500 px-6 py-2.5 text-sm font-extrabold text-obsidian-950 shadow-lg shadow-joy-500/20 transition hover:bg-joy-400">
+              <span>Continue to Book</span>
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL STEP 2: Attendee Details Form (Stays inside same modal!) -->
+      <div id="modal-step-2" class="hidden step-animate space-y-4">
+        <div class="flex items-center justify-between gap-3 rounded-2xl border border-joy-500/30 bg-joy-500/10 px-4 py-3 text-xs">
+          <div>
+            <span class="font-bold text-joy-400 uppercase tracking-wider">Selected:</span>
+            <span id="step2-selection-badge" class="ml-1 font-extrabold text-white">Tier 1 &bull; 1 Seat &bull; &#8377;2,500</span>
+          </div>
+          <button type="button" onclick="goToModalStep(1)" class="font-bold text-joy-400 hover:underline">
+            &larr; Change Option
+          </button>
+        </div>
+
+        <div id="modal-error-box" class="hidden rounded-2xl border border-rose-500/40 bg-rose-950/40 px-4 py-3 text-xs font-medium text-rose-200"></div>
+
+        <form id="modal-booking-form" class="space-y-3.5" novalidate>
+          <div class="grid gap-3.5 sm:grid-cols-2">
+            <div class="space-y-1 sm:col-span-2">
+              <label for="m_full_name" class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                Full Name <span class="text-joy-400">*</span>
+              </label>
+              <input type="text" id="m_full_name" required placeholder="e.g. Aarav Sharma"
+                     class="w-full rounded-xl border border-white/15 bg-obsidian-950 px-3.5 py-2.5 text-sm font-semibold text-white placeholder-slate-500 focus:border-joy-500 focus:outline-none" />
+            </div>
+
+            <div class="space-y-1">
+              <label for="m_email" class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                Email Address <span class="text-joy-400">*</span>
+              </label>
+              <input type="email" id="m_email" required placeholder="aarav@example.com"
+                     class="w-full rounded-xl border border-white/15 bg-obsidian-950 px-3.5 py-2.5 text-sm font-semibold text-white placeholder-slate-500 focus:border-joy-500 focus:outline-none" />
+            </div>
+
+            <div class="space-y-1">
+              <label for="m_phone" class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                WhatsApp Mobile <span class="text-joy-400">*</span>
+              </label>
+              <div class="flex gap-2">
+                <span class="inline-flex items-center rounded-xl border border-white/15 bg-obsidian-950 px-3 text-xs font-bold text-slate-300">+91</span>
+                <input type="tel" id="m_phone" required maxlength="10" pattern="[0-9]{10}" placeholder="10-digit number"
+                       class="w-full rounded-xl border border-white/15 bg-obsidian-950 px-3.5 py-2.5 text-sm font-mono font-semibold text-white placeholder-slate-500 focus:border-joy-500 focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <label class="flex items-start gap-2.5 rounded-2xl border border-white/10 bg-obsidian-950/70 p-3.5 cursor-pointer">
+            <input type="checkbox" id="m_consent" required class="mt-0.5 h-4 w-4 rounded accent-[#64E818]" />
+            <span class="text-xs leading-relaxed text-slate-300">
+              I agree to the <strong>Strict No-Cancellation &amp; Non-Refundable Policy</strong> (100% proceeds dedicated to girl education) and understand the Joygivers team will confirm UPI payment via WhatsApp.
+            </span>
+          </label>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <button type="button" onclick="goToModalStep(1)" class="rounded-full border border-white/20 px-5 py-2.5 text-xs font-bold text-slate-200 hover:bg-obsidian-800 transition">
+              &larr; Back
+            </button>
+            <button type="submit" id="m_submit_btn"
+                    class="inline-flex items-center gap-2 rounded-full bg-joy-500 px-7 py-3 text-sm font-extrabold text-obsidian-950 shadow-lg shadow-joy-500/20 transition hover:bg-joy-400">
+              <span id="m_submit_label">Confirm &amp; Reserve Seats</span>
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- MODAL STEP 3: Instant Booking Confirmation + Sample QR Pass Preview -->
+      <div id="modal-step-3" class="hidden step-animate space-y-4">
+        <div class="flex items-center gap-3 rounded-2xl border border-joy-500/35 bg-joy-500/10 px-4 py-3.5">
+          <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-joy-500 text-obsidian-950 font-extrabold text-base">&#10003;</div>
+          <div>
+            <div class="text-xs font-extrabold uppercase tracking-wider text-joy-400">Seats Reserved Successfully</div>
+            <div class="text-sm font-bold text-white">Ref: <span id="m_conf_ref" class="font-mono text-amber-400">SK-2027</span> &bull; <span id="m_conf_summary">Tier 1</span></div>
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-12 items-center">
+          <div class="sm:col-span-7 space-y-3 text-xs text-slate-300">
+            <div class="rounded-2xl border border-white/10 bg-obsidian-950/80 p-4 space-y-2">
+              <div class="font-bold text-white">Next Steps to Receive Your Gate QR:</div>
+              <p>1. Pay via UPI: <strong class="font-mono text-amber-300">mujammilibrahim007@okhdfcbank</strong></p>
+              <p>2. Message your reference to our WhatsApp Payment Desk.</p>
+              <p>3. Official signed QR passes dispatch directly to <span id="m_conf_phone" class="font-mono text-white">+91 ...</span>.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <a id="m_conf_wa" href="https://wa.me/917736606506" target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-1.5 rounded-full bg-joy-500 px-5 py-2.5 text-xs font-extrabold text-obsidian-950 shadow hover:bg-joy-400">
+                <span>Message Payment Desk on WhatsApp</span>
+                <span>&rarr;</span>
+              </a>
+              <a id="m_conf_tracker" href="#"
+                 class="hidden inline-flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-2.5 text-xs font-bold text-white hover:border-joy-400">
+                <span>Payment Tracker</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Sample Pass Preview Card -->
+          <div class="sm:col-span-5 rounded-2xl bg-white p-4 text-obsidian-950 text-center space-y-2 shadow-xl">
+            <div class="flex items-center justify-between text-xs border-b border-slate-200 pb-1.5">
+              <span class="font-extrabold text-joy-700">Raag-E-Ishq</span>
+              <span id="m_pass_tier" class="rounded-full bg-obsidian-950 px-2 py-0.5 text-xs font-bold text-joy-400">Tier 1</span>
+            </div>
+            <div id="m_pass_holder" class="text-xs font-extrabold text-obsidian-950 truncate">Attendee</div>
+            <div id="m_qr_matrix" class="inline-flex rounded-xl border border-slate-200 p-1.5 bg-white"></div>
+            <div class="text-xs font-medium text-slate-500">Sample QR Entry Pass</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 border-t border-white/10">
+          <button type="button" onclick="resetModalBooking()" class="text-xs font-bold text-joy-400 hover:underline">
+            + Book Another Ticket
+          </button>
+          <form method="dialog">
+            <button type="submit" class="rounded-full border border-white/20 px-5 py-2 text-xs font-bold text-slate-200 hover:bg-obsidian-800">
+              Done
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </dialog>
+
+  <!-- Accessible Mobile Navigation Modal -->
+  <dialog id="mobile-nav-dialog"
+          closedby="any"
+          aria-label="Mobile Navigation Menu"
+          class="ml-auto mr-0 my-0 h-full max-h-none w-[min(82vw,20rem)] border-l border-white/15 bg-obsidian-950 p-6 text-white shadow-2xl">
+    <div class="flex flex-col h-full justify-between">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <img src="./images/joygivers-logo.jpg"
+               alt="Joygivers"
+               width="955"
+               height="248"
+               class="h-7 w-auto object-contain mix-blend-screen" />
+          <form method="dialog">
+            <button type="submit" aria-label="Close navigation menu" autofocus class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-obsidian-900 text-white">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+            </button>
+          </form>
+        </div>
+        <nav class="flex flex-col gap-2 text-base font-semibold text-slate-200">
+          <a href="#top" data-mobile-nav-link class="rounded-xl px-3 py-2.5 hover:bg-white/5 hover:text-joy-400">Home</a>
+          <a href="#mission" data-mobile-nav-link class="rounded-xl px-3 py-2.5 hover:bg-white/5 hover:text-joy-400">Our Mission</a>
+          <a href="#event-spotlight" data-mobile-nav-link class="rounded-xl px-3 py-2.5 hover:bg-white/5 hover:text-joy-400">Raag-E-Ishq Event</a>
+          <a href="#impact" data-mobile-nav-link class="rounded-xl px-3 py-2.5 hover:bg-white/5 hover:text-joy-400">Impact</a>
+          <a href="#contact" data-mobile-nav-link class="rounded-xl px-3 py-2.5 hover:bg-white/5 hover:text-joy-400">Contact</a>
+        </nav>
+      </div>
+      <button type="button"
+              onclick="mobileNavBookClick()"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-joy-500 px-5 py-3 text-sm font-extrabold text-obsidian-950 shadow">
+        <span>Book Event Tickets</span>
+        <span aria-hidden="true">&rarr;</span>
+      </button>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      // ============================================================
+      // 1. HERO AUTO-SLIDING CAROUSEL
+      // ============================================================
+      const SLIDE_INTERVAL_MS = 6000;
+      const carousel = document.getElementById('hero-carousel');
+      const slides = [document.getElementById('slide-0'), document.getElementById('slide-1')];
+      const dots = [document.getElementById('dot-0'), document.getElementById('dot-1')];
+      const progressEl = document.getElementById('slide-progress');
+      const statusEl = document.getElementById('carousel-status');
+      const bookingDialog = document.getElementById('booking-modal');
+      const mobileNavDialog = document.getElementById('mobile-nav-dialog');
+      const mobileNavBtn = document.getElementById('mobile-menu-open');
+
+      let currentIndex = 0;
+      let autoTimer = null;
+      let isPaused = false;
+
+      function restartProgressAnimation() {
+        if (!progressEl) return;
+        progressEl.classList.remove('is-running');
+        void progressEl.offsetWidth;
+        if (!isPaused) {
+          progressEl.classList.add('is-running');
+        }
+      }
+
+      function renderSlideState() {
+        slides.forEach((slide, idx) => {
+          const active = idx === currentIndex;
+          slide.classList.toggle('is-active', active);
+          slide.setAttribute('aria-hidden', String(!active));
+        });
+
+        dots.forEach((dot, idx) => {
+          const active = idx === currentIndex;
+          dot.setAttribute('aria-selected', String(active));
+          if (active) {
+            dot.className = 'flex items-center gap-2 rounded-full border border-joy-500/60 bg-obsidian-900 px-3.5 py-1.5 text-xs font-bold text-joy-400 transition';
+            dot.querySelector('span').className = 'h-2 w-2 rounded-full bg-joy-500';
+          } else {
+            dot.className = 'flex items-center gap-2 rounded-full border border-white/20 bg-obsidian-900/60 px-3.5 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-white/40';
+            dot.querySelector('span').className = 'h-2 w-2 rounded-full bg-slate-500';
+          }
+        });
+
+        restartProgressAnimation();
+      }
+
+      function startTimer() {
+        clearInterval(autoTimer);
+        if (isPaused) return;
+        autoTimer = setInterval(() => {
+          currentIndex = (currentIndex + 1) % slides.length;
+          renderSlideState();
+        }, SLIDE_INTERVAL_MS);
+        restartProgressAnimation();
+      }
+
+      function pauseCarousel() {
+        isPaused = true;
+        clearInterval(autoTimer);
+        if (progressEl) progressEl.classList.remove('is-running');
+        if (statusEl) statusEl.textContent = 'Paused';
+      }
+
+      function resumeCarousel() {
+        if (bookingDialog && bookingDialog.open) return;
+        isPaused = false;
+        if (statusEl) statusEl.textContent = 'Auto-sliding (6s)';
+        startTimer();
+      }
+
+      window.goToSlide = function (index) {
+        currentIndex = ((index % slides.length) + slides.length) % slides.length;
+        renderSlideState();
+        startTimer();
+      };
+
+      const nextSlide = () => window.goToSlide(currentIndex + 1);
+      const prevSlide = () => window.goToSlide(currentIndex - 1);
+
+      document.getElementById('hero-next')?.addEventListener('click', nextSlide);
+      document.getElementById('hero-prev')?.addEventListener('click', prevSlide);
+
+      carousel?.addEventListener('mouseenter', pauseCarousel);
+      carousel?.addEventListener('mouseleave', resumeCarousel);
+      carousel?.addEventListener('focusin', (e) => {
+        if (e.target && e.target.matches(':focus-visible')) pauseCarousel();
+      });
+      carousel?.addEventListener('focusout', (e) => {
+        if (!carousel.contains(e.relatedTarget) && !carousel.matches(':hover')) resumeCarousel();
+      });
+
+      carousel?.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') nextSlide();
+        else if (e.key === 'ArrowLeft') prevSlide();
+      });
+
+      let touchStartX = 0;
+      carousel?.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      carousel?.addEventListener('touchend', (e) => {
+        const diff = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(diff) > 45) {
+          if (diff < 0) nextSlide();
+          else prevSlide();
+        }
+      }, { passive: true });
+
+      renderSlideState();
+      startTimer();
+
+      // ============================================================
+      // 2. LIVE EVENT PAGE LINK + INTERACTIVE BOOK NOW MODAL
+      // ============================================================
+      const liveConfig = window.JOYGIVERS_LIVE || {
+        enabled: false,
+        registerUrl: '',
+        eventPageUrl: 'https://raag-e-ishq.vercel.app',
+        categories: []
+      };
+
+      // Ensure "More Details" points cleanly to Raag-E-Ishq event page (local '/' or production vercel)
+      if (liveConfig.eventPageUrl) {
+        document.querySelectorAll('[data-event-page-link]').forEach((el) => {
+          el.setAttribute('href', liveConfig.eventPageUrl);
+        });
+      }
+
+      const defaultCategories = [
+        { id: 1, name: 'Tier 1', price_paise: 250000, available: 100, tag: 'Front Priority Seating' },
+        { id: 2, name: 'Tier 2', price_paise: 150000, available: 100, tag: 'Prime Auditorium Seating' },
+        { id: 3, name: 'Tier 3', price_paise: 100000, available: 250, tag: 'Classic Hall Seating' },
+      ];
+
+      const categories = (Array.isArray(liveConfig.categories) && liveConfig.categories.length > 0)
+        ? liveConfig.categories.map((c, i) => ({
+            ...c,
+            tag: (defaultCategories[i] && defaultCategories[i].tag) || 'Admission Seating',
+          }))
+        : defaultCategories;
+
+      // Options include the 3 seat tiers plus the Charitable Supporter option (mode 'no')
+      let selectedCatIdx = 0;
+      let selectedMode = 'yes'; // 'yes' = Attending, 'no' = Charitable Supporter
+      let selectedQty = 1;
+
+      function formatRupees(paise) {
+        return '₹' + Number(paise / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+      }
+
+      function renderModalSelection() {
+        const listEl = document.getElementById('modal-tier-list');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+
+        categories.forEach((cat, idx) => {
+          const isSelected = selectedMode === 'yes' && selectedCatIdx === idx;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => {
+            selectedMode = 'yes';
+            selectedCatIdx = idx;
+            renderModalSelection();
+          };
+          btn.className = isSelected
+            ? 'w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-joy-500/15 transition'
+            : 'w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition';
+
+          const left = document.createElement('div');
+          left.className = 'flex items-center gap-2.5 flex-wrap';
+
+          const dot = document.createElement('span');
+          dot.className = isSelected
+            ? 'h-2.5 w-2.5 rounded-full bg-joy-500 ring-2 ring-joy-500/30 flex-shrink-0'
+            : 'h-2.5 w-2.5 rounded-full border border-white/35 flex-shrink-0';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.className = `text-sm font-extrabold ${idx === 0 ? 'text-amber-400' : (isSelected ? 'text-joy-400' : 'text-white')}`;
+          nameSpan.textContent = String(cat.name || '');
+
+          const tagSpan = document.createElement('span');
+          tagSpan.className = 'text-xs text-slate-400';
+          tagSpan.textContent = `${cat.tag} (${cat.available ?? 0} left)`;
+
+          left.append(dot, nameSpan, tagSpan);
+
+          const priceSpan = document.createElement('span');
+          priceSpan.className = `text-sm font-extrabold ${isSelected ? 'text-joy-400' : 'text-white'}`;
+          priceSpan.textContent = formatRupees(cat.price_paise);
+
+          btn.append(left, priceSpan);
+          listEl.appendChild(btn);
+        });
+
+        // Charitable Supporter Row (matches Screenshot 1 + directly clickable!)
+        const isSupporter = selectedMode === 'no';
+        const supBtn = document.createElement('button');
+        supBtn.type = 'button';
+        supBtn.onclick = () => {
+          selectedMode = 'no';
+          renderModalSelection();
+        };
+        supBtn.className = isSupporter
+          ? 'w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-joy-500/15 transition'
+          : 'w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-white/5 transition';
+
+        const supLeft = document.createElement('div');
+        supLeft.className = 'flex items-center gap-2.5 flex-wrap';
+
+        const supDot = document.createElement('span');
+        supDot.className = isSupporter
+          ? 'h-2.5 w-2.5 rounded-full bg-joy-500 ring-2 ring-joy-500/30 flex-shrink-0'
+          : 'h-2.5 w-2.5 rounded-full border border-white/35 flex-shrink-0';
+
+        const supTitle = document.createElement('span');
+        supTitle.className = 'text-sm font-extrabold text-joy-400';
+        supTitle.textContent = 'Charitable Supporter';
+
+        const supSub = document.createElement('span');
+        supSub.className = 'text-xs text-slate-400';
+        supSub.textContent = 'Non-attending contribution (No seat used)';
+
+        supLeft.append(supDot, supTitle, supSub);
+
+        const supBadge = document.createElement('span');
+        supBadge.className = 'text-xs font-bold text-joy-400';
+        supBadge.textContent = 'Official Receipt';
+
+        supBtn.append(supLeft, supBadge);
+        listEl.appendChild(supBtn);
+
+        const activeCat = categories[selectedCatIdx] || categories[0];
+        const totalPaise = activeCat.price_paise * selectedQty;
+        const unitLabel = selectedQty === 1 ? 'Seat' : 'Seats';
+        const label = selectedMode === 'no'
+          ? `Supporter (${activeCat.name}) × ${selectedQty}`
+          : `${activeCat.name} × ${selectedQty} ${unitLabel}`;
+
+        document.getElementById('modal-qty-display').textContent = selectedQty;
+        document.getElementById('modal-summary-label').textContent = label;
+        document.getElementById('modal-total-display').textContent = formatRupees(totalPaise);
+        document.getElementById('step2-selection-badge').textContent = `${label} • ${formatRupees(totalPaise)}`;
+      }
+
+      window.adjustModalQty = function (delta) {
+        selectedQty = Math.max(1, Math.min(10, selectedQty + delta));
+        renderModalSelection();
+      };
+
+      window.goToModalStep = function (stepNum) {
+        const s1 = document.getElementById('modal-step-1');
+        const s2 = document.getElementById('modal-step-2');
+        const s3 = document.getElementById('modal-step-3');
+        s1.classList.toggle('hidden', stepNum !== 1);
+        s2.classList.toggle('hidden', stepNum !== 2);
+        s3.classList.toggle('hidden', stepNum !== 3);
+      };
+
+      window.openBookingModal = function (preselectTierIdx) {
+        if (typeof preselectTierIdx === 'number' && categories[preselectTierIdx]) {
+          selectedCatIdx = preselectTierIdx;
+          selectedMode = 'yes';
+        }
+        renderModalSelection();
+        window.goToModalStep(1);
+        if (bookingDialog && !bookingDialog.open) {
+          pauseCarousel();
+          bookingDialog.showModal();
+        }
+      };
+
+      window.resetModalBooking = function () {
+        document.getElementById('modal-booking-form')?.reset();
+        document.getElementById('modal-error-box')?.classList.add('hidden');
+        selectedQty = 1;
+        selectedMode = 'yes';
+        renderModalSelection();
+        window.goToModalStep(1);
+      };
+
+      bookingDialog?.addEventListener('close', () => {
+        bookingDialog.returnValue = '';
+        resumeCarousel();
+      });
+
+      function renderSampleQrSvg(seedText) {
+        const size = 21;
+        let hash = 2166136261;
+        for (let i = 0; i < seedText.length; i++) {
+          hash ^= seedText.charCodeAt(i);
+          hash = Math.imul(hash, 16777619);
+        }
+        const isFinder = (r, c) =>
+          (r < 7 && c < 7) || (r < 7 && c >= size - 7) || (r >= size - 7 && c < 7);
+
+        let rects = '';
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            let filled = false;
+            if (isFinder(r, c)) {
+              const lr = r >= size - 7 ? r - (size - 7) : r;
+              const lc = c >= size - 7 ? c - (size - 7) : c;
+              filled = (lr === 0 || lr === 6 || lc === 0 || lc === 6 || (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4));
+            } else {
+              hash ^= (r * 31 + c * 17);
+              hash = Math.imul(hash, 16777619);
+              filled = (hash >>> 0) % 2 === 0;
+            }
+            if (filled) rects += `<rect x="${c * 5}" y="${r * 5}" width="5" height="5" fill="#050608"/>`;
+          }
+        }
+        return `<svg width="105" height="105" viewBox="0 0 ${size * 5} ${size * 5}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sample Admission QR">${rects}</svg>`;
+      }
+
+      document.getElementById('modal-booking-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errBox = document.getElementById('modal-error-box');
+        errBox.classList.add('hidden');
+        errBox.textContent = '';
+
+        const fullName = document.getElementById('m_full_name').value.trim();
+        const email = document.getElementById('m_email').value.trim();
+        const phone = document.getElementById('m_phone').value.replace(/[^0-9]/g, '');
+        const consent = document.getElementById('m_consent').checked;
+
+        if (!fullName || !email || !/^[0-9]{10}$/.test(phone) || !consent) {
+          errBox.textContent = 'Please enter your full name, valid email, 10-digit mobile number, and accept the non-refundable policy.';
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        const submitBtn = document.getElementById('m_submit_btn');
+        const submitLabel = document.getElementById('m_submit_label');
+        submitBtn.disabled = true;
+        submitLabel.textContent = 'Reserving...';
+
+        const activeCat = categories[selectedCatIdx] || categories[0];
+
+        let reference = '';
+        let totalPaise = activeCat.price_paise * selectedQty;
+        let paymentUrl = '';
+
+        if (liveConfig.enabled && liveConfig.registerUrl) {
+          try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const res = await fetch(liveConfig.registerUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+              },
+              body: JSON.stringify({
+                full_name: fullName,
+                email: email,
+                phone: phone,
+                ticket_category_id: activeCat.id,
+                quantity: selectedQty,
+                attending: selectedMode,
+                privacy_consent: 1,
+              }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+              const firstErr = data?.errors ? Object.values(data.errors).flat()[0] : (data?.message || 'Unable to process reservation.');
+              errBox.textContent = firstErr;
+              errBox.classList.remove('hidden');
+              submitBtn.disabled = false;
+              submitLabel.textContent = 'Confirm & Reserve Seats';
+              return;
+            }
+
+            reference = data.booking_reference;
+            totalPaise = data.total_amount_paise || totalPaise;
+            paymentUrl = data.payment_url || '';
+          } catch (err) {
+            errBox.textContent = 'Network error while reserving seats. Please try again.';
+            errBox.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitLabel.textContent = 'Confirm & Reserve Seats';
+            return;
+          }
+        } else {
+          reference = 'SK-20270117-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+        }
+
+        submitBtn.disabled = false;
+        submitLabel.textContent = 'Confirm & Reserve Seats';
+
+        document.getElementById('m_conf_ref').textContent = reference;
+        document.getElementById('m_conf_summary').textContent = `${activeCat.name} • ${selectedQty} ${selectedQty === 1 ? 'Seat' : 'Seats'} • ${formatRupees(totalPaise)}`;
+        document.getElementById('m_conf_phone').textContent = '+91 ' + phone;
+        document.getElementById('m_pass_tier').textContent = selectedMode === 'no' ? 'Supporter' : activeCat.name;
+        document.getElementById('m_pass_holder').textContent = fullName;
+        document.getElementById('m_qr_matrix').innerHTML = renderSampleQrSvg(reference + phone);
+
+        const waMsg = `Hi Joygivers Team, I have submitted booking enquiry ${reference} for ${fullName} (${formatRupees(totalPaise)}). Please share payment options for Raag-E-Ishq.`;
+        document.getElementById('m_conf_wa').href = `https://wa.me/917736606506?text=${encodeURIComponent(waMsg)}`;
+
+        const trackerLink = document.getElementById('m_conf_tracker');
+        if (paymentUrl) {
+          trackerLink.href = paymentUrl;
+          trackerLink.classList.remove('hidden');
+        } else {
+          trackerLink.classList.add('hidden');
+        }
+
+        window.goToModalStep(3);
+      });
+
+      renderModalSelection();
+
+      // ============================================================
+      // 3. MOBILE NAVIGATION DRAWER
+      // ============================================================
+      window.mobileNavBookClick = function () {
+        mobileNavDialog?.close();
+        window.openBookingModal();
+      };
+
+      mobileNavBtn?.addEventListener('click', () => {
+        if (mobileNavDialog && !mobileNavDialog.open) {
+          mobileNavDialog.showModal();
+          mobileNavBtn.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      mobileNavDialog?.addEventListener('close', () => {
+        mobileNavDialog.returnValue = '';
+        mobileNavBtn?.setAttribute('aria-expanded', 'false');
+      });
+
+      document.querySelectorAll('[data-mobile-nav-link]').forEach((link) => {
+        link.addEventListener('click', () => {
+          mobileNavDialog?.close();
+        });
+      });
+
+      if (!('closedBy' in HTMLDialogElement.prototype)) {
+        const outside = (e, dialog) => {
+          const r = dialog.getBoundingClientRect();
+          return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+        };
+        for (const dialog of document.querySelectorAll('dialog[closedby="any"]')) {
+          let pressedOutside = false;
+          dialog.addEventListener('pointerdown', (e) => {
+            pressedOutside = outside(e, dialog);
+          });
+          dialog.addEventListener('pointerup', (e) => {
+            if (pressedOutside && outside(e, dialog)) dialog.close();
+          });
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
