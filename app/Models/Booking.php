@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -135,5 +136,46 @@ class Booking extends Model
     public function getFormattedTotalAttribute(): string
     {
         return '₹' . number_format($this->total_amount_paise / 100, 2);
+    }
+
+    /**
+     * Filter bookings by reference or contact fields, ranking direct matches before email substrings.
+     */
+    public function scopeSearchTerm(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+        if ($term === '') {
+            return $query;
+        }
+
+        $like = "%{$term}%";
+        $phoneDigits = Contact::normalizeSearchPhoneDigits($term);
+        $phoneLike = $phoneDigits ? "%{$phoneDigits}%" : $like;
+
+        $query->where(function (Builder $q) use ($like, $phoneDigits, $phoneLike) {
+            $q->where('booking_reference', 'like', $like)
+              ->orWhereHas('contact', function (Builder $cq) use ($like, $phoneDigits, $phoneLike) {
+                  $cq->where('full_name', 'like', $like)
+                     ->orWhere('phone', 'like', $like)
+                     ->orWhere('email', 'like', $like);
+
+                  if ($phoneDigits !== null) {
+                      $cq->orWhere('phone', 'like', $phoneLike);
+                  }
+              });
+        });
+
+        return $query->orderByRaw(
+            'CASE
+                WHEN booking_reference LIKE ? THEN 0
+                WHEN EXISTS (
+                    SELECT 1 FROM contacts c
+                    WHERE c.id = bookings.contact_id
+                      AND (c.full_name LIKE ? OR c.phone LIKE ? OR c.phone LIKE ?)
+                ) THEN 1
+                ELSE 2
+            END ASC',
+            [$like, $like, $like, $phoneLike]
+        );
     }
 }

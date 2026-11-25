@@ -22,7 +22,8 @@ class ReportController extends Controller
         $settlements = Booking::with(['items.category', 'contact', 'paymentAttempts'])
             ->where('status', Booking::STATUS_CONFIRMED)
             ->latest('id')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
         return view('admin.reports.sales', [
             'metrics' => $metrics,

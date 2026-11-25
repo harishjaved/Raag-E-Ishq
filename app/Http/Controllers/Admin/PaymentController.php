@@ -23,7 +23,7 @@ class PaymentController extends Controller
             $query->where('status', $status);
         }
 
-        $payments = $query->paginate(20);
+        $payments = $query->paginate(20)->withQueryString();
 
         return view('admin.payments.index', [
             'payments' => $payments,

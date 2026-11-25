@@ -27,7 +27,7 @@
     <!-- 5-Segment Interactive Workflow Pipeline Strip -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <!-- Tab 1: All -->
-        <a href="{{ route('admin.bookings') }}"
+        <a href="{{ route('admin.bookings', $search ? ['search' => $search] : []) }}"
             class="p-4 rounded-2xl border transition-all flex flex-col justify-between group shadow-sm {{ !$currentStatus ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-500/50 text-white shadow-amber-500/10' : 'bg-[#0d121f] border-slate-800/80 hover:border-slate-700 text-slate-400' }}">
             <div class="flex items-center justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider">All Records</span>
@@ -40,7 +40,7 @@
         </a>
 
         <!-- Tab 2: Pending Call -->
-        <a href="{{ route('admin.bookings', ['status' => 'PENDING']) }}"
+        <a href="{{ route('admin.bookings', array_filter(['status' => 'PENDING', 'search' => $search])) }}"
             class="p-4 rounded-2xl border transition-all flex flex-col justify-between group shadow-sm {{ in_array($currentStatus, ['PENDING', 'PAYMENT_PENDING']) ? 'bg-gradient-to-b from-amber-950/40 to-slate-900 border-amber-500 text-amber-300 shadow-amber-500/20' : 'bg-[#0d121f] border-slate-800/80 hover:border-amber-500/40 text-slate-400' }}">
             <div class="flex items-center justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Pending Call</span>
@@ -53,7 +53,7 @@
         </a>
 
         <!-- Tab 3: In Process -->
-        <a href="{{ route('admin.bookings', ['status' => 'IN_PROCESS']) }}"
+        <a href="{{ route('admin.bookings', array_filter(['status' => 'IN_PROCESS', 'search' => $search])) }}"
             class="p-4 rounded-2xl border transition-all flex flex-col justify-between group shadow-sm {{ $currentStatus === 'IN_PROCESS' ? 'bg-gradient-to-b from-sky-950/40 to-slate-900 border-sky-500 text-sky-300 shadow-sky-500/20' : 'bg-[#0d121f] border-slate-800/80 hover:border-sky-500/40 text-slate-400' }}">
             <div class="flex items-center justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">In Process</span>
@@ -66,7 +66,7 @@
         </a>
 
         <!-- Tab 4: Completed -->
-        <a href="{{ route('admin.bookings', ['status' => 'CONFIRMED']) }}"
+        <a href="{{ route('admin.bookings', array_filter(['status' => 'CONFIRMED', 'search' => $search])) }}"
             class="p-4 rounded-2xl border transition-all flex flex-col justify-between group shadow-sm {{ $currentStatus === 'CONFIRMED' ? 'bg-gradient-to-b from-emerald-950/40 to-slate-900 border-emerald-500 text-emerald-300 shadow-emerald-500/20' : 'bg-[#0d121f] border-slate-800/80 hover:border-emerald-500/40 text-slate-400' }}">
             <div class="flex items-center justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">Completed</span>
@@ -79,7 +79,7 @@
         </a>
 
         <!-- Tab 5: Cancelled -->
-        <a href="{{ route('admin.bookings', ['status' => 'CANCELLED']) }}"
+        <a href="{{ route('admin.bookings', array_filter(['status' => 'CANCELLED', 'search' => $search])) }}"
             class="p-4 rounded-2xl border transition-all flex flex-col justify-between group shadow-sm {{ $currentStatus === 'CANCELLED' ? 'bg-gradient-to-b from-rose-950/30 to-slate-900 border-rose-500 text-rose-300 shadow-rose-500/20' : 'bg-[#0d121f] border-slate-800/80 hover:border-rose-500/40 text-slate-400' }}">
             <div class="flex items-center justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-rose-400">Cancelled</span>
@@ -143,17 +143,22 @@
     @endif
 
     <!-- Search & Active Filters Bar -->
-    <div class="p-4 rounded-2xl bg-[#0e1424] border border-slate-800/80 flex flex-col md:flex-row items-center justify-between gap-4 shadow-md">
-        <form method="GET" action="{{ route('admin.bookings') }}" class="w-full md:w-auto flex-grow flex items-center gap-3">
-            @if ($currentStatus)
-                <input type="hidden" name="status" value="{{ $currentStatus }}">
-            @endif
-            <div class="relative flex-grow max-w-md">
+    <div class="p-4 rounded-2xl bg-[#0e1424] border border-slate-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-md">
+        <form method="GET" action="{{ route('admin.bookings') }}" class="w-full lg:w-auto flex-grow flex flex-wrap items-center gap-3">
+            <div class="relative flex-grow min-w-[220px] max-w-md">
                 <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input type="text" name="search" value="{{ $search }}" placeholder="Search customer name, email, phone (+91), or reference..."
                     class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
             </div>
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5">
+            <select name="status" onchange="this.form.submit()" aria-label="Filter by workflow status"
+                class="px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-amber-400 transition">
+                <option value="">All Statuses ({{ $counts['all'] }})</option>
+                <option value="PENDING" {{ in_array($currentStatus, ['PENDING', 'PAYMENT_PENDING']) ? 'selected' : '' }}>Pending Call ({{ $counts['pending'] }})</option>
+                <option value="IN_PROCESS" {{ $currentStatus === 'IN_PROCESS' ? 'selected' : '' }}>In Process ({{ $counts['in_process'] }})</option>
+                <option value="CONFIRMED" {{ $currentStatus === 'CONFIRMED' ? 'selected' : '' }}>Completed ({{ $counts['completed'] }})</option>
+                <option value="CANCELLED" {{ $currentStatus === 'CANCELLED' ? 'selected' : '' }}>Cancelled ({{ $counts['cancelled'] }})</option>
+            </select>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                 <span>Filter</span>
             </button>
             @if ($search || $currentStatus)
@@ -162,7 +167,15 @@
         </form>
 
         <div class="text-xs text-slate-400 font-mono flex-shrink-0">
-            Showing <strong class="text-slate-200">{{ $bookings->count() }}</strong> of <strong class="text-slate-200">{{ $bookings->total() }}</strong> enquiries
+            @if ($search || $currentStatus)
+                @if ($bookings->total() > $bookings->count())
+                    Showing <strong class="text-amber-300">{{ $bookings->firstItem() }}–{{ $bookings->lastItem() }}</strong> of <strong class="text-slate-200">{{ $bookings->total() }}</strong> matching ({{ $counts['all'] }} total)
+                @else
+                    Showing <strong class="text-amber-300">{{ $bookings->total() }}</strong> matching (of <strong class="text-slate-200">{{ $counts['all'] }}</strong> total enquiries)
+                @endif
+            @else
+                Showing <strong class="text-slate-200">{{ $bookings->count() }}</strong> of <strong class="text-slate-200">{{ $bookings->total() }}</strong> enquiries
+            @endif
         </div>
     </div>
 
@@ -206,8 +219,20 @@
                                     {{ strtoupper(substr($booking->contact->full_name, 0, 2)) }}
                                 </div>
                                 <div class="space-y-1">
+                                    @php
+                                        $emailOnlyMatch = $search !== ''
+                                            && stripos($booking->contact->email, $search) !== false
+                                            && stripos($booking->contact->full_name, $search) === false
+                                            && stripos($booking->booking_reference, $search) === false
+                                            && stripos($booking->contact->phone, $search) === false;
+                                    @endphp
                                     <div class="font-bold text-slate-100 text-sm leading-tight">{{ $booking->contact->full_name }}</div>
-                                    <div class="text-[11px] text-slate-400">{{ $booking->contact->email }}</div>
+                                    <div class="text-[11px] text-slate-400 flex flex-wrap items-center gap-1.5">
+                                        <span>{{ $booking->contact->email }}</span>
+                                        @if ($emailOnlyMatch)
+                                            <span class="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-semibold">matched email</span>
+                                        @endif
+                                    </div>
 
                                     <!-- Action Pills for Call & WhatsApp -->
                                     <div class="flex flex-wrap items-center gap-1.5 pt-1">

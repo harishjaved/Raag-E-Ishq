@@ -20,7 +20,7 @@ class TicketDispatchController extends Controller
             'contact',
             'items.category',
             'tickets.category',
-        ])->latest();
+        ]);
 
         if ($filter === 'needs_generation') {
             // Bookings that have no tickets yet
@@ -30,18 +30,12 @@ class TicketDispatchController extends Controller
             $query->whereHas('tickets');
         }
 
-        if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('booking_reference', 'like', "%{$search}%")
-                  ->orWhereHas('contact', function ($cq) use ($search) {
-                      $cq->where('full_name', 'like', "%{$search}%")
-                         ->orWhere('phone', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
+            $query->searchTerm($search);
         }
 
-        $bookings = $query->paginate(15);
+        $bookings = $query->latest()->paginate(15)->withQueryString();
 
         // Populate QR SVGs and WhatsApp dispatch URLs for all loaded tickets
         foreach ($bookings as $booking) {

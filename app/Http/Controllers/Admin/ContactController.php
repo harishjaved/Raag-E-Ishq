@@ -13,17 +13,14 @@ class ContactController extends Controller
     {
         $query = Contact::withCount(['bookings', 'bookings as confirmed_bookings_count' => function ($q) {
             $q->where('status', 'CONFIRMED');
-        }])->latest();
+        }]);
 
-        if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('full_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
-            });
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
+            $query->searchTerm($search);
         }
 
-        $contacts = $query->paginate(20);
+        $contacts = $query->latest()->paginate(20)->withQueryString();
 
         return view('admin.contacts.index', [
             'contacts' => $contacts,

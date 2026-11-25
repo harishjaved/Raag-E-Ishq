@@ -397,4 +397,67 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $this->get($tamperedShortUrl)->assertRedirect(route('home'));
         $this->get('/booking/' . $reference . '/confirmed?p=tampered&s=badsignature')->assertRedirect(route('home'));
     }
+
+    public function test_admin_search_and_filter_rank_name_matches_first_and_normalize_phone(): void
+    {
+        $olderHari = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'hari',
+            'email' => 'iyhfsfh@example.com',
+            'phone' => '8493939393',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 1,
+            'privacy_consent' => true,
+        ]);
+        $olderHari->update(['status' => Booking::STATUS_CONFIRMED, 'created_at' => now()->subDay()]);
+
+        $newerSooraj = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Sooraj',
+            'email' => 'mohammedharishjaved@example.com',
+            'phone' => '6282130150',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 1,
+            'privacy_consent' => true,
+        ]);
+
+        $unrelated = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Arun Kumar',
+            'email' => 'arun@example.com',
+            'phone' => '9847000111',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 1,
+            'privacy_consent' => true,
+        ]);
+
+        // Name match ('hari') must rank above newer email-only match ('Sooraj'), and exclude unrelated ('Arun')
+        $searchResp = $this->actingAs($this->eventManager)->get('/admin/bookings?search=hari');
+        $searchResp->assertStatus(200);
+        $searchResp->assertSeeInOrder([$olderHari->booking_reference, $newerSooraj->booking_reference]);
+        $searchResp->assertDontSee($unrelated->booking_reference);
+        $searchResp->assertSee('matched email');
+        $searchResp->assertSee('matching (of');
+
+        // Normalized +91 spaced phone query finds stored 10-digit phone cleanly
+        $phoneResp = $this->actingAs($this->eventManager)->get('/admin/bookings?search=' . urlencode('+91 84939 39393'));
+        $phoneResp->assertStatus(200);
+        $phoneResp->assertSee($olderHari->booking_reference);
+        $phoneResp->assertDontSee($unrelated->booking_reference);
+
+        // Combined status + search filter excludes non-confirmed bookings and preserves search on tabs
+        $filteredResp = $this->actingAs($this->eventManager)->get('/admin/bookings?status=CONFIRMED&search=hari');
+        $filteredResp->assertStatus(200);
+        $filteredResp->assertSee($olderHari->booking_reference);
+        $filteredResp->assertDontSee($newerSooraj->booking_reference);
+        $filteredResp->assertSee('search=hari');
+
+        // Dispatch & CRM search honor relevance and phone normalization too
+        $this->actingAs($this->eventManager)->get('/admin/dispatch?search=hari')
+            ->assertStatus(200)
+            ->assertSeeInOrder([$olderHari->booking_reference, $newerSooraj->booking_reference])
+            ->assertDontSee($unrelated->booking_reference);
+
+        $this->actingAs($this->eventManager)->get('/admin/crm/contacts?search=' . urlencode('+91 8493939393'))
+            ->assertStatus(200)
+            ->assertSee('8493939393')
+            ->assertDontSee('9847000111');
+    }
 }

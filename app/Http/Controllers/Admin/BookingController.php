@@ -18,7 +18,7 @@ class BookingController extends Controller
     {
         $inventoryService->releaseExpiredHolds();
 
-        $query = Booking::with(['contact', 'items.category', 'tickets.category'])->latest();
+        $query = Booking::with(['contact', 'items.category', 'tickets.category']);
 
         $status = $request->query('status');
         if ($status) {
@@ -31,18 +31,12 @@ class BookingController extends Controller
             }
         }
 
-        if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('booking_reference', 'like', "%{$search}%")
-                  ->orWhereHas('contact', function ($cq) use ($search) {
-                      $cq->where('full_name', 'like', "%{$search}%")
-                         ->orWhere('phone', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
+            $query->searchTerm($search);
         }
 
-        $bookings = $query->paginate(20);
+        $bookings = $query->latest()->paginate(20)->withQueryString();
 
         // Precompute quick WhatsApp URLs & QR codes for each booking
         foreach ($bookings as $booking) {
