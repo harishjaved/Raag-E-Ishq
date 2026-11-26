@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
                 if (!Schema::hasTable('events')) {
                     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
                 }
-                if (Schema::hasTable('events') && \App\Models\Event::count() === 0) {
+                if (Schema::hasTable('events') && (\App\Models\Event::count() === 0 || \App\Models\User::count() === 0)) {
                     \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
                 }
                 if (is_dir('/tmp')) {
@@ -45,18 +45,28 @@ class AppServiceProvider extends ServiceProvider
         }
         // Share live counters with the admin sidebar
         View::composer('layouts.admin', function ($view) {
-            if (Schema::hasTable('bookings')) {
-                $pendingCount = Booking::whereIn('status', [Booking::STATUS_PAYMENT_PENDING, 'PENDING'])->count();
-                $inProcessCount = Booking::where('status', Booking::STATUS_IN_PROCESS)->count();
+            try {
+                $statusAgg = Booking::query()
+                    ->selectRaw('COALESCE(SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END), 0) as pending_count', [
+                        Booking::STATUS_PAYMENT_PENDING,
+                        'PENDING',
+                    ])
+                    ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as in_process_count', [
+                        Booking::STATUS_IN_PROCESS,
+                    ])
+                    ->first();
+
                 $needsDispatchCount = Booking::whereDoesntHave('tickets')
                     ->whereIn('status', [Booking::STATUS_CONFIRMED, Booking::STATUS_IN_PROCESS, Booking::STATUS_PAYMENT_PENDING])
                     ->count();
 
                 $view->with([
-                    'sidebarPendingCount' => $pendingCount,
-                    'sidebarInProcessCount' => $inProcessCount,
+                    'sidebarPendingCount' => (int) ($statusAgg->pending_count ?? 0),
+                    'sidebarInProcessCount' => (int) ($statusAgg->in_process_count ?? 0),
                     'sidebarNeedsDispatchCount' => $needsDispatchCount,
                 ]);
+            } catch (\Throwable $e) {
+                // Skip if database has not finished migrating yet
             }
         });
     }

@@ -76,12 +76,30 @@ class BookingController extends Controller
             }
         }
 
+        $statusCounts = Booking::query()
+            ->selectRaw('COUNT(*) as all_count')
+            ->selectRaw('COALESCE(SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END), 0) as pending_count', [
+                Booking::STATUS_PAYMENT_PENDING,
+                'PENDING',
+            ])
+            ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as in_process_count', [
+                Booking::STATUS_IN_PROCESS,
+            ])
+            ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) as completed_count', [
+                Booking::STATUS_CONFIRMED,
+            ])
+            ->selectRaw('COALESCE(SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END), 0) as cancelled_count', [
+                Booking::STATUS_CANCELLED,
+                Booking::STATUS_HOLD_EXPIRED,
+            ])
+            ->first();
+
         $counts = [
-            'all' => Booking::count(),
-            'pending' => Booking::whereIn('status', [Booking::STATUS_PAYMENT_PENDING, 'PENDING'])->count(),
-            'in_process' => Booking::where('status', Booking::STATUS_IN_PROCESS)->count(),
-            'completed' => Booking::where('status', Booking::STATUS_CONFIRMED)->count(),
-            'cancelled' => Booking::whereIn('status', [Booking::STATUS_CANCELLED, Booking::STATUS_HOLD_EXPIRED])->count(),
+            'all' => (int) ($statusCounts->all_count ?? 0),
+            'pending' => (int) ($statusCounts->pending_count ?? 0),
+            'in_process' => (int) ($statusCounts->in_process_count ?? 0),
+            'completed' => (int) ($statusCounts->completed_count ?? 0),
+            'cancelled' => (int) ($statusCounts->cancelled_count ?? 0),
         ];
 
         return view('admin.bookings.index', [

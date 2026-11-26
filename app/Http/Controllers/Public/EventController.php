@@ -16,12 +16,14 @@ class EventController extends Controller
             $q->where('is_active', true)->orderBy('display_order');
         }])->where('slug', 'sagar-kinare-2026')->firstOrFail();
 
-        $categoriesWithAvailability = $event->categories->map(function ($category) use ($inventoryService) {
-            $category->available = $inventoryService->getAvailableCapacity($category);
+        $snapshot = $inventoryService->getEventInventorySnapshot($event);
+
+        $categoriesWithAvailability = $event->categories->map(function ($category) use ($snapshot) {
+            $category->available = $snapshot['per_category'][$category->id]['available'] ?? 0;
             return $category;
         });
 
-        $globalRemaining = $inventoryService->getGlobalRemainingCapacity($event);
+        $globalRemaining = $snapshot['global_remaining'];
 
         return view('public.event', [
             'event' => $event,

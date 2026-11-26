@@ -37,12 +37,13 @@ Route::get('/joygivers', function (\App\Services\InventoryService $inventoryServ
         }])->where('slug', 'sagar-kinare-2026')->first();
 
         if ($event) {
-            $categoriesPayload = $event->categories->map(function ($cat) use ($inventoryService) {
+            $snapshot = $inventoryService->getEventInventorySnapshot($event);
+            $categoriesPayload = $event->categories->map(function ($cat) use ($snapshot) {
                 return [
                     'id' => $cat->id,
                     'name' => $cat->name,
                     'price_paise' => $cat->price_paise,
-                    'available' => $inventoryService->getAvailableCapacity($cat),
+                    'available' => $snapshot['per_category'][$cat->id]['available'] ?? 0,
                 ];
             })->values()->all();
         }

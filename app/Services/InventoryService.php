@@ -86,6 +86,78 @@ class InventoryService
     }
 
     /**
+     * Fetch batched inventory counts per category and global remaining capacity in 3 grouped queries.
+     *
+     * @return array{
+     *     per_category: array<int, array{issued: int, active_holds: int, unlinked_allocations: int, available: int}>,
+     *     global_remaining: int,
+     *     total_allocated: int
+     * }
+     */
+    public function getEventInventorySnapshot(Event $event): array
+    {
+        $categories = $event->relationLoaded('categories')
+            ? $event->categories
+            : $event->categories()->orderBy('display_order')->get();
+
+        $allCategoryIds = $event->categories()->pluck('id');
+        if ($allCategoryIds->isEmpty()) {
+            return [
+                'per_category' => [],
+                'global_remaining' => (int) $event->total_capacity,
+                'total_allocated' => 0,
+            ];
+        }
+
+        $now = Carbon::now();
+
+        $issuedByCat = Ticket::query()
+            ->selectRaw('ticket_category_id, COUNT(*) as total')
+            ->whereIn('ticket_category_id', $allCategoryIds)
+            ->whereHas('booking', fn ($q) => $q->where('is_attending', true))
+            ->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])
+            ->groupBy('ticket_category_id')
+            ->pluck('total', 'ticket_category_id');
+
+        $holdsByCat = InventoryHold::query()
+            ->selectRaw('ticket_category_id, COALESCE(SUM(quantity), 0) as total')
+            ->whereIn('ticket_category_id', $allCategoryIds)
+            ->whereHas('booking', fn ($q) => $q->where('is_attending', true))
+            ->where('status', InventoryHold::STATUS_ACTIVE)
+            ->where('expires_at', '>', $now)
+            ->groupBy('ticket_category_id')
+            ->pluck('total', 'ticket_category_id');
+
+        $allocsByCat = TicketAllocation::query()
+            ->selectRaw('ticket_category_id, COALESCE(SUM(quantity), 0) as total')
+            ->whereIn('ticket_category_id', $allCategoryIds)
+            ->whereNull('booking_id')
+            ->groupBy('ticket_category_id')
+            ->pluck('total', 'ticket_category_id');
+
+        $perCategory = [];
+        foreach ($categories as $cat) {
+            $issued = (int) ($issuedByCat[$cat->id] ?? 0);
+            $holds = (int) ($holdsByCat[$cat->id] ?? 0);
+            $allocs = (int) ($allocsByCat[$cat->id] ?? 0);
+            $perCategory[$cat->id] = [
+                'issued' => $issued,
+                'active_holds' => $holds,
+                'unlinked_allocations' => $allocs,
+                'available' => max(0, (int) $cat->capacity - ($issued + $holds + $allocs)),
+            ];
+        }
+
+        $totalAllocated = (int) $issuedByCat->sum() + (int) $holdsByCat->sum() + (int) $allocsByCat->sum();
+
+        return [
+            'per_category' => $perCategory,
+            'global_remaining' => max(0, (int) $event->total_capacity - $totalAllocated),
+            'total_allocated' => $totalAllocated,
+        ];
+    }
+
+    /**
      * Atomically create a booking, contact, items, and inventory hold under row-level locking.
      * Prevents 10+ concurrent buyers from overselling even on the last seat.
      *
