@@ -25,7 +25,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->reportable(function (\Throwable $e) {
             if (!app()->runningUnitTests()) {
-                error_log('APP_EXCEPTION: ' . get_class($e) . ': ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+                $frames = collect($e->getTrace())
+                    ->take(5)
+                    ->map(fn ($f) => basename((string) ($f['file'] ?? '?')) . ':' . ($f['line'] ?? '?'))
+                    ->implode(' <- ');
+                error_log('APP_EXCEPTION: ' . get_class($e) . ': ' . $e->getMessage() . ' @ ' . basename($e->getFile()) . ':' . $e->getLine() . ' | ' . $frames);
+                if (isset($_SERVER['VERCEL'])) {
+                    return false;
+                }
             }
         });
     })->create();
