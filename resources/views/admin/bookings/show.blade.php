@@ -7,9 +7,19 @@
     <!-- Breadcrumb & Top Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800/60">
         <div>
-            <div class="flex items-center gap-2 mb-1">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
                 <a href="{{ route('admin.bookings') }}" class="text-xs text-slate-400 hover:text-amber-400 transition flex items-center gap-1 font-semibold">
                     &larr; Back to Enquiries Desk
+                </a>
+                <span class="text-slate-700">&bull;</span>
+                <a href="{{ route('home') }}"
+                    aria-label="Go to main page"
+                    title="Go to main page"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800/90 hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-slate-700 hover:border-amber-400 text-[11px] font-bold transition">
+                    <span>Main Page</span>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </a>
             </div>
             <div class="flex items-center gap-3">
@@ -106,6 +116,14 @@
                 <a href="{{ route('booking.confirmed', $booking->booking_reference) }}" target="_blank"
                     class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
                     <span>Public Ticket View &rarr;</span>
+                </a>
+                <a href="{{ route('admin.bookings') }}"
+                    aria-label="Close ticket view and return to Back Office desk"
+                    title="Close &amp; return to Enquiries Desk"
+                    class="w-9 h-9 rounded-full bg-slate-800 hover:bg-rose-500 text-slate-200 hover:text-white border border-slate-700 hover:border-rose-400 flex items-center justify-center transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </a>
             @elseif (in_array($booking->status, ['HOLD_EXPIRED', 'PAYMENT_FAILED', 'RECONCILIATION_REQUIRED']))
                 <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm late payment received and issue tickets (if capacity allows)?');">
@@ -343,22 +361,13 @@
 </div>
 
 <!-- WhatsApp Ticket Dispatch Modal -->
-<div id="whatsappDispatchModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#0e1424] border border-slate-700 rounded-3xl max-w-xl w-full p-6 shadow-2xl relative space-y-5 animate-scale-up">
-        <!-- Modal Header -->
-        <div class="flex items-start justify-between border-b border-slate-800 pb-4">
-            <div class="space-y-1">
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>WhatsApp QR Ticket Dispatch</span>
-                </div>
-                <h3 id="modalCustomerTitle" class="text-lg font-bold text-slate-100 font-serif-display">{{ $booking->contact->full_name }} ({{ $booking->booking_reference }})</h3>
-                <p id="modalSubtitle" class="text-xs text-slate-400">Total: ₹{{ number_format($booking->total_amount_paise / 100, 2) }} &bull; Phone: {{ $booking->contact->phone }}</p>
-            </div>
-            <button type="button" onclick="closeWhatsAppModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-100 flex items-center justify-center text-sm font-bold transition">
-                &times;
-            </button>
-        </div>
+<div id="whatsappDispatchModal" role="dialog" aria-modal="true" aria-labelledby="modalCustomerTitle"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-contain">
+    <div class="bg-[#0e1424] border border-slate-700 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto overscroll-contain p-5 sm:p-6 shadow-2xl relative space-y-5 animate-scale-up my-auto">
+        @include('admin.partials.whatsapp-modal-header', [
+            'modalTitle' => $booking->contact->full_name . ' (' . $booking->booking_reference . ')',
+            'modalSubtitle' => 'Total: ₹' . number_format($booking->total_amount_paise / 100, 2) . ' • Phone: ' . $booking->contact->phone,
+        ])
 
         <!-- Ticket Switcher Tabs (if booking has multiple tickets) -->
         <div id="modalTicketTabs" class="flex flex-wrap gap-2 hidden">
@@ -406,22 +415,7 @@
                 <span id="modalOpenWhatsAppText">Send WhatsApp Pass (to Customer)</span>
             </button>
 
-            <!-- Secondary Actions Row -->
-            <div class="grid grid-cols-2 gap-2.5">
-                <!-- 2. Download QR Image (PNG) -->
-                <button type="button" id="modalDownloadPngBtn"
-                    class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
-                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    <span>Download QR (PNG)</span>
-                </button>
-
-                <!-- 3. Copy Text Message -->
-                <button type="button" id="modalCopyTextBtn"
-                    class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span>Copy Message Text</span>
-                </button>
-            </div>
+@include('admin.partials.whatsapp-modal-actions')
         </div>
     </div>
 </div>

@@ -530,4 +530,55 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $tier2Row = collect($metrics['category_breakdown'])->firstWhere('name', 'Tier 2');
         $this->assertEquals(100, $tier2Row['available']); // Expired hold freed cleanly
     }
+
+    public function test_public_ticket_views_and_back_office_whatsapp_modal_render_cross_navigation_controls(): void
+    {
+        $booking = $this->inventoryService->createBookingWithHold([
+            'full_name' => 'Meera Jasmine',
+            'email' => 'meera@test.com',
+            'phone' => '9847666777',
+            'ticket_category_id' => $this->tier1->id,
+            'quantity' => 1,
+            'privacy_consent' => true,
+        ]);
+        $booking->update(['status' => Booking::STATUS_CONFIRMED]);
+        $this->ticketService->issueTicketsForBooking($booking);
+        $ticket = $booking->tickets()->firstOrFail();
+
+        // 1. Public confirmed ticket screen includes clickable cross buttons to Main Page and working Reserve Seats link
+        $confirmed = $this->get(route('booking.confirmed', $booking->booking_reference));
+        $confirmed->assertStatus(200);
+        $confirmed->assertSee('aria-label="Close ticket view and go to main page"', false);
+        $confirmed->assertSee('aria-label="Go to main page"', false);
+        $confirmed->assertSee('href="' . route('home') . '"', false);
+        $confirmed->assertSee('href="' . route('event.show') . '#register"', false);
+
+        // 2. Signed single-pass screen includes clickable cross button to Main Page
+        $signedDownloadUrl = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);
+        $singlePass = $this->get($signedDownloadUrl);
+        $singlePass->assertStatus(200);
+        $singlePass->assertSee('aria-label="Close ticket and go to main page"', false);
+        $singlePass->assertSee('href="' . route('home') . '"', false);
+
+        // 3. Back Office Bookings Desk WhatsApp modal includes sticky accessible close & main-page controls
+        $desk = $this->actingAs($this->eventManager)->get(route('admin.bookings'));
+        $desk->assertStatus(200);
+        $desk->assertSee('role="dialog"', false);
+        $desk->assertSee('aria-label="Close WhatsApp modal"', false);
+        $desk->assertSee('aria-label="Close and go to main page"', false);
+        $desk->assertSee('Close &amp; Back to Office', false);
+        $desk->assertSee('Go to Main Page');
+        $desk->assertSee('href="' . route('home') . '"', false);
+
+        // 4. Back Office Booking Details (ticket view + WhatsApp modal) includes cross buttons to Back Office & Main Page
+        $show = $this->actingAs($this->eventManager)->get(route('admin.bookings.show', $booking->id));
+        $show->assertStatus(200);
+        $show->assertSee('aria-label="Close ticket view and return to Back Office desk"', false);
+        $show->assertSee('aria-label="Close WhatsApp modal"', false);
+        $show->assertSee('aria-label="Go to main page"', false);
+        $show->assertSee('href="' . route('admin.bookings') . '"', false);
+        $show->assertSee('href="' . route('home') . '"', false);
+        $show->assertSee('Close &amp; Back to Office', false);
+        $show->assertSee('Go to Main Page');
+    }
 }

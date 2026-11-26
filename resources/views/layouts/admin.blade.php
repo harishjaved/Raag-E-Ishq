@@ -269,5 +269,40 @@
             @yield('content')
         </main>
     </div>
+
+    <script>
+        (function () {
+            let pressedOutside = false;
+
+            const getActiveModal = () => {
+                const modal = document.getElementById('whatsappDispatchModal');
+                return modal && !modal.classList.contains('hidden') ? modal : null;
+            };
+
+            const isOutsideDialog = (modal, event) => {
+                const panel = modal.firstElementChild;
+                return panel ? !panel.contains(event.target) : event.target === modal;
+            };
+
+            document.addEventListener('pointerdown', (event) => {
+                const modal = getActiveModal();
+                pressedOutside = Boolean(modal && isOutsideDialog(modal, event));
+            });
+
+            document.addEventListener('pointerup', (event) => {
+                const modal = getActiveModal();
+                if (pressedOutside && modal && isOutsideDialog(modal, event) && typeof window.closeWhatsAppModal === 'function') {
+                    window.closeWhatsAppModal();
+                }
+                pressedOutside = false;
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && getActiveModal() && typeof window.closeWhatsAppModal === 'function') {
+                    window.closeWhatsAppModal();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

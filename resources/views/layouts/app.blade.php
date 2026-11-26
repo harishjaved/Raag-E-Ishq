@@ -368,7 +368,7 @@
                 </button>
 
                 <!-- Book Tickets CTA -->
-                <a href="#register"
+                <a href="{{ request()->routeIs('event.show') ? '#register' : route('event.show') . '#register' }}"
                     class="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-white shadow-md shadow-rose-500/20 transition transform active:scale-95">
                     Reserve Seats
                 </a>

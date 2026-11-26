@@ -66,7 +66,15 @@
 
 <div class="max-w-2xl mx-auto px-4 py-8 space-y-8">
     <!-- Success Banner (Screen Only) -->
-    <div class="success-banner p-6 rounded-3xl bg-emerald-950/80 border border-emerald-500/40 text-center space-y-3 shadow-2xl">
+    <div class="success-banner relative p-6 rounded-3xl bg-emerald-950/80 border border-emerald-500/40 text-center space-y-3 shadow-2xl">
+        <a href="{{ route('home') }}"
+            aria-label="Close ticket view and go to main page"
+            title="Close &amp; go to main page"
+            class="no-print absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-900/80 hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-emerald-500/40 hover:border-amber-400 flex items-center justify-center transition shadow-lg">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </a>
         <div class="w-12 h-12 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
         </div>
@@ -97,10 +105,21 @@
                 <h2 class="text-lg font-bold text-slate-100">Your Admission Tickets ({{ $tickets->count() }})</h2>
                 <p class="text-xs text-slate-400">Save QR to your gallery or print tickets for gate check-in.</p>
             </div>
-            <button onclick="window.print()" class="text-xs font-bold px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition flex items-center gap-2 shadow-lg shadow-amber-500/20">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                <span>Print All Passes / Save as PDF</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="window.print()" class="text-xs font-bold px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 transition flex items-center gap-2 shadow-lg shadow-amber-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    <span>Print All Passes / Save as PDF</span>
+                </button>
+                <a href="{{ route('home') }}"
+                    aria-label="Go to main page"
+                    title="Go to main page"
+                    class="inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    <span>Main Page</span>
+                </a>
+            </div>
         </div>
 
         @foreach ($tickets as $ticket)

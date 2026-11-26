@@ -47,7 +47,7 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
     <div class="max-w-md w-full space-y-4">
-        <div class="no-print flex justify-between items-center text-xs">
+        <div class="no-print flex flex-wrap justify-between items-center gap-2 text-xs">
             <a href="{{ route('event.show') }}" class="text-amber-400 font-semibold hover:underline">&larr; Back to Raag-E-Ishq</a>
             <div class="flex items-center gap-2">
                 <a href="{{ route('ticket.qr.download', ['uuid' => $ticket->qr_uuid]) }}"
@@ -59,6 +59,14 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     <span>Print Pass / PDF</span>
                 </button>
+                <a href="{{ route('home') }}"
+                    aria-label="Close ticket and go to main page"
+                    title="Close &amp; go to main page"
+                    class="w-8 h-8 rounded-full bg-slate-800 hover:bg-amber-500 text-slate-200 hover:text-slate-950 border border-slate-700 hover:border-amber-400 flex items-center justify-center transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </a>
             </div>
         </div>
 
