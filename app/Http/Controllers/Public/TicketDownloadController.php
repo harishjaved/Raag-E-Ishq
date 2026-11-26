@@ -26,6 +26,7 @@ class TicketDownloadController extends Controller
 
         return view('public.ticket_download', [
             'ticket' => $ticket,
+            'booking' => $ticket->booking,
             'qrSvg' => $qrSvg,
         ]);
     }

@@ -30,7 +30,7 @@ class Phase4TicketIssuanceAndSecurityTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
         $this->inventoryService = app(InventoryService::class);
         $this->ticketService = app(TicketService::class);
     }

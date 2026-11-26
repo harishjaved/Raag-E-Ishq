@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\BookingItem;
 use App\Models\Contact;
+use App\Models\Donation;
 use App\Models\Event;
 use App\Models\EventSetting;
 use App\Models\InventoryHold;
@@ -14,6 +15,7 @@ use App\Models\PaymentAttempt;
 use App\Models\Ticket;
 use App\Models\TicketAllocation;
 use App\Models\TicketCategory;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -25,24 +27,17 @@ class InventoryService
      */
     public function getAvailableCapacity(TicketCategory $category): int
     {
-        // 1. Issued/checked-in valid tickets for attending bookings
         $issuedCount = Ticket::where('ticket_category_id', $category->id)
-            ->whereHas('booking', function ($q) {
-                $q->where('is_attending', true);
-            })
+            ->whereHas('booking', fn ($q) => $q->where('is_attending', true))
             ->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])
             ->count();
 
-        // 2. Active, unexpired inventory holds for attending bookings
         $activeHoldsCount = InventoryHold::where('ticket_category_id', $category->id)
-            ->whereHas('booking', function ($q) {
-                $q->where('is_attending', true);
-            })
+            ->whereHas('booking', fn ($q) => $q->where('is_attending', true))
             ->where('status', InventoryHold::STATUS_ACTIVE)
             ->where('expires_at', '>', Carbon::now())
             ->sum('quantity');
 
-        // 3. Sponsor, complimentary, and organiser unissued reserve holds
         $allocationsCount = TicketAllocation::where('ticket_category_id', $category->id)
             ->whereNull('booking_id')
             ->sum('quantity');
@@ -61,16 +56,12 @@ class InventoryService
         $categoryIds = $event->categories()->pluck('id');
 
         $issuedCount = Ticket::whereIn('ticket_category_id', $categoryIds)
-            ->whereHas('booking', function ($q) {
-                $q->where('is_attending', true);
-            })
+            ->whereHas('booking', fn ($q) => $q->where('is_attending', true))
             ->whereIn('status', [Ticket::STATUS_ISSUED, Ticket::STATUS_CHECKED_IN])
             ->count();
 
         $activeHoldsCount = InventoryHold::whereIn('ticket_category_id', $categoryIds)
-            ->whereHas('booking', function ($q) {
-                $q->where('is_attending', true);
-            })
+            ->whereHas('booking', fn ($q) => $q->where('is_attending', true))
             ->where('status', InventoryHold::STATUS_ACTIVE)
             ->where('expires_at', '>', Carbon::now())
             ->sum('quantity');
@@ -86,7 +77,7 @@ class InventoryService
     }
 
     /**
-     * Fetch batched inventory counts per category and global remaining capacity in 3 grouped queries.
+     * Fetch batched inventory counts per category and global remaining capacity.
      *
      * @return array{
      *     per_category: array<int, array{issued: int, active_holds: int, unlinked_allocations: int, available: int}>,
@@ -158,17 +149,16 @@ class InventoryService
     }
 
     /**
-     * Atomically create a booking, contact, items, and inventory hold under row-level locking.
-     * Prevents 10+ concurrent buyers from overselling even on the last seat.
+     * Atomically create a reservation request & temporary seat hold (default 30 min) under row-level locking.
      *
      * @throws OutOfStockException
      */
     public function createBookingWithHold(array $data, ?string $ipAddress = null, ?string $userAgent = null): Booking
     {
-        $holdTtlMinutes = (int) EventSetting::get('hold_duration_minutes', 1440);
+        $holdTtlMinutes = max(1, (int) EventSetting::get('hold_duration_minutes', 30));
         $holdExpiresAt = Carbon::now()->addMinutes($holdTtlMinutes);
 
-        $isAttending = !isset($data['attending']) || in_array(strtolower((string)$data['attending']), ['yes', 'true', '1'], true);
+        $isAttending = !isset($data['attending']) || in_array(strtolower((string) $data['attending']), ['yes', 'true', '1'], true);
 
         return DB::transaction(function () use ($data, $isAttending, $holdExpiresAt, $ipAddress, $userAgent) {
             $category = TicketCategory::where('id', $data['ticket_category_id'])
@@ -178,7 +168,6 @@ class InventoryService
             $event = $category->event()->lockForUpdate()->firstOrFail();
             $requestedQuantity = (int) $data['quantity'];
 
-            // 1 & 2. Only check & lock physical capacity if attending
             if ($isAttending) {
                 $categoryAvailable = $this->getAvailableCapacity($category);
                 if ($categoryAvailable < $requestedQuantity) {
@@ -197,31 +186,12 @@ class InventoryService
                 }
             }
 
-            // 3. Create or update contact record (do not merge bookings, only contact info)
-            $contact = Contact::updateOrCreate(
-                [
-                    'email' => strtolower(trim($data['email'])),
-                    'phone' => preg_replace('/[^0-9]/', '', $data['phone']),
-                ],
-                [
-                    'full_name' => trim($data['full_name']),
-                    'country_code' => $data['country_code'] ?? '+91',
-                    'marketing_opt_in' => (bool) ($data['marketing_opt_in'] ?? false),
-                    'utm_source' => $data['utm_source'] ?? null,
-                    'utm_medium' => $data['utm_medium'] ?? null,
-                    'utm_campaign' => $data['utm_campaign'] ?? null,
-                    'utm_content' => $data['utm_content'] ?? null,
-                ]
-            );
+            $contact = $this->upsertContact($data);
 
-            // 4. Server computes exact price in paise - CLIENT NEVER SUPPLIES PRICE
             $unitPricePaise = $category->price_paise;
             $totalAmountPaise = $unitPricePaise * $requestedQuantity;
-
-            // 5. Generate collision-resistant unique booking reference
             $bookingReference = $this->generateUniqueBookingReference();
 
-            // 6. Create booking
             $booking = Booking::create([
                 'booking_reference' => $bookingReference,
                 'event_id' => $event->id,
@@ -232,11 +202,11 @@ class InventoryService
                 'currency' => 'INR',
                 'status' => Booking::STATUS_PAYMENT_PENDING,
                 'hold_expires_at' => $isAttending ? $holdExpiresAt : null,
+                'payment_channel' => 'UPI_ONLINE',
                 'ip_address' => $ipAddress,
                 'user_agent' => $userAgent,
             ]);
 
-            // 7. Create booking item
             BookingItem::create([
                 'booking_id' => $booking->id,
                 'ticket_category_id' => $category->id,
@@ -245,7 +215,6 @@ class InventoryService
                 'subtotal_paise' => $totalAmountPaise,
             ]);
 
-            // 8. Create inventory hold ONLY if attending
             if ($isAttending) {
                 InventoryHold::create([
                     'booking_id' => $booking->id,
@@ -256,12 +225,12 @@ class InventoryService
                 ]);
             }
 
-            // 9. Audit log the booking creation
             AuditLog::log(
                 action: $isAttending ? 'BOOKING_HOLD_CREATED' : 'DONATION_BOOKING_CREATED',
                 targetType: 'Booking',
                 targetId: $booking->id,
                 newValues: [
+                    'stage' => Booking::STATUS_REQUEST_SUBMITTED . ' -> ' . Booking::STATUS_PAYMENT_PENDING,
                     'booking_reference' => $bookingReference,
                     'category' => $category->name,
                     'quantity' => $requestedQuantity,
@@ -275,6 +244,184 @@ class InventoryService
     }
 
     /**
+     * Allow authorized admins to enter offline / cash / bank / VIP bookings into the live 450-seat pool.
+     *
+     * @throws OutOfStockException
+     */
+    public function createOfflineBooking(array $data, User $adminUser, TicketService $ticketService, ?string $ipAddress = null): Booking
+    {
+        $holdTtlMinutes = max(1, (int) EventSetting::get('hold_duration_minutes', 30));
+        $holdExpiresAt = Carbon::now()->addMinutes($holdTtlMinutes);
+        $markPaid = !empty($data['mark_paid']);
+        $channel = strtoupper((string) ($data['payment_channel'] ?? 'CASH'));
+
+        return DB::transaction(function () use ($data, $adminUser, $ticketService, $holdExpiresAt, $markPaid, $channel, $ipAddress) {
+            $category = TicketCategory::where('id', $data['ticket_category_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $event = $category->event()->lockForUpdate()->firstOrFail();
+            $requestedQuantity = (int) $data['quantity'];
+
+            $categoryAvailable = $this->getAvailableCapacity($category);
+            if ($categoryAvailable < $requestedQuantity) {
+                throw new OutOfStockException(
+                    "Only {$categoryAvailable} ticket(s) remaining in {$category->display_name}.",
+                    $categoryAvailable
+                );
+            }
+
+            $globalAvailable = $this->getGlobalRemainingCapacity($event);
+            if ($globalAvailable < $requestedQuantity) {
+                throw new OutOfStockException(
+                    "Only {$globalAvailable} ticket(s) remaining for the entire event.",
+                    $globalAvailable
+                );
+            }
+
+            $contact = $this->upsertContact($data);
+            $unitPricePaise = $channel === 'COMPLIMENTARY' ? 0 : $category->price_paise;
+            $totalAmountPaise = $unitPricePaise * $requestedQuantity;
+            $bookingReference = $this->generateUniqueBookingReference();
+            $utr = !empty($data['utr_reference']) ? trim((string) $data['utr_reference']) : null;
+            $now = Carbon::now();
+
+            $booking = Booking::create([
+                'booking_reference' => $bookingReference,
+                'event_id' => $event->id,
+                'contact_id' => $contact->id,
+                'is_attending' => true,
+                'is_donation' => false,
+                'total_amount_paise' => $totalAmountPaise,
+                'currency' => 'INR',
+                'status' => $markPaid ? Booking::STATUS_CONFIRMED : Booking::STATUS_PAYMENT_PENDING,
+                'hold_expires_at' => $holdExpiresAt,
+                'payment_submitted_at' => $markPaid ? $now : null,
+                'payment_verified_at' => $markPaid ? $now : null,
+                'confirmed_at' => $markPaid ? $now : null,
+                'utr_reference' => $utr,
+                'is_offline_booking' => true,
+                'payment_channel' => $channel,
+                'created_by_user_id' => $adminUser->id,
+                'verified_by_user_id' => $markPaid ? $adminUser->id : null,
+                'ip_address' => $ipAddress,
+                'user_agent' => 'Back Office Manual Entry',
+            ]);
+
+            BookingItem::create([
+                'booking_id' => $booking->id,
+                'ticket_category_id' => $category->id,
+                'quantity' => $requestedQuantity,
+                'unit_price_paise' => $unitPricePaise,
+                'subtotal_paise' => $totalAmountPaise,
+            ]);
+
+            InventoryHold::create([
+                'booking_id' => $booking->id,
+                'ticket_category_id' => $category->id,
+                'quantity' => $requestedQuantity,
+                'expires_at' => $holdExpiresAt,
+                'status' => $markPaid ? InventoryHold::STATUS_CONVERTED : InventoryHold::STATUS_ACTIVE,
+            ]);
+
+            if ($markPaid) {
+                PaymentAttempt::create([
+                    'booking_id' => $booking->id,
+                    'provider' => 'offline_desk',
+                    'provider_payment_id' => $utr ?: ('OFFLINE-' . $bookingReference),
+                    'amount_paise' => $totalAmountPaise,
+                    'currency' => 'INR',
+                    'method' => strtolower($channel),
+                    'status' => PaymentAttempt::STATUS_CAPTURED,
+                    'captured_at' => $now,
+                ]);
+
+                $ticketService->issueTicketsForBooking($booking);
+            }
+
+            AuditLog::log(
+                action: 'OFFLINE_BOOKING_CREATED',
+                targetType: 'Booking',
+                targetId: $booking->id,
+                newValues: [
+                    'booking_reference' => $bookingReference,
+                    'category' => $category->name,
+                    'quantity' => $requestedQuantity,
+                    'channel' => $channel,
+                    'mark_paid' => $markPaid,
+                    'utr_reference' => $utr,
+                    'created_by' => $adminUser->name,
+                ],
+                userId: $adminUser->id
+            );
+
+            return $booking;
+        });
+    }
+
+    /**
+     * Create a standalone Support-the-Cause donation without reserving or deducting hall seats.
+     */
+    public function createStandaloneDonation(array $data, ?string $ipAddress = null): Donation
+    {
+        return DB::transaction(function () use ($data, $ipAddress) {
+            $event = Event::where('slug', 'sagar-kinare-2026')->firstOrFail();
+            $contact = $this->upsertContact($data);
+
+            $amountRupees = (int) round((float) $data['amount_rupees']);
+            $amountPaise = $amountRupees * 100;
+            $utr = !empty($data['utr_reference']) ? trim((string) $data['utr_reference']) : null;
+            $hasProof = $utr !== null && $utr !== '';
+
+            $donation = Donation::create([
+                'donation_reference' => Donation::generateUniqueReference(),
+                'event_id' => $event->id,
+                'contact_id' => $contact->id,
+                'amount_paise' => $amountPaise,
+                'currency' => 'INR',
+                'status' => $hasProof ? Donation::STATUS_PAYMENT_SUBMITTED : Donation::STATUS_PENDING_PAYMENT,
+                'payment_method' => strtoupper((string) ($data['payment_method'] ?? 'UPI')),
+                'utr_reference' => $utr,
+                'donor_note' => !empty($data['donor_note']) ? trim((string) $data['donor_note']) : null,
+                'ip_address' => $ipAddress,
+            ]);
+
+            AuditLog::log(
+                action: 'CAUSE_DONATION_CREATED',
+                targetType: 'Donation',
+                targetId: $donation->id,
+                newValues: [
+                    'donation_reference' => $donation->donation_reference,
+                    'amount_paise' => $amountPaise,
+                    'status' => $donation->status,
+                    'utr_reference' => $utr,
+                ]
+            );
+
+            return $donation;
+        });
+    }
+
+    protected function upsertContact(array $data): Contact
+    {
+        return Contact::updateOrCreate(
+            [
+                'email' => strtolower(trim((string) $data['email'])),
+                'phone' => preg_replace('/[^0-9]/', '', (string) $data['phone']),
+            ],
+            [
+                'full_name' => trim((string) $data['full_name']),
+                'country_code' => $data['country_code'] ?? '+91',
+                'marketing_opt_in' => (bool) ($data['marketing_opt_in'] ?? false),
+                'utm_source' => $data['utm_source'] ?? null,
+                'utm_medium' => $data['utm_medium'] ?? null,
+                'utm_campaign' => $data['utm_campaign'] ?? null,
+                'utm_content' => $data['utm_content'] ?? null,
+            ]
+        );
+    }
+
+    /**
      * Atomically cancel a booking and release its inventory holds back to the available pool.
      */
     public function cancelBooking(Booking $booking, string $reason = 'Cancelled by administrator', ?int $userId = null): Booking
@@ -282,25 +429,22 @@ class InventoryService
         return DB::transaction(function () use ($booking, $reason, $userId) {
             $booking = Booking::where('id', $booking->id)->lockForUpdate()->firstOrFail();
 
-            if ($booking->status === Booking::STATUS_CONFIRMED) {
+            if ($booking->isConfirmed()) {
                 throw new \InvalidArgumentException('Confirmed booking with issued tickets cannot be directly cancelled here.');
             }
 
             $oldStatus = $booking->status;
 
-            // Release all active holds
             InventoryHold::where('booking_id', $booking->id)
                 ->where('status', InventoryHold::STATUS_ACTIVE)
                 ->update(['status' => InventoryHold::STATUS_RELEASED]);
 
-            // Update booking
             $booking->update([
                 'status' => Booking::STATUS_CANCELLED,
                 'cancelled_at' => Carbon::now(),
                 'cancellation_reason' => $reason,
             ]);
 
-            // Expire any pending payment attempts
             PaymentAttempt::where('booking_id', $booking->id)
                 ->whereIn('status', [PaymentAttempt::STATUS_CREATED, PaymentAttempt::STATUS_AWAITING_PAYMENT])
                 ->update(['status' => PaymentAttempt::STATUS_EXPIRED]);
@@ -328,33 +472,39 @@ class InventoryService
     public function releaseExpiredHolds(): int
     {
         $now = Carbon::now();
+        $ttlMinutes = max(1, (int) EventSetting::get('hold_duration_minutes', 30));
         $count = 0;
 
-        // 1. Release active inventory holds that passed expires_at
         $expiredHolds = InventoryHold::where('status', InventoryHold::STATUS_ACTIVE)
             ->where('expires_at', '<=', $now)
+            ->whereHas('booking', fn ($q) => $q->whereIn('status', [
+                Booking::STATUS_REQUEST_SUBMITTED,
+                Booking::STATUS_PAYMENT_PENDING,
+                Booking::STATUS_PENDING,
+            ]))
             ->get();
 
         foreach ($expiredHolds as $hold) {
-            DB::transaction(function () use ($hold, &$count) {
+            DB::transaction(function () use ($hold, $ttlMinutes, &$count) {
                 $hold->update(['status' => InventoryHold::STATUS_RELEASED]);
 
                 $booking = $hold->booking()->lockForUpdate()->first();
-                if ($booking && $booking->status === Booking::STATUS_PAYMENT_PENDING) {
+                if ($booking && in_array($booking->status, [Booking::STATUS_REQUEST_SUBMITTED, Booking::STATUS_PAYMENT_PENDING, Booking::STATUS_PENDING], true)) {
+                    $oldStatus = $booking->status;
                     $booking->update([
                         'status' => Booking::STATUS_HOLD_EXPIRED,
-                        'cancellation_reason' => 'Inventory hold expired without verified payment',
+                        'cancellation_reason' => "Inventory hold expired after {$ttlMinutes} minutes without verified payment",
                     ]);
 
                     AuditLog::log(
                         action: 'BOOKING_HOLD_EXPIRED',
                         targetType: 'Booking',
                         targetId: $booking->id,
-                        oldValues: ['status' => Booking::STATUS_PAYMENT_PENDING],
+                        oldValues: ['status' => $oldStatus],
                         newValues: [
                             'status' => Booking::STATUS_HOLD_EXPIRED,
                             'booking_reference' => $booking->booking_reference,
-                            'reason' => '10-minute hold window elapsed without payment',
+                            'reason' => "{$ttlMinutes}-minute hold window elapsed without payment",
                         ]
                     );
                 }
@@ -362,35 +512,38 @@ class InventoryService
             });
         }
 
-        // 2. Mark any pending bookings past hold_expires_at as HOLD_EXPIRED
-        $expiredPendingBookings = Booking::where('status', Booking::STATUS_PAYMENT_PENDING)
+        $expiredPendingBookings = Booking::whereIn('status', [
+                Booking::STATUS_REQUEST_SUBMITTED,
+                Booking::STATUS_PAYMENT_PENDING,
+                Booking::STATUS_PENDING,
+            ])
             ->whereNotNull('hold_expires_at')
             ->where('hold_expires_at', '<=', $now)
             ->get();
 
         foreach ($expiredPendingBookings as $booking) {
-            DB::transaction(function () use ($booking, &$count) {
+            DB::transaction(function () use ($booking, $ttlMinutes, &$count) {
+                $oldStatus = $booking->status;
                 $booking->update([
                     'status' => Booking::STATUS_HOLD_EXPIRED,
-                    'cancellation_reason' => 'Inventory hold expired without verified payment',
+                    'cancellation_reason' => "Inventory hold expired after {$ttlMinutes} minutes without verified payment",
                 ]);
 
                 AuditLog::log(
                     action: 'BOOKING_HOLD_EXPIRED',
                     targetType: 'Booking',
                     targetId: $booking->id,
-                    oldValues: ['status' => Booking::STATUS_PAYMENT_PENDING],
+                    oldValues: ['status' => $oldStatus],
                     newValues: [
                         'status' => Booking::STATUS_HOLD_EXPIRED,
                         'booking_reference' => $booking->booking_reference,
-                        'reason' => '10-minute hold window elapsed without payment',
+                        'reason' => "{$ttlMinutes}-minute hold window elapsed without payment",
                     ]
                 );
                 $count++;
             });
         }
 
-        // 3. Mark any awaiting payment attempts past expires_at or on resolved bookings as EXPIRED
         $expiredPaymentAttempts = PaymentAttempt::with('booking')
             ->where('status', PaymentAttempt::STATUS_AWAITING_PAYMENT)
             ->where(function ($q) use ($now) {
@@ -403,7 +556,7 @@ class InventoryService
             ->get();
 
         foreach ($expiredPaymentAttempts as $payment) {
-            DB::transaction(function () use ($payment, &$count) {
+            DB::transaction(function () use ($payment, $ttlMinutes, &$count) {
                 $payment->update(['status' => PaymentAttempt::STATUS_EXPIRED]);
 
                 AuditLog::log(
@@ -415,7 +568,7 @@ class InventoryService
                         'status' => PaymentAttempt::STATUS_EXPIRED,
                         'booking_reference' => $payment->booking?->booking_reference,
                         'amount_rupees' => number_format($payment->amount_paise / 100, 2),
-                        'reason' => '10-minute payment session expired without payment confirmation',
+                        'reason' => "{$ttlMinutes}-minute payment session expired without payment confirmation",
                     ]
                 );
                 $count++;
@@ -430,7 +583,7 @@ class InventoryService
         $datePrefix = date('Ymd');
         do {
             $random = strtoupper(Str::random(5));
-            $reference = "SK-{$datePrefix}-{$random}";
+            $reference = "REI-{$datePrefix}-{$random}";
         } while (Booking::where('booking_reference', $reference)->exists());
 
         return $reference;

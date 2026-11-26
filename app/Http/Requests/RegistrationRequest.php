@@ -2,22 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\SanitizesInputs;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegistrationRequest extends FormRequest
 {
+    use SanitizesInputs;
+
     public function authorize(): bool
     {
         return true;
-    }
-
-    protected function sanitizeString(?string $value): string
-    {
-        if ($value === null) {
-            return '';
-        }
-        $cleaned = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $value);
-        return strip_tags(trim($cleaned));
     }
 
     protected function prepareForValidation(): void
@@ -57,11 +51,11 @@ class RegistrationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'phone.regex' => 'Please provide a valid 10-digit mobile number.',
-            'privacy_consent.accepted' => 'You must acknowledge the privacy notice to complete registration.',
-            'ticket_category_id.exists' => 'The selected ticket category is invalid.',
-            'quantity.min' => 'You must select at least 1 ticket.',
-            'quantity.max' => 'Maximum 10 tickets allowed per order.',
+            'phone.regex' => 'Please enter a valid 10-digit WhatsApp number.',
+            'privacy_consent.accepted' => 'Please confirm the privacy & charitable booking notice to proceed.',
+            'ticket_category_id.exists' => 'Please select a valid ticket category (Gold, Silver, or Bronze).',
+            'quantity.min' => 'Please select at least 1 guest.',
+            'quantity.max' => 'Maximum 10 guests per reservation request.',
         ];
     }
 }

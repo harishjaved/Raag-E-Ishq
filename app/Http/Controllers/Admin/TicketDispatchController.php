@@ -71,7 +71,7 @@ class TicketDispatchController extends Controller
 
         if ($booking->status !== Booking::STATUS_CONFIRMED) {
             $app = app(BookingController::class);
-            $app->confirmPayment($id, $razorpayService);
+            $app->confirmPayment(request(), $id, $razorpayService);
         } else {
             if ($booking->tickets->isEmpty()) {
                 $ticketService->issueTicketsForBooking($booking);

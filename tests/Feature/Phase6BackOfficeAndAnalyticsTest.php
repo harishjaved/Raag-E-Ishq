@@ -40,9 +40,9 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
-        $this->tier2 = $this->event->categories()->where('name', 'Tier 2')->first();
-        $this->tier3 = $this->event->categories()->where('name', 'Tier 3')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
+        $this->tier2 = $this->event->categories()->where('name', 'Silver')->first();
+        $this->tier3 = $this->event->categories()->where('name', 'Bronze')->first();
 
         $this->superAdmin = User::where('email', 'superadmin@joygivers.org')->first();
         $this->eventManager = User::where('email', 'manager@joygivers.org')->first();
@@ -521,13 +521,13 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $this->assertEquals(446, $metrics['global_remaining']);
         $this->assertEquals(4, $metrics['total_allocated']);
 
-        $tier1Row = collect($metrics['category_breakdown'])->firstWhere('name', 'Tier 1');
+        $tier1Row = collect($metrics['category_breakdown'])->firstWhere('name', 'Gold');
         $this->assertEquals(2, $tier1Row['sold']);
         $this->assertEquals(2, $tier1Row['comps']);
         $this->assertEquals(96, $tier1Row['available']);
         $this->assertEquals(500000, $tier1Row['revenue_paise']); // Does NOT add ₹5,000 fake revenue for comp
 
-        $tier2Row = collect($metrics['category_breakdown'])->firstWhere('name', 'Tier 2');
+        $tier2Row = collect($metrics['category_breakdown'])->firstWhere('name', 'Silver');
         $this->assertEquals(100, $tier2Row['available']); // Expired hold freed cleanly
     }
 
@@ -551,7 +551,7 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $confirmed->assertSee('aria-label="Close ticket view and go to main page"', false);
         $confirmed->assertSee('aria-label="Go to main page"', false);
         $confirmed->assertSee('href="' . route('home') . '"', false);
-        $confirmed->assertSee('href="' . route('event.show') . '#register"', false);
+        $confirmed->assertSee('href="' . route('home') . '#register"', false);
 
         // 2. Signed single-pass screen includes clickable cross button to Main Page
         $signedDownloadUrl = \Illuminate\Support\Facades\URL::signedRoute('ticket.download', ['uuid' => $ticket->qr_uuid]);

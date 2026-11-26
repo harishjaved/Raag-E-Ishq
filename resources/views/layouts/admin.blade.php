@@ -154,6 +154,18 @@
                             <span>Audit Trail &amp; Logs</span>
                         </a>
                     @endif
+
+                    <!-- Security & 2FA -->
+                    <a href="{{ route('admin.security') }}"
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl transition {{ request()->routeIs('admin.security*') ? 'bg-gradient-to-r from-amber-500/20 to-transparent border-l-2 border-amber-400 text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' }}">
+                        <div class="flex items-center gap-2.5">
+                            <svg class="w-4 h-4 {{ request()->routeIs('admin.security*') ? 'text-amber-400' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            <span>Security &amp; 2FA</span>
+                        </div>
+                        @if (auth()->user()->hasTwoFactorEnabled())
+                            <span class="w-2 h-2 rounded-full bg-emerald-400" title="2FA Active"></span>
+                        @endif
+                    </a>
                 </div>
 
                 <!-- Group 4: Gate Operations -->

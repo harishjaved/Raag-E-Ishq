@@ -23,13 +23,13 @@
 </head>
 <body class="min-h-full flex flex-col bg-slate-950 text-slate-100">
     <!-- Top Navigation Bar -->
-    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 py-3">
+    <header class="border-b border-[#D4AF37]/30 bg-[#2C060E]/95 backdrop-blur sticky top-0 z-50 px-4 py-3">
         <div class="max-w-md mx-auto flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <span class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center border border-emerald-500/30">GS</span>
+                <span class="w-7 h-7 rounded-lg bg-[#D4AF37]/20 text-[#E5C158] font-bold text-xs flex items-center justify-center border border-[#D4AF37]/40">GS</span>
                 <div>
-                    <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Gate Operations</div>
-                    <div class="text-sm font-bold text-slate-100">{{ $user->name }}</div>
+                    <div class="text-[10px] uppercase font-bold tracking-wider text-[#E5C158]">Gate Operations</div>
+                    <div class="text-sm font-bold text-[#FAF6F0]">{{ $user->name }}</div>
                 </div>
             </div>
             <div class="flex items-center gap-2">

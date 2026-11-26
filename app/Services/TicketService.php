@@ -507,7 +507,9 @@ class TicketService
     public function buildWhatsAppTicketMessage(Booking $booking): string
     {
         $booking->loadMissing(['contact', 'items.category', 'tickets.category']);
-        $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
+        $amountFormatted = $booking->total_amount_paise % 100 === 0
+            ? number_format($booking->total_amount_paise / 100, 0)
+            : number_format($booking->total_amount_paise / 100, 2);
         $ticketsUrl = $this->buildSignedPassUrl($booking);
 
         if ($booking->is_donation) {
@@ -562,26 +564,29 @@ class TicketService
     }
 
     /**
-     * Build payment instructions WhatsApp message for enquiry.
+     * Build payment instructions WhatsApp message for reservation request.
      */
     public function buildWhatsAppPaymentMessage(Booking $booking): string
     {
-        $amountFormatted = number_format($booking->total_amount_paise / 100, 2);
+        $amountFormatted = $booking->total_amount_paise % 100 === 0
+            ? number_format($booking->total_amount_paise / 100, 0)
+            : number_format($booking->total_amount_paise / 100, 2);
+        $vpa = config('services.razorpay.merchant_vpa', 'mujammilibrahim007@okhdfcbank');
         $lines = [
             "*Joygivers Presents: Raag-E-Ishq*",
-            "*Ticket Booking Enquiry Confirmation*",
+            "*Reservation Request & Payment Instructions*",
             "",
             "Hello *" . $booking->contact->full_name . "*!",
-            "Thank you for registering for Raag-E-Ishq at Chavara Hall, Kochi.",
+            "Thank you for reserving your seats for Raag-E-Ishq at Chavara Hall, Kochi.",
             "",
-            "• *Enquiry Reference:* " . $booking->booking_reference,
+            "• *Booking Reference:* " . $booking->booking_reference,
             "• *Total Amount Payable:* ₹" . $amountFormatted,
             "",
             "*UPI Payment Details:*",
-            "• UPI ID: *mujammilibrahim007@okhdfcbank*",
+            "• UPI ID: *" . $vpa . "*",
             "• Payee: Joygivers Event Desk",
             "",
-            "Please send your payment screenshot / UTR number here once done so our team can approve and issue your unique QR admission pass immediately.",
+            "Please submit your UTR / payment screenshot reference on your booking page within 30 minutes so our team can verify payment and send your QR Entry Passes immediately.",
         ];
         return implode("\n", $lines);
     }

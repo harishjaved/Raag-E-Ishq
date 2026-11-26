@@ -44,6 +44,7 @@ class Phase1FoundationTest extends TestCase
             'audit_logs',
             'event_settings',
             'email_deliveries',
+            'donations',
         ];
 
         foreach ($tables as $table) {
@@ -62,18 +63,18 @@ class Phase1FoundationTest extends TestCase
         $categories = $event->categories;
         $this->assertCount(3, $categories);
 
-        $tier1 = $categories->firstWhere('name', 'Tier 1');
-        $tier2 = $categories->firstWhere('name', 'Tier 2');
-        $tier3 = $categories->firstWhere('name', 'Tier 3');
+        $gold = $categories->firstWhere('name', 'Gold');
+        $silver = $categories->firstWhere('name', 'Silver');
+        $bronze = $categories->firstWhere('name', 'Bronze');
 
-        $this->assertEquals(250000, $tier1->price_paise);
-        $this->assertEquals(100, $tier1->capacity);
+        $this->assertEquals(250000, $gold->price_paise);
+        $this->assertEquals(100, $gold->capacity);
 
-        $this->assertEquals(150000, $tier2->price_paise);
-        $this->assertEquals(100, $tier2->capacity);
+        $this->assertEquals(150000, $silver->price_paise);
+        $this->assertEquals(100, $silver->capacity);
 
-        $this->assertEquals(100000, $tier3->price_paise);
-        $this->assertEquals(250, $tier3->capacity);
+        $this->assertEquals(100000, $bronze->price_paise);
+        $this->assertEquals(250, $bronze->capacity);
 
         // Sum of tier capacities MUST equal 450
         $this->assertEquals(450, $categories->sum('capacity'));
@@ -113,7 +114,7 @@ class Phase1FoundationTest extends TestCase
 
     public function test_event_settings_seeded(): void
     {
-        $this->assertEquals('10', EventSetting::get('hold_duration_minutes'));
+        $this->assertEquals('30', EventSetting::get('hold_duration_minutes'));
         $this->assertEquals('events@joygivers.org', EventSetting::get('support_email'));
         $this->assertEquals('test', EventSetting::get('razorpay_mode'));
     }

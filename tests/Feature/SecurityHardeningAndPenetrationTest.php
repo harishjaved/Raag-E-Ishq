@@ -30,7 +30,7 @@ class SecurityHardeningAndPenetrationTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
         $this->gateStaff = User::where('role', User::ROLE_GATE_STAFF)->first();
         $this->ticketService = app(TicketService::class);
     }

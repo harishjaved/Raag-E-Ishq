@@ -30,7 +30,7 @@ class DonationAndAttendanceOptionTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
         $this->inventoryService = app(InventoryService::class);
         $this->analyticsService = app(AnalyticsService::class);
         $this->razorpayService = app(RazorpayService::class);
@@ -163,8 +163,8 @@ class DonationAndAttendanceOptionTest extends TestCase
 
         $response = $this->get("/booking/{$booking->booking_reference}/confirmed");
         $response->assertStatus(200);
-        $response->assertSee('Payment Verified &amp; Contribution Acknowledged!', false);
-        $response->assertSee('Non-Attending / In Absentia');
+        $response->assertSee('Payment Verified &amp; Contribution Acknowledged', false);
+        $response->assertSee('Non-Attending Contribution');
         $response->assertSee('Official Supporter Receipt');
         $response->assertSee('Suresh Menon');
         // Crucial test: Ensure admission QR is NOT rendered for non-attending donors

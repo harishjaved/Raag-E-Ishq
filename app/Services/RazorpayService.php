@@ -76,7 +76,7 @@ class RazorpayService
                     'fixed_amount' => true,
                     'payment_amount' => $booking->total_amount_paise,
                     'description' => "Admissions for Raag-E-Ishq ({$booking->booking_reference})",
-                    'close_by' => $booking->hold_expires_at?->timestamp ?? Carbon::now()->addMinutes(10)->timestamp,
+                    'close_by' => $booking->hold_expires_at?->timestamp ?? Carbon::now()->addMinutes(30)->timestamp,
                     'notes' => [
                         'booking_reference' => $booking->booking_reference,
                     ],
@@ -340,10 +340,14 @@ class RazorpayService
                 }
             }
 
-            // Valid payment: Confirm booking and issue tickets
+            // Valid payment: Verify payment, Confirm booking, and issue QR Entry Passes
+            $now = Carbon::now();
             $booking->update([
                 'status' => Booking::STATUS_CONFIRMED,
-                'confirmed_at' => Carbon::now(),
+                'payment_submitted_at' => $booking->payment_submitted_at ?? $now,
+                'payment_verified_at' => $now,
+                'confirmed_at' => $now,
+                'verified_by_user_id' => $booking->verified_by_user_id ?? auth()->id(),
             ]);
 
             // Update Payment Attempt
@@ -394,7 +398,7 @@ class RazorpayService
 
         if ($bookingRef) {
             $booking = Booking::where('booking_reference', $bookingRef)->first();
-            if ($booking && $booking->status === Booking::STATUS_PAYMENT_PENDING) {
+            if ($booking && in_array($booking->status, [Booking::STATUS_REQUEST_SUBMITTED, Booking::STATUS_PAYMENT_PENDING, Booking::STATUS_PAYMENT_SUBMITTED], true)) {
                 $booking->update([
                     'status' => Booking::STATUS_PAYMENT_FAILED,
                     'cancellation_reason' => $entity['error_description'] ?? 'Payment declined by gateway/bank',

@@ -30,7 +30,7 @@ class Phase3RazorpayWebhookTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
         $this->inventoryService = app(InventoryService::class);
         $this->webhookSecret = 'test_webhook_secret_key_12345';
         config(['services.razorpay.webhook_secret' => $this->webhookSecret]);

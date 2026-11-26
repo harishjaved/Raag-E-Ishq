@@ -56,6 +56,13 @@ class TicketCategory extends Model
 
     public function getFormattedPriceAttribute(): string
     {
-        return '₹' . number_format($this->price_paise / 100, 2);
+        $rupees = $this->price_paise / 100;
+        return '₹' . ($this->price_paise % 100 === 0 ? number_format($rupees, 0) : number_format($rupees, 2));
+    }
+
+    public function isLowAvailability(?int $available = null, int $threshold = 20): bool
+    {
+        $remaining = $available ?? (int) ($this->available ?? 0);
+        return $remaining > 0 && $remaining < $threshold;
     }
 }

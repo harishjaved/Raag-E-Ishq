@@ -34,7 +34,7 @@ class EndToEndLifecycleTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
         $this->gateStaff = User::where('email', 'gate@joygivers.org')->first();
         $this->superAdmin = User::where('email', 'superadmin@joygivers.org')->first();
 
@@ -56,7 +56,7 @@ class EndToEndLifecycleTest extends TestCase
         $discoveryResponse = $this->get('/?utm_source=whatsapp&utm_medium=broadcast&utm_campaign=vip_preview');
         $discoveryResponse->assertStatus(200);
         $discoveryResponse->assertSee('Raag-E-Ishq');
-        $discoveryResponse->assertSee('Tier 1');
+        $discoveryResponse->assertSee('Gold');
 
         // STEP 2: Registration & CRM Contact Creation with Inventory Hold
         $registrationPayload = [
@@ -87,13 +87,13 @@ class EndToEndLifecycleTest extends TestCase
         $this->assertEquals(500000, $booking->total_amount_paise); // 2 * 250,000 paise (Server calculated)
         $regResponse->assertRedirect(route('booking.payment', ['reference' => $booking->booking_reference]));
 
-        // STEP 3: Booking Enquiry Page Presentation (Concierge Verification & Status)
+        // STEP 3: Reservation Hold Page Presentation (Countdown Timer, UPI & Verification Status)
         $paymentPageResponse = $this->get(route('booking.payment', ['reference' => $booking->booking_reference]));
         $paymentPageResponse->assertStatus(200);
         $paymentPageResponse->assertSee($booking->booking_reference);
-        $paymentPageResponse->assertSee('₹5,000.00');
-        $paymentPageResponse->assertSee('Booking Enquiry Registered');
-        $paymentPageResponse->assertSee('Verification Call', false);
+        $paymentPageResponse->assertSee('₹5,000');
+        $paymentPageResponse->assertSee('Complete Payment for Your Reservation');
+        $paymentPageResponse->assertSee('WhatsApp Payment Desk', false);
 
         // Check polling status is initially pending
         $statusPoll1 = $this->getJson(route('booking.status', ['reference' => $booking->booking_reference]));

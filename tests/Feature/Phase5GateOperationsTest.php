@@ -33,7 +33,7 @@ class Phase5GateOperationsTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
         $this->gateStaff = User::where('email', 'gate@joygivers.org')->first();
         $this->superAdmin = User::where('email', 'superadmin@joygivers.org')->first();
         $this->financeUser = User::where('email', 'finance@joygivers.org')->first();

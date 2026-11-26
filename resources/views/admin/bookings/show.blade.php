@@ -22,19 +22,27 @@
                     </svg>
                 </a>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif-display">{{ $booking->booking_reference }}</h1>
-                @if ($booking->status === 'CONFIRMED')
+                @if ($booking->isConfirmed())
                     <span class="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
-                        COMPLETED &bull; PAID
+                        {{ $booking->tickets->isNotEmpty() ? 'TICKETS ISSUED' : 'BOOKING CONFIRMED' }}
                     </span>
-                @elseif ($booking->status === 'IN_PROCESS')
+                @elseif ($booking->isPaymentSubmitted())
+                    <span class="px-3 py-1 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/40 text-xs font-bold animate-pulse">
+                        PAYMENT SUBMITTED &bull; VERIFY UTR
+                    </span>
+                @elseif ($booking->isInProcess())
                     <span class="px-3 py-1 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 text-xs font-bold">
                         IN PROCESS &bull; CONTACTED
                     </span>
-                @elseif (in_array($booking->status, ['PAYMENT_PENDING', 'PENDING']))
+                @elseif ($booking->isPending())
                     <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs font-bold animate-pulse">
-                        PENDING CALL
+                        PAYMENT PENDING &bull; HOLD ACTIVE
+                    </span>
+                @elseif ($booking->status === 'HOLD_EXPIRED')
+                    <span class="px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-bold">
+                        HOLD EXPIRED
                     </span>
                 @elseif ($booking->status === 'CANCELLED')
                     <span class="px-3 py-1 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 text-xs font-bold">
@@ -45,62 +53,55 @@
                         {{ $booking->status }}
                     </span>
                 @endif
+                @if ($booking->is_offline_booking)
+                    <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold">
+                        OFFLINE DESK ({{ $booking->payment_channel ?? 'CASH' }})
+                    </span>
+                @endif
             </div>
-            <p class="text-xs text-slate-400 mt-1 font-mono">Enquiry submitted: {{ $booking->created_at->format('d M Y, h:i A') }}</p>
+            <p class="text-xs text-slate-400 mt-1 font-mono">
+                Request submitted: {{ $booking->created_at->format('d M Y, h:i A') }}
+                @if ($booking->hold_expires_at && !$booking->isConfirmed() && $booking->status !== 'CANCELLED' && $booking->status !== 'HOLD_EXPIRED')
+                    &bull; Hold expires: <strong class="text-amber-300">{{ $booking->hold_expires_at->format('h:i A') }}</strong>
+                @endif
+            </p>
         </div>
 
         <!-- Top Action Buttons -->
         <div class="flex flex-wrap items-center gap-2">
-            @if (in_array($booking->status, ['PAYMENT_PENDING', 'PENDING']))
+            @if ($booking->isPending() || $booking->isInProcess() || $booking->isPaymentSubmitted())
                 @if (isset($booking->whatsapp_payment_url))
                     <a href="{{ $booking->whatsapp_payment_url }}" target="_blank"
                         class="px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
                         <span>Send WhatsApp Details</span>
                     </a>
                 @endif
-                <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline">
-                    @csrf
-                    <input type="hidden" name="status" value="IN_PROCESS">
-                    <button type="submit" class="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 font-bold text-xs transition">
-                        Mark In Process
-                    </button>
-                </form>
-                <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm payment received and issue admission tickets?');">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span>Approve &amp; Issue Tickets</span>
-                    </button>
-                </form>
-                <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel enquiry and release reserved seats?');">
-                    @csrf
-                    <input type="hidden" name="status" value="CANCELLED">
-                    <button type="submit" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs transition">
-                        Cancel Enquiry
-                    </button>
-                </form>
-            @elseif ($booking->status === 'IN_PROCESS')
-                @if (isset($booking->whatsapp_payment_url))
-                    <a href="{{ $booking->whatsapp_payment_url }}" target="_blank"
-                        class="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 font-bold text-xs flex items-center gap-1.5 transition">
-                        <span>Send WhatsApp Payment Details</span>
-                    </a>
+                @if ($booking->isPending())
+                    <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline">
+                        @csrf
+                        <input type="hidden" name="status" value="IN_PROCESS">
+                        <button type="submit" class="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 font-bold text-xs transition">
+                            Mark In Process
+                        </button>
+                    </form>
                 @endif
-                <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm payment received and issue admission tickets?');">
+                <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline-flex items-center gap-1.5" onsubmit="return confirm('Verify payment and issue QR Entry Passes?');">
                     @csrf
+                    <input type="text" name="utr_reference" value="{{ $booking->utr_reference }}" placeholder="UTR / Receipt #"
+                        class="w-36 px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-slate-200 font-mono placeholder-slate-500 focus:outline-none focus:border-amber-400">
                     <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        <span>Approve &amp; Issue Tickets</span>
+                        <span>Verify Payment &amp; Issue Passes</span>
                     </button>
                 </form>
-                <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel enquiry and release reserved seats?');">
+                <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel reservation and release held seats?');">
                     @csrf
                     <input type="hidden" name="status" value="CANCELLED">
                     <button type="submit" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs transition">
-                        Cancel Enquiry
+                        Cancel
                     </button>
                 </form>
-            @elseif ($booking->status === 'CONFIRMED')
+            @elseif ($booking->isConfirmed())
                 @if (isset($booking->whatsapp_ticket_url))
                     <button type="button" onclick="openWhatsAppModal()"
                         class="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
@@ -108,11 +109,17 @@
                         <span>Send Passes via WhatsApp</span>
                     </button>
                     <button type="button" onclick="quickSendWhatsAppWithQr()"
-                        class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/40 border border-purple-500/40 text-purple-300 font-bold text-xs flex items-center gap-1.5 transition">
+                        class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 font-bold text-xs flex items-center gap-1.5 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                         <span>Copy QR &amp; Open WhatsApp</span>
                     </button>
                 @endif
+                <form action="{{ route('admin.bookings.resend', $booking->id) }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/30 text-sky-300 text-xs font-bold transition">
+                        Resend Email &amp; Passes
+                    </button>
+                </form>
                 <a href="{{ route('booking.confirmed', $booking->booking_reference) }}" target="_blank"
                     class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition flex items-center gap-1.5">
                     <span>Public Ticket View &rarr;</span>
@@ -137,41 +144,23 @@
         </div>
     </div>
 
-    <!-- 3-Step Operations Progress Stepper -->
-    <div class="p-5 rounded-2xl bg-[#0e1424] border border-slate-800/80">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Step 1 -->
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    ✓
+    <!-- 6-Stage Booking Lifecycle Stepper -->
+    <div class="p-5 rounded-2xl bg-[#0e1424] border border-slate-800/80 space-y-3">
+        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">6-Stage Booking Lifecycle</div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            @foreach ($booking->lifecycle_stages as $idx => $stage)
+                <div class="p-3 rounded-xl border {{ $stage['state'] === 'completed' ? 'bg-emerald-950/30 border-emerald-500/30' : ($stage['state'] === 'active' ? 'bg-amber-950/30 border-amber-500/40' : 'bg-slate-950/60 border-slate-800') }}">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center {{ $stage['state'] === 'completed' ? 'bg-emerald-500 text-slate-950' : ($stage['state'] === 'active' ? 'bg-amber-400 text-slate-950 animate-pulse' : 'bg-slate-800 text-slate-500') }}">
+                            {{ $stage['state'] === 'completed' ? '✓' : ($idx + 1) }}
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-400">STAGE {{ $idx + 1 }}</span>
+                    </div>
+                    <div class="text-xs font-bold {{ $stage['state'] === 'completed' ? 'text-emerald-300' : ($stage['state'] === 'active' ? 'text-amber-300' : 'text-slate-500') }}">
+                        {{ $stage['label'] }}
+                    </div>
                 </div>
-                <div>
-                    <div class="text-xs font-bold text-slate-200">1. Details Registered</div>
-                    <div class="text-[11px] text-slate-400">Seats held in system</div>
-                </div>
-            </div>
-
-            <!-- Step 2 -->
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full {{ in_array($booking->status, ['IN_PROCESS', 'CONFIRMED']) ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-amber-500/20 border-amber-500/50 text-amber-400 animate-pulse' }} border flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    {{ in_array($booking->status, ['IN_PROCESS', 'CONFIRMED']) ? '✓' : '2' }}
-                </div>
-                <div>
-                    <div class="text-xs font-bold {{ in_array($booking->status, ['IN_PROCESS', 'CONFIRMED']) ? 'text-slate-200' : 'text-amber-300' }}">2. Phone Call &amp; WhatsApp</div>
-                    <div class="text-[11px] text-slate-400">{{ in_array($booking->status, ['IN_PROCESS', 'CONFIRMED']) ? 'Details communicated' : 'Call customer now' }}</div>
-                </div>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full {{ $booking->status === 'CONFIRMED' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500' }} border flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    {{ $booking->status === 'CONFIRMED' ? '✓' : '3' }}
-                </div>
-                <div>
-                    <div class="text-xs font-bold {{ $booking->status === 'CONFIRMED' ? 'text-emerald-400' : 'text-slate-400' }}">3. Payment &amp; Passes</div>
-                    <div class="text-[11px] text-slate-400">{{ $booking->status === 'CONFIRMED' ? 'Tickets active & issued' : 'Awaiting confirmation' }}</div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 
@@ -209,13 +198,19 @@
             </div>
             <div>
                 <div class="text-3xl font-extrabold text-amber-400 font-mono">
-                    ₹{{ number_format($booking->total_amount_paise / 100, 2) }}
+                    {{ $booking->formatted_total }}
                 </div>
-                <div class="text-xs text-slate-400 mt-1">
+                <div class="text-xs text-slate-400 mt-1 space-y-0.5">
                     @if ($booking->is_donation)
                         <span class="text-purple-400 font-bold">Pure Supporter Donation</span> &bull; 0 seats held
                     @else
-                        <span>Verified offline UPI transfer</span>
+                        <span>Channel: <strong class="text-slate-200">{{ $booking->payment_channel ?? 'UPI_ONLINE' }}</strong></span>
+                    @endif
+                    @if ($booking->utr_reference)
+                        <div class="font-mono text-sky-300">UTR / Ref: {{ $booking->utr_reference }}</div>
+                    @endif
+                    @if ($booking->payment_screenshot_reference)
+                        <div class="text-[11px] text-slate-400">Proof Note: {{ $booking->payment_screenshot_reference }}</div>
                     @endif
                 </div>
             </div>

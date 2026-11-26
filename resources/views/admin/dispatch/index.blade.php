@@ -11,7 +11,7 @@
                 <span>Gate Admission Desk</span>
             </div>
             <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-100 font-serif-display">Ticket Generator &amp; Dispatch Desk</h1>
-            <p class="text-xs text-slate-400 mt-1">Generate unique cryptographic QR tickets for verified customers and dispatch via WhatsApp, Email, or Print.</p>
+            <p class="text-xs text-slate-400 mt-1">Generate unique QR Entry Passes for verified guests and dispatch via WhatsApp, Email, or Print.</p>
         </div>
 
         <div class="flex items-center gap-2.5">
@@ -125,8 +125,8 @@
                 <!-- Generated Tickets Grid -->
                 @if ($booking->tickets->isEmpty())
                     <div class="p-6 rounded-2xl bg-slate-950/60 border border-dashed border-slate-800 text-center space-y-2">
-                        <div class="text-xs text-slate-400">Tickets have not been generated yet for this booking enquiry.</div>
-                        <p class="text-[11px] text-slate-500">Confirm payment and click <strong>"Generate Unique QR Tickets"</strong> to produce individual gate entry passes with cryptographic QR codes.</p>
+                        <div class="text-xs text-slate-400">Passes have not been generated yet for this reservation.</div>
+                        <p class="text-[11px] text-slate-500">Verify payment and click <strong>"Generate Unique QR Tickets"</strong> to produce individual QR Entry Passes.</p>
                     </div>
                 @else
                     <div class="space-y-3">

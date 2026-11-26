@@ -28,9 +28,9 @@ class Phase2RegistrationAndConcurrencyTest extends TestCase
         $this->seed();
 
         $this->event = Event::where('slug', 'sagar-kinare-2026')->first();
-        $this->tier1 = $this->event->categories()->where('name', 'Tier 1')->first();
-        $this->tier2 = $this->event->categories()->where('name', 'Tier 2')->first();
-        $this->tier3 = $this->event->categories()->where('name', 'Tier 3')->first();
+        $this->tier1 = $this->event->categories()->where('name', 'Gold')->first();
+        $this->tier2 = $this->event->categories()->where('name', 'Silver')->first();
+        $this->tier3 = $this->event->categories()->where('name', 'Bronze')->first();
     }
 
     public function test_public_event_page_renders_with_live_availability(): void
@@ -39,12 +39,13 @@ class Phase2RegistrationAndConcurrencyTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Raag-E-Ishq');
         $response->assertSee('Chavara Hall');
-        $response->assertSee('Tier 1');
-        $response->assertSee('Tier 2');
-        $response->assertSee('Tier 3');
-        $response->assertSee('₹2,500.00');
-        $response->assertSee('₹1,500.00');
-        $response->assertSee('₹1,000.00');
+        $response->assertSee('Gold');
+        $response->assertSee('Silver');
+        $response->assertSee('Bronze');
+        $response->assertSee('₹2,500');
+        $response->assertSee('₹1,500');
+        $response->assertSee('₹1,000');
+        $response->assertDontSee('450 seats available');
     }
 
     public function test_guest_can_register_and_create_booking_with_hold(): void

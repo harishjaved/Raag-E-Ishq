@@ -16,12 +16,82 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-2.5">
-            <a href="{{ route('admin.dispatch') }}" class="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 transition shadow-lg shadow-amber-500/20">
+        <div class="flex flex-wrap items-center gap-2.5">
+            <button type="button" onclick="document.getElementById('offlineBookingPanel').classList.toggle('hidden')"
+                class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 font-bold text-xs transition">
+                + Log Offline / Cash / VIP Booking
+            </button>
+            <a href="{{ route('admin.dispatch') }}" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
                 <span>Ticket Dispatch Desk &rarr;</span>
             </a>
         </div>
+    </div>
+
+    <!-- Collapsible Offline / Cash / VIP Booking Entry Panel -->
+    <div id="offlineBookingPanel" class="{{ $errors->any() ? '' : 'hidden' }} p-6 rounded-2xl bg-[#0e1424] border border-amber-500/35 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+                <h2 class="text-sm font-bold text-amber-300 uppercase tracking-wider">Manual Offline / Cash / VIP Booking Entry</h2>
+                <p class="text-xs text-slate-400">Deducts directly from live Gold, Silver, or Bronze seat inventory and can issue QR Entry Passes immediately.</p>
+            </div>
+            <button type="button" onclick="document.getElementById('offlineBookingPanel').classList.add('hidden')" class="text-xs text-slate-400 hover:text-slate-200">&times; Close</button>
+        </div>
+        <form action="{{ route('admin.bookings.offline') }}" method="POST" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
+            @csrf
+            <div class="space-y-1">
+                <label class="font-semibold text-slate-300">Guest Full Name *</label>
+                <input type="text" name="full_name" required placeholder="Guest Name"
+                    class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-amber-400">
+            </div>
+            <div class="space-y-1">
+                <label class="font-semibold text-slate-300">Email Address *</label>
+                <input type="email" name="email" required placeholder="guest@example.com"
+                    class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-amber-400">
+            </div>
+            <div class="space-y-1">
+                <label class="font-semibold text-slate-300">10-Digit WhatsApp *</label>
+                <input type="tel" name="phone" required maxlength="10" pattern="[0-9]{10}" placeholder="9876543210"
+                    class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 font-mono focus:outline-none focus:border-amber-400">
+            </div>
+            <div class="space-y-1">
+                <label class="font-semibold text-slate-300">Category *</label>
+                <select name="ticket_category_id" required class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-amber-400">
+                    @foreach ($categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }} — {{ $cat->formatted_price }} ({{ $cat->available }} left)</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="space-y-1">
+                <label class="font-semibold text-slate-300">Guests *</label>
+                <input type="number" name="quantity" min="1" max="25" value="1" required
+                    class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-amber-400">
+            </div>
+            <div class="space-y-1">
+                <label class="font-semibold text-slate-300">Channel *</label>
+                <select name="payment_channel" required class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 focus:outline-none focus:border-amber-400">
+                    <option value="CASH">Cash Receipt</option>
+                    <option value="UPI_OFFLINE">Offline UPI Transfer</option>
+                    <option value="BANK_TRANSFER">Bank / NEFT / IMPS</option>
+                    <option value="POS_CARD">POS / Card</option>
+                    <option value="COMPLIMENTARY">Complimentary / VIP (₹0)</option>
+                </select>
+            </div>
+            <div class="space-y-1">
+                <label class="font-semibold text-slate-300">UTR / Receipt Ref (Optional)</label>
+                <input type="text" name="utr_reference" placeholder="Receipt # or UTR"
+                    class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-100 font-mono focus:outline-none focus:border-amber-400">
+            </div>
+            <div class="flex flex-col justify-end gap-2">
+                <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                    <input type="checkbox" name="mark_paid" value="1" checked class="rounded border-slate-700 bg-slate-950 text-amber-500">
+                    <span>Mark Paid &amp; Issue QR Passes</span>
+                </label>
+                <button type="submit" class="w-full py-2 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition">
+                    Save Offline Booking
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- 5-Segment Interactive Workflow Pipeline Strip -->
@@ -52,17 +122,17 @@
             <div class="text-[10px] text-amber-400/80 mt-1">Requires phone outreach</div>
         </a>
 
-        <!-- Tab 3: In Process -->
+        <!-- Tab 3: In Process / Payment Submitted -->
         <a href="{{ route('admin.bookings', array_filter(['status' => 'IN_PROCESS', 'search' => $search])) }}"
-            class="p-4 rounded-2xl border transition-all flex flex-col justify-between group shadow-sm {{ $currentStatus === 'IN_PROCESS' ? 'bg-gradient-to-b from-sky-950/40 to-slate-900 border-sky-500 text-sky-300 shadow-sky-500/20' : 'bg-[#0d121f] border-slate-800/80 hover:border-sky-500/40 text-slate-400' }}">
+            class="p-4 rounded-2xl border transition-all flex flex-col justify-between group shadow-sm {{ in_array($currentStatus, ['IN_PROCESS', 'PAYMENT_SUBMITTED']) ? 'bg-gradient-to-b from-sky-950/40 to-slate-900 border-sky-500 text-sky-300 shadow-sky-500/20' : 'bg-[#0d121f] border-slate-800/80 hover:border-sky-500/40 text-slate-400' }}">
             <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">In Process</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">UTR / In Process</span>
                 <span class="w-2 h-2 rounded-full bg-sky-400"></span>
             </div>
             <div class="text-2xl font-extrabold font-mono mt-2 text-sky-400">
                 {{ $counts['in_process'] }}
             </div>
-            <div class="text-[10px] text-sky-400/80 mt-1">QR / bank details sent</div>
+            <div class="text-[10px] text-sky-400/80 mt-1">Verify payment proof</div>
         </a>
 
         <!-- Tab 4: Completed -->
@@ -196,10 +266,12 @@
             <tbody class="divide-y divide-slate-800/60">
                 @forelse ($bookings as $booking)
                     @php
-                        $isPending = in_array($booking->status, ['PAYMENT_PENDING', 'PENDING']);
-                        $isInProcess = $booking->status === 'IN_PROCESS';
-                        $isConfirmed = $booking->status === 'CONFIRMED';
+                        $isPending = $booking->isPending();
+                        $isPaymentSubmitted = $booking->isPaymentSubmitted();
+                        $isInProcess = $booking->isInProcess();
+                        $isConfirmed = $booking->isConfirmed();
                         $isExpired = in_array($booking->status, ['CANCELLED', 'HOLD_EXPIRED']);
+                        $holdMinsLeft = $booking->hold_expires_at ? max(0, (int) ceil(now()->diffInSeconds($booking->hold_expires_at, false) / 60)) : null;
                     @endphp
                     <tr class="hover:bg-slate-900/40 transition">
                         <!-- 1. Reference & Date -->
@@ -209,6 +281,9 @@
                             </a>
                             <div class="text-[11px] text-slate-500 font-mono mt-0.5">
                                 {{ $booking->created_at->format('d M, h:i A') }}
+                                @if ($booking->is_offline_booking)
+                                    <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 text-[9px] font-bold">OFFLINE</span>
+                                @endif
                             </div>
                         </td>
 
@@ -266,10 +341,11 @@
                         <td class="py-4 px-3 whitespace-nowrap">
                             @foreach ($booking->items as $item)
                                 @php
-                                    $isTier1 = str_contains(strtolower($item->category->name), 'tier 1');
-                                    $isTier2 = str_contains(strtolower($item->category->name), 'tier 2');
+                                    $cNameLower = strtolower($item->category->name);
+                                    $isGold = str_contains($cNameLower, 'gold') || str_contains($cNameLower, 'tier 1');
+                                    $isSilver = str_contains($cNameLower, 'silver') || str_contains($cNameLower, 'tier 2');
                                 @endphp
-                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold {{ $isTier1 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : ($isTier2 ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-purple-500/10 border-purple-500/30 text-purple-400') }}">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold {{ $isGold ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : ($isSilver ? 'bg-slate-700/40 border-slate-500/40 text-slate-200' : 'bg-amber-900/20 border-amber-700/40 text-amber-300') }}">
                                     <span>{{ $item->category->name }}</span>
                                     <span class="text-slate-500">&bull;</span>
                                     <span>{{ $item->quantity }} {{ $item->quantity === 1 ? 'Seat' : 'Seats' }}</span>
@@ -282,7 +358,7 @@
                             @if ($booking->is_donation)
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30 text-[10px] font-bold">
                                     <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                                    <span>CHARITY ONLY</span>
+                                    <span>SUPPORTER</span>
                                 </span>
                             @else
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30 text-[10px] font-bold">
@@ -294,26 +370,39 @@
 
                         <!-- 5. Amount -->
                         <td class="py-4 px-3 font-mono font-extrabold text-slate-100 text-sm whitespace-nowrap">
-                            ₹{{ number_format($booking->total_amount_paise / 100, 2) }}
+                            {{ $booking->formatted_total }}
+                            @if ($booking->utr_reference)
+                                <div class="text-[10px] font-normal text-sky-300">UTR: {{ $booking->utr_reference }}</div>
+                            @endif
                         </td>
 
                         <!-- 6. Workflow Status -->
                         <td class="py-4 px-3 whitespace-nowrap">
                             @if ($isConfirmed)
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold shadow-sm">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                    <span>COMPLETED</span>
+                                    <span>{{ $booking->tickets->isNotEmpty() ? 'TICKETS ISSUED' : 'CONFIRMED' }}</span>
+                                </span>
+                            @elseif ($isPaymentSubmitted)
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 text-[11px] font-bold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+                                    <span>PAYMENT SUBMITTED</span>
                                 </span>
                             @elseif ($isInProcess)
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 text-[11px] font-bold shadow-sm">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 text-[11px] font-bold">
                                     <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
                                     <span>IN PROCESS</span>
                                 </span>
                             @elseif ($isPending)
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[11px] font-bold shadow-sm">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                                    <span>PENDING CALL</span>
-                                </span>
+                                <div class="space-y-1">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[11px] font-bold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                        <span>PAYMENT PENDING</span>
+                                    </span>
+                                    @if ($holdMinsLeft !== null && $booking->is_attending)
+                                        <div class="text-[10px] font-mono text-amber-300">{{ $holdMinsLeft }}m hold left</div>
+                                    @endif
+                                </div>
                             @elseif ($booking->status === 'CANCELLED')
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-semibold">
                                     <span>CANCELLED</span>
@@ -334,60 +423,50 @@
                         <!-- 7. Team Actions -->
                         <td class="py-4 px-3 text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-1.5">
-                                @if ($isPending)
-                                    <!-- Mark In Process -->
-                                    <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline">
+                                @if ($isPending || $isPaymentSubmitted || $isInProcess)
+                                    @if ($isPending)
+                                        <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="status" value="IN_PROCESS">
+                                            <button type="submit" title="Mark In-Process (Contacted)" class="px-2.5 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-bold text-xs transition border border-sky-500/30">
+                                                In Process
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <!-- Verify Payment & Issue Tickets -->
+                                    <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Verify payment of {{ $booking->formatted_total }} for {{ $booking->contact->full_name }} and issue QR Entry Passes?');">
                                         @csrf
-                                        <input type="hidden" name="status" value="IN_PROCESS">
-                                        <button type="submit" title="Mark In-Process (Called customer)" class="px-2.5 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-bold text-xs transition border border-sky-500/30">
-                                            Mark In Process
+                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition">
+                                            Verify &amp; Issue
                                         </button>
                                     </form>
 
-                                    <!-- Approve & Issue Tickets -->
-                                    <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm payment of ₹{{ number_format($booking->total_amount_paise / 100, 2) }} for {{ $booking->contact->full_name }} and issue tickets?');">
-                                        @csrf
-                                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shadow-emerald-500/20">
-                                            Approve &amp; Issue
-                                        </button>
-                                    </form>
-
-                                    <!-- Cancel -->
-                                    <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel enquiry {{ $booking->booking_reference }} and release seats?');">
+                                    <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel booking {{ $booking->booking_reference }} and release held seats?');">
                                         @csrf
                                         <input type="hidden" name="status" value="CANCELLED">
-                                        <button type="submit" title="Cancel enquiry" class="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs transition">
-                                            Cancel
-                                        </button>
-                                    </form>
-                                @elseif ($isInProcess)
-                                    <!-- Approve & Issue Tickets -->
-                                    <form action="{{ route('admin.bookings.confirm-payment', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm payment of ₹{{ number_format($booking->total_amount_paise / 100, 2) }} for {{ $booking->contact->full_name }} and issue tickets?');">
-                                        @csrf
-                                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-md shadow-emerald-500/20">
-                                            Approve &amp; Issue
-                                        </button>
-                                    </form>
-
-                                    <!-- Cancel -->
-                                    <form action="{{ route('admin.bookings.update-status', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Cancel enquiry {{ $booking->booking_reference }} and release seats?');">
-                                        @csrf
-                                        <input type="hidden" name="status" value="CANCELLED">
-                                        <button type="submit" title="Cancel enquiry" class="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs transition">
+                                        <button type="submit" title="Cancel reservation" class="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs transition">
                                             Cancel
                                         </button>
                                     </form>
                                 @elseif ($isConfirmed)
                                     <div class="inline-flex items-center gap-1">
                                         <button type="button" onclick="openWhatsAppModal({{ $booking->id }})"
-                                            class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs transition border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+                                            class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs transition border border-emerald-500/30 flex items-center gap-1.5">
                                             <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                                             <span>WhatsApp Pass</span>
                                         </button>
+                                        <form action="{{ route('admin.bookings.resend', $booking->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" title="Resend Email & Trigger Pass Dispatch"
+                                                class="px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 font-semibold text-xs transition">
+                                                Resend
+                                            </button>
+                                        </form>
                                         <button type="button"
                                             onclick="quickSendWhatsAppWithQr({{ $booking->id }})"
                                             title="Copy QR Ticket Image to clipboard and open WhatsApp"
-                                            class="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 border border-slate-700 transition" aria-label="Copy QR and Open WhatsApp">
+                                            class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 border border-slate-700 transition" aria-label="Copy QR and Open WhatsApp">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
                                         </button>
                                     </div>
@@ -423,6 +502,62 @@
         <div class="mt-6 pt-4 border-t border-slate-800/60">
             {{ $bookings->links() }}
         </div>
+    </div>
+
+    <!-- Standalone Support-the-Cause Donations Ledger -->
+    <div class="p-6 rounded-2xl bg-[#0e1424] border border-slate-800/80 space-y-4 overflow-x-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800/60">
+            <div>
+                <h2 class="text-base font-bold text-slate-100 font-serif-display">Standalone Cause Donations (Zero Seats Deducted)</h2>
+                <p class="text-xs text-slate-400">Direct contributions submitted through "Support the Cause". Acknowledge once UPI payment is verified.</p>
+            </div>
+        </div>
+        <table class="w-full text-xs text-left">
+            <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px] bg-slate-950/40">
+                    <th class="py-2.5 px-3">Donation Ref</th>
+                    <th class="py-2.5 px-3">Donor</th>
+                    <th class="py-2.5 px-3">Amount</th>
+                    <th class="py-2.5 px-3">UTR Ref</th>
+                    <th class="py-2.5 px-3">Status</th>
+                    <th class="py-2.5 px-3 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60">
+                @forelse ($recentDonations as $don)
+                    <tr>
+                        <td class="py-3 px-3 font-mono font-bold text-amber-400">{{ $don->donation_reference }}</td>
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-slate-200">{{ $don->contact?->full_name }}</div>
+                            <div class="text-[11px] text-slate-400">{{ $don->contact?->phone }} &bull; {{ $don->contact?->email }}</div>
+                        </td>
+                        <td class="py-3 px-3 font-mono font-bold text-emerald-400">{{ $don->formatted_amount }}</td>
+                        <td class="py-3 px-3 font-mono text-sky-300">{{ $don->utr_reference ?? '—' }}</td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $don->status === 'ACKNOWLEDGED' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-300' }}">
+                                {{ $don->status }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-3 text-right">
+                            @if ($don->status !== 'ACKNOWLEDGED')
+                                <form action="{{ route('admin.donations.acknowledge', $don->id) }}" method="POST" class="inline-flex items-center gap-1.5">
+                                    @csrf
+                                    <input type="text" name="utr_reference" value="{{ $don->utr_reference }}" placeholder="UTR #"
+                                        class="w-28 px-2 py-1 rounded bg-slate-950 border border-slate-700 text-slate-200 font-mono text-[11px]">
+                                    <button type="submit" class="px-3 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px]">
+                                        Acknowledge
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-[11px] text-emerald-400 font-semibold">Acknowledged ✓</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6" class="py-6 text-center text-slate-500">No standalone cause donations recorded yet.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 
