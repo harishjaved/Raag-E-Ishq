@@ -207,11 +207,16 @@
                         <span class="text-amber-400 font-mono font-bold">17 Jan, 7PM</span>
                     </div>
 
-                    <!-- Public Site Shortcut -->
+                    <!-- Public Site Shortcuts -->
                     <a href="{{ route('home') }}" target="_blank"
                         class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 hover:border-slate-700 text-[11px] font-semibold text-slate-300 hover:text-white transition flex items-center gap-1.5">
                         <span>Public Page</span>
                         <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                    <a href="{{ route('event.show') }}" target="_blank"
+                        class="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-[11px] font-semibold text-amber-300 hover:text-amber-200 transition flex items-center gap-1.5">
+                        <span>Event Page</span>
+                        <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     </a>
                 </div>
             </div>

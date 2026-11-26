@@ -35,7 +35,7 @@ class Phase2RegistrationAndConcurrencyTest extends TestCase
 
     public function test_public_event_page_renders_with_live_availability(): void
     {
-        $response = $this->get('/');
+        $response = $this->get('/event');
         $response->assertStatus(200);
         $response->assertSee('Raag-E-Ishq');
         $response->assertSee('Chavara Hall');

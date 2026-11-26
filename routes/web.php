@@ -19,10 +19,8 @@ use App\Http\Controllers\Staff\ScanController;
 use App\Http\Controllers\Webhooks\RazorpayWebhookController;
 use Illuminate\Support\Facades\Route;
 
-// Public Registration & Event
-Route::get('/', [EventController::class, 'show'])->name('home');
-// Joygivers Foundation Main Landing Page (serves unified standalone + live-connected joygivers-website/)
-Route::get('/joygivers', function (\App\Services\InventoryService $inventoryService) {
+// Primary Public Homepage: Joygivers Foundation Landing Page + Live Booking Integration
+Route::get('/', function (\App\Services\InventoryService $inventoryService) {
     $html = file_get_contents(base_path('joygivers-website/index.html'));
     $html = str_replace(
         ['src="./images/', 'content="./images/', 'href="./images/'],
@@ -55,7 +53,7 @@ Route::get('/joygivers', function (\App\Services\InventoryService $inventoryServ
         . '  <script>window.JOYGIVERS_LIVE = ' . json_encode([
             'enabled' => true,
             'registerUrl' => route('register.store', [], false),
-            'eventPageUrl' => app()->environment('production') ? 'https://raag-e-ishq.vercel.app' : route('home', [], false),
+            'eventPageUrl' => app()->environment('production') ? 'https://raag-e-ishq.vercel.app/event' : route('event.show', [], false),
             'categories' => $categoriesPayload,
         ]) . ';</script>' . "\n</head>";
 
@@ -64,7 +62,13 @@ Route::get('/joygivers', function (\App\Services\InventoryService $inventoryServ
     return response($html, 200, [
         'Content-Type' => 'text/html; charset=UTF-8',
     ]);
-})->name('joygivers.landing');
+})->name('home');
+
+// Legacy /joygivers URL redirects permanently to the primary Joygivers homepage (/)
+Route::get('/joygivers', fn () => redirect()->route('home', [], 301))->name('joygivers.landing');
+
+// Raag-E-Ishq Event Ticketing Page
+Route::get('/event', [EventController::class, 'show'])->name('event.show');
 
 Route::get('/joygivers/images/{file}', function (string $file) {
     if (!preg_match('/^[a-zA-Z0-9._-]+$/', $file)) {
@@ -89,7 +93,7 @@ Route::get('/joygivers/images/{file}', function (string $file) {
         'Cache-Control' => 'public, max-age=86400',
     ]);
 })->name('joygivers.asset');
-Route::get('/register', fn () => redirect()->route('home'))->name('register.show');
+Route::get('/register', fn () => redirect()->route('event.show'))->name('register.show');
 Route::post('/register', [RegistrationController::class, 'store'])->name('register.store')->middleware('throttle:30,1');
 
 // Booking Payment & Polling

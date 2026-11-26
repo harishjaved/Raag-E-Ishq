@@ -21,7 +21,7 @@ class PaymentController extends Controller
             ->first();
 
         if (!$booking) {
-            return redirect()->route('home')->withErrors([
+            return redirect()->route('event.show')->withErrors([
                 'quantity' => "Booking reference '{$reference}' not found or has expired. Please select your seats below to place an enquiry."
             ]);
         }
@@ -31,7 +31,7 @@ class PaymentController extends Controller
         }
 
         if ($booking->status === Booking::STATUS_HOLD_EXPIRED) {
-            return redirect()->route('home')->withErrors([
+            return redirect()->route('event.show')->withErrors([
                 'quantity' => "Your 10-minute reservation hold for {$booking->booking_reference} has expired. Please re-select your tickets."
             ]);
         }

@@ -392,10 +392,10 @@ class Phase6BackOfficeAndAnalyticsTest extends TestCase
         $response->assertSee('data:image/svg+xml;base64,', false);
 
         // Tampered short tokens and legacy tokens must be rejected
-        $this->get('/p/tampered-invalid-token')->assertRedirect(route('home'));
+        $this->get('/p/tampered-invalid-token')->assertRedirect(route('event.show'));
         $tamperedShortUrl = substr($signedUrl, 0, -4) . 'AAAA';
-        $this->get($tamperedShortUrl)->assertRedirect(route('home'));
-        $this->get('/booking/' . $reference . '/confirmed?p=tampered&s=badsignature')->assertRedirect(route('home'));
+        $this->get($tamperedShortUrl)->assertRedirect(route('event.show'));
+        $this->get('/booking/' . $reference . '/confirmed?p=tampered&s=badsignature')->assertRedirect(route('event.show'));
     }
 
     public function test_admin_search_and_filter_rank_name_matches_first_and_normalize_phone(): void

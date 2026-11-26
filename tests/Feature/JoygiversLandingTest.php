@@ -31,7 +31,7 @@ class JoygiversLandingTest extends TestCase
     {
         $this->seed(DatabaseSeeder::class);
 
-        $response = $this->get('/joygivers');
+        $response = $this->get('/');
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/html; charset=UTF-8');
@@ -42,14 +42,18 @@ class JoygiversLandingTest extends TestCase
         $response->assertSee('Empowering Her Future');
         $response->assertSee('Through Education');
 
-        // Slide 2: More Details -> eventPageUrl | Book Now -> openBookingModal()
+        // Slide 2: More Details -> eventPageUrl (/event) | Book Now -> openBookingModal()
         $response->assertSee('Joygivers Presents:');
         $response->assertSee('Raag-E-Ishq');
         $response->assertSee('More Details');
         $response->assertSee('data-event-page-link', false);
         $response->assertSee('eventPageUrl', false);
+        $response->assertSee('/event', false);
         $response->assertSee('Book Now');
         $response->assertSee('openBookingModal()');
+
+        // Legacy /joygivers URL redirects cleanly to root (/)
+        $this->get('/joygivers')->assertRedirect(route('home'));
 
         // Screenshot 1 Style Booking Modal with Interactive Tiers & 3-step Form/Confirmation
         $response->assertSee('booking-modal');
@@ -97,15 +101,15 @@ class JoygiversLandingTest extends TestCase
         ]);
     }
 
-    public function test_main_raag_e_ishq_ticketing_homepage_remains_intact(): void
+    public function test_raag_e_ishq_ticketing_page_at_event_route_remains_intact(): void
     {
         $this->seed(DatabaseSeeder::class);
 
-        $response = $this->get('/');
+        $response = $this->get('/event');
 
         $response->assertOk();
         $response->assertSee('Raag-E-Ishq');
         $response->assertSee('Submit Booking Enquiry');
-        $response->assertSee(route('joygivers.landing'));
+        $response->assertSee(route('home'));
     }
 }

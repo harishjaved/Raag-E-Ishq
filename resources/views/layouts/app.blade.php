@@ -338,7 +338,7 @@
     <!-- Main Top Navigation -->
     <header class="border-b transition-colors duration-200 sticky top-0 z-50 backdrop-blur-md relative dark:border-slate-800/80 dark:bg-slate-950/80 light:border-slate-200 light:bg-white/80">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2.5">
+            <a href="{{ route('event.show') }}" class="flex items-center gap-2.5">
                 <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-amber-400 via-rose-500 to-purple-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-rose-500/20">
                     REI
                 </span>
@@ -350,7 +350,7 @@
 
             <!-- Right Navigation Actions -->
             <div class="flex items-center gap-2 sm:gap-3">
-                <a href="{{ route('joygivers.landing') }}"
+                <a href="{{ route('home') }}"
                    class="text-xs font-bold px-3 py-2 rounded-xl border transition dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-200 dark:hover:border-amber-400/50 light:border-slate-200 light:bg-slate-100 light:text-slate-700 light:hover:bg-slate-200">
                     &larr; Joygivers
                 </a>

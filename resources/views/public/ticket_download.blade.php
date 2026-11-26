@@ -48,7 +48,7 @@
 <body class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
     <div class="max-w-md w-full space-y-4">
         <div class="no-print flex justify-between items-center text-xs">
-            <a href="/" class="text-amber-400 font-semibold hover:underline">&larr; Back to Raag-E-Ishq</a>
+            <a href="{{ route('event.show') }}" class="text-amber-400 font-semibold hover:underline">&larr; Back to Raag-E-Ishq</a>
             <div class="flex items-center gap-2">
                 <a href="{{ route('ticket.qr.download', ['uuid' => $ticket->qr_uuid]) }}"
                     class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition flex items-center gap-1.5">

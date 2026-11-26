@@ -28,7 +28,7 @@ class ConfirmationController extends Controller
                 return view('public.confirmed', $restored);
             }
 
-            return redirect()->route('home')->withErrors([
+            return redirect()->route('event.show')->withErrors([
                 'quantity' => "Booking reference '{$reference}' not found. Please place an enquiry below or contact support."
             ]);
         }
@@ -40,7 +40,7 @@ class ConfirmationController extends Controller
     {
         $restored = $ticketService->restoreConfirmedBookingFromShortToken($token);
         if ($restored === null) {
-            return redirect()->route('home')->withErrors([
+            return redirect()->route('event.show')->withErrors([
                 'quantity' => 'Ticket pass link is invalid or corrupted. Please place an enquiry or request a resend below.',
             ]);
         }

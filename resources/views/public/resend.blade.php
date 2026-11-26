@@ -35,7 +35,7 @@
     </div>
 
     <div class="text-center">
-        <a href="/" class="text-xs text-slate-500 hover:text-slate-400">&larr; Return to Event Home</a>
+        <a href="{{ route('event.show') }}" class="text-xs text-slate-500 hover:text-slate-400">&larr; Return to Event Home</a>
     </div>
 </div>
 @endsection
