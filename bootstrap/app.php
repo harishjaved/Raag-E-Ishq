@@ -26,11 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->reportable(function (\Throwable $e) {
             if (!app()->runningUnitTests()) {
                 $frames = collect($e->getTrace())
-                    ->take(5)
+                    ->take(6)
                     ->map(fn ($f) => basename((string) ($f['file'] ?? '?')) . ':' . ($f['line'] ?? '?'))
                     ->implode(' <- ');
                 error_log('APP_EXCEPTION: ' . get_class($e) . ': ' . $e->getMessage() . ' @ ' . basename($e->getFile()) . ':' . $e->getLine() . ' | ' . $frames);
-                if (isset($_SERVER['VERCEL'])) {
+                if (app()->isProduction()) {
                     return false;
                 }
             }
