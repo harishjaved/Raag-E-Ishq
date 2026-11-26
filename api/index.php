@@ -24,6 +24,8 @@ foreach ($tmpDirs as $dir) {
 // Use managed Postgres automatically when Vercel database env vars exist; otherwise fall back to /tmp SQLite
 $hasPostgresEnv = (bool) (
     getenv('DB_URL')
+    ?: getenv('DATABASE_URL_UNPOOLED')
+    ?: getenv('POSTGRES_URL_NON_POOLING')
     ?: getenv('DATABASE_URL')
     ?: getenv('POSTGRES_URL')
     ?: getenv('STORAGE_POSTGRES_URL')
